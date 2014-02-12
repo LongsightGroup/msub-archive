@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+    <artifactId>evalproviders</artifactId>
+    <groupId>org.sakaiproject.evaluation</groupId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+	
+	<name>evalproviders - API</name>
+	<groupId>org.sakaiproject.evaluation</groupId>
+		<artifactId>evalproviders-api</artifactId>
+
+	<packaging>jar</packaging>
+
+	<properties>
+    	<deploy.target>shared</deploy.target>
+  	</properties>
+  	
+  	<dependencies>
+
+    	<!-- project dependencies -->
+		  <dependency>
+        <groupId>org.sakaiproject.evaluation</groupId>
+        <artifactId>sakai-evaluation-api</artifactId>
+        <version>1.4-SNAPSHOT</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.sakaiproject.hierarchy</groupId>
+        <artifactId>hierarchy-api</artifactId>
+        <version>${hierarchy.version}</version>
+      </dependency>
+      
+    	<!-- third party dependencies -->
+   		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
+
+		<!-- Sakai dependencies -->
+        <dependency>
+            <groupId>org.sakaiproject.kernel</groupId>
+            <artifactId>sakai-kernel-api</artifactId>
+        </dependency>
+	    
+	</dependencies>
+	
+	<build />
+	 
+</project>

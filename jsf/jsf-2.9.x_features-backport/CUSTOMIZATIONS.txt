@@ -1,0 +1,2 @@
+SAK-20086 Need upgrading JSF to 1.2.x or higher in Sakai-JSF framework
+  * LS-161 is the merge to Longsight JSF branch

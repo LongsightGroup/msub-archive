@@ -1,0 +1,10 @@
+SAK 19964 Gradebook drop highest and/or lowest or keep highest score for a student
+SAK 20370 Show total points in All Grades view for instructor
+SAK-19731 Add ability to hide columns in All Grades View for instructors
+SAK-21008 Points GB with Categories: Calculations are off
+SAK-21225 Extra Credit in Gradebook
+SAK-21528 Gradebook Service ignores dropped scores
+SAK-22545 Missing NPE check in edu-services (gradebook) category leads to NPE 
+CMCC-21 (SAK-22200): new method signature for getCalculatedCourseGrade to not map the grades to letter, Needed for export routines.
+SAK-25659 Assignments event log for grading throws 'gradebook.updateItemScore' but not in all cases
+

@@ -1,0 +1,6 @@
+SAK-21225 Extra Credit in Gradebook
+  * SAK-23896: EC categories brought over via Site Import lead to gradebook crash (NPE)
+CMCC-21 (SAK-22200): new method signature for getCalculatedCourseGrade to not map the grades to letter, Needed for export routines.
+SAK-23544 Course Management should return academic sessions in descending order
+SAK-23570 getAcademicSessions (course management) should utilize hibernate L2Cache
+SAK-25659 record the gradebook.updateItemScore event when grading an assignment attached to an existing gradebook item (Estimate 271)

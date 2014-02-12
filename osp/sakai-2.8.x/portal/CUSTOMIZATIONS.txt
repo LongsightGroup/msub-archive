@@ -1,0 +1,2 @@
+KNL-655 Upgrade to Ehcache to 1.7.2
+SAK-10393 Worksites need to support locale preferences !!(relies on site-manage changes)

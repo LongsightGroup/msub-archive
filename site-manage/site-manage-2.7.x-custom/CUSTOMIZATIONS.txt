@@ -1,0 +1,1 @@
+SAK-19866 Auto-groups - ability to assign users randomly

@@ -1,0 +1,3 @@
+RES-42 Token Expiration isn't handled properly and needs to be configurable
+RES-43 Clean out Vula specific text and add sakai.property to redirect the user to login to xlogin
+RES-44 Make confirmation instructions configurable via tool properties like the instructions are

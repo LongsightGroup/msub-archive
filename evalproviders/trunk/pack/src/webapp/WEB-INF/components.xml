@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+
+	<!--  SakaiProxy -->
+ 	<bean id="org.sakaiproject.evalgroup.providers.logic.SakaiProxy"
+    	class="org.sakaiproject.evalgroup.providers.logic.SakaiProxyImpl"
+        init-method="init">
+        
+        <!-- API injection -->
+        <property name="securityService" ref="org.sakaiproject.authz.api.SecurityService" />
+        <property name="sessionManager" ref="org.sakaiproject.tool.api.SessionManager" />
+        <property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager" />
+        <property name="userDirectoryService" ref="org.sakaiproject.user.api.UserDirectoryService" />
+		<property name="eventTrackingService" ref="org.sakaiproject.event.api.EventTrackingService" />
+		<property name="serverConfigurationService" ref="org.sakaiproject.component.api.ServerConfigurationService" />
+		<property name="siteService" ref="org.sakaiproject.site.api.SiteService" />
+		
+	</bean>
+	
+	<!-- ProjectLogic -->
+	<bean id="org.sakaiproject.evalgroup.providers.logic.ProjectLogic"
+    	class="org.sakaiproject.evalgroup.providers.logic.ProjectLogicImpl"
+    	init-method="init">
+    	
+    	<property name="dao" ref="org.sakaiproject.evalgroup.providers.dao.ProjectDao" />	
+    	<property name="cache" ref="org.sakaiproject.evalgroup.providers.cache" />	
+    	
+    </bean>
+    
+    <!-- DAO. This uses the DataSource that has already been setup by Sakai  -->
+	<bean id="org.sakaiproject.evalgroup.providers.dao.ProjectDao"
+		class="org.sakaiproject.evalgroup.providers.dao.impl.ProjectDaoImpl"
+		init-method="init">
+		<property name="jdbcTemplate">
+			<bean class="org.springframework.jdbc.core.JdbcTemplate">
+				<constructor-arg type="javax.sql.DataSource">
+					<ref bean="javax.sql.DataSource" />
+				</constructor-arg>
+			</bean>
+		</property>	
+	</bean>
+	
+	<!-- Cache: ttl=1 hour -->
+    <bean id="org.sakaiproject.evalgroup.providers.cache"
+        class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+        <property name="cacheManager">
+            <ref bean="org.sakaiproject.memory.api.MemoryService.cacheManager"/>
+        </property>
+        <property name="cacheName">
+            <value>org.sakaiproject.evalgroup.providers.cache</value>
+        </property>
+        <property name="maxElementsInMemory" value="1000" />
+        <property name="diskPersistent" value="false" />
+        <property name="eternal" value="false" />
+        <property name="timeToLive" value="3600" />
+        <property name="timeToIdle" value="3600" />
+    </bean>
+    
+    
+    <bean id="org.sakaiproject.evaluation.providers.EvalHierarchyProvider"      
+     class="org.sakaiproject.evalgroup.providers.SimpleEvalHierarchyProviderImpl"
+        init-method="init">
+           <property name="projectLogic" ref="org.sakaiproject.evalgroup.providers.logic.ProjectLogic" />
+			<property name="externalLogic" ref="org.sakaiproject.evaluation.logic.externals.EvalExternalLogic" />
+			<property name="hierarchyService" ref="org.sakaiproject.hierarchy.HierarchyService" />
+    </bean>
+
+</beans>

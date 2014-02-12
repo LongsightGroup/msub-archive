@@ -1,0 +1,147 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>roster-base</artifactId>
+    <groupId>org.sakaiproject</groupId>
+    <version>2.6-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <name>Sakai Roster List Tool</name>
+  <groupId>org.sakaiproject</groupId>
+  <artifactId>sakai-roster-tool</artifactId>
+  <organization>
+    <name>Sakai Project</name>
+    <url>http://sakaiproject.org/</url>
+  </organization>
+  <inceptionYear>2003</inceptionYear>
+  <packaging>war</packaging>
+  <dependencies>
+    <dependency>
+      <groupId>org.sakaiproject.kernel</groupId>
+      <artifactId>sakai-kernel-util</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject.kernel</groupId>
+      <artifactId>sakai-kernel-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject.kernel</groupId>
+      <artifactId>sakai-component-manager</artifactId>
+    </dependency>
+<!--
+      This has been relocated to sakai-kernel-util
+      org.sakaiproject.kernel.utilsakai-util-->
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-profile-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-roster-api</artifactId>
+    </dependency>
+<!--org.sakaiprojectsakai-component${sakai.version}-->
+<!--org.sakaiprojectsakai-component-api${sakai.version}-->
+<!--org.sakaiprojectsakai-authz-api${sakai.version}-->
+<!--org.sakaiprojectsakai-tool-api${sakai.version}-->
+<!--org.sakaiprojectsakai-site-api${sakai.version}-->
+<!--org.sakaiprojectsakai-entity-api${sakai.version}-->
+<!--org.sakaiprojectsakai-util-api${sakai.version}-->
+<!--org.sakaiprojectsakai-util${sakai.version}-->
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-sections-app-util</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.sakaiproject</groupId>
+          <artifactId>sakai-sections-model</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-sections-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-coursemanagement-api</artifactId>
+    </dependency>
+<!--My faces dependency -->
+    <dependency>
+      <groupId>org.apache.myfaces.core</groupId>
+      <artifactId>myfaces-api</artifactId>
+      <version>1.1.5</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.myfaces.core</groupId>
+      <artifactId>myfaces-impl</artifactId>
+      <version>1.1.5</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.myfaces.tomahawk</groupId>
+      <artifactId>tomahawk</artifactId>
+      <version>1.1.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-jsf-app</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>jsf</groupId>
+          <artifactId>jsf-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-depend-jsf-widgets-myfaces</artifactId>
+      <type>pom</type>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-jsf-spreadsheet</artifactId>
+    </dependency>
+<!--javax.servletservlet-api${sakai.servletapi.version}-->
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>jsp-api</artifactId>
+      <version>2.0</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>jstl</artifactId>
+      <version>1.1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+      <version>1.0.4</version>
+    </dependency>
+<!--org.sakaiprojectsakai-user-api${sakai.version}-->
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-jsf-tool</artifactId>
+    </dependency>
+<!--org.sakaiprojectsakai-event-api${sakai.version}-->
+  </dependencies>
+  <build>
+    <resources>
+      <resource>
+        <directory>${basedir}/src/bundle</directory>
+        <includes>
+          <include>**/*.properties</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>${basedir}/src/java</directory>
+        <includes>
+          <include>**/*.xml</include>
+        </includes>
+      </resource>
+    </resources>
+  </build>
+</project>

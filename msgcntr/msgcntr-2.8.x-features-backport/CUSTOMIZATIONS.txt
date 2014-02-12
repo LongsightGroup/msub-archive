@@ -1,0 +1,44 @@
+MSGCNTR-390 Allow instructor to duplicate forum or topic
+MSGCNTR-405 Allow Filtering By SiteId in MSGCNTR Synoptic Quartz Job
+MSGCNTR-409 Add sakai.property for Synoptic Count Update to Update new members only
+MSGCNTR-411 Post First Option in Forums
+MSGCNTR-401 Add new Property to prevent users from using Generic Recipients in "To" field (all participants, ect)
+MSGCNTR-442 Clicking Forum Title will show "duplicate" option for all users
+MSGCNTR-329 Message sent to students is no longer treated as a BCC
+MSGCNTR-403 Grading Forums - Easier way to view all messages from one person and enter grade in one screen, or view list of all users with counts of posts and grade entry box
+MSGCNTR-487 Stats Grading Clicking Name Popup then sorting causes missing "close" button
+MSGCNTR-438 Ability to select to hide/reveal groups in Messages
+MSGCNTR-523 Add ability for user to customize size of the WYSIWYG Editor (requires jsf custom SAK-20546 and prop msgcntr.editor.rows)
+MSGCNTR-527 Synoptic Job: Allow updating of synoptic counts even when unread counts are 0
+MSGCNTR-542 Redo Forum/Topic Permissions setting UI
+MSGCNTR-425 Word Count doesn't work with new CKEditor
+MSGCNTR-551 Null Pointer Exception for getTopicById in MessageForumsForumManagerImpl.java
+MSGCNTR-308 Improvements for deleted forum posts
+MSGCNTR-374 Allow institution to set a preference as to whether the checkbox to "cc" the email address of the recipient is checked by default
+MSGCNTR-569 CONTEXT_ID length is not consistent and can cause errors
+MSGCNTR-598 User Statistics Page Loads slowly
+MSGCNTR-109 Display photo alongside name in Forums tool when viewing responses to thread
+MSGCNTR-549 Allow user to change name of forum/topic when duplicating (also fix i18n issue)
+MSGCNTR-231 Ability to create Forum Topics/Forums based on groups.
+MSGCNTR-637 Direct Links to Topics allows backdoor access to topics that are restricted
+SAK-16568 Entity picker link points to original site when 'Import from Site' option is used
+MSGCNTR-607 Option to Import Start & End Dates for Forums
+MSGCNTR-663 Bulk Grading Page (with selected gb item) can scrable scores
+MSGCNTR-670 Clicking Next or Previous shows a the BCC text for people who shouldn't see it
+MSGCNTR-677 msgcntr findEntityRefs calls isInstructor with siteId not siteRef causing incorrect responses
+MSGCNTR-623 The "Insert Original Text" link fail in forums (CKEditor)
+MSGCNTR-548 Direct Link doesn't work for Topic
+MSGCNTR-733 Curser placement jumps when responding to message in FCKEditor WYSIWYG
+MSGCNTR-580 Open Close date logic is incorrect 
+MSGCNTR-741
+MSGCNTR-718 (Hidden) Forum topics are still accessible via next topic when they shouldn't be
+LS-143 Check for site.upd to create new forums or topics because of DA and permissions
+MSGCNTR-748 Option to disable CC settings at the Institution Level 
+MSGCNTR-749 Option to Disabled auto forwarding at the institution Level
+SAK-23202 Gradebook multiplying points when grades are attached to it from other tools.
+MSGCNTR-790 Add property to set default start and end times for Forums
+MSGCNTR-791 findReadMessagesForStudent does not need to order in sql as it does it in code
+MSGCNTR-584 Need property to control display of profile pic feature 
+MSGCNTR-825 Option to show full description by default instead of hiding it for forums and topics
+SAK-25274 Forum Statistics page brings in too much data and creates slow page loads
+

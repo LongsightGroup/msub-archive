@@ -1,0 +1,3 @@
+SAK-16499 Ability to lock a user account
+SAK-23582 portal.use.dhtml.more should not be used as property for user preferences page
+

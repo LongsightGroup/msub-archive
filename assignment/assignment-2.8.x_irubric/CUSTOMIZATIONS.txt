@@ -1,0 +1,1 @@
+iRubric https://source.sakaiproject.org/contrib/irubric/sakai-2.8.1/patches/asm.diff

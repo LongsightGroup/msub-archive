@@ -1,0 +1,12 @@
+SAK-10393 Worksites need to support locale preferences !!(relies on portal changes as well)
+SAK-20923 Option to disable requirement for 'authorizer' when creating new site (includes LS-17 Remove excessive emails)
+LS-41 Increase course field to 4 in worksite setup
+SAK-20756 Default site language option should not be empty
+SAK-21038 Use quiet reference notation to suppress velocity code if $sectionObject.getCategoryDescription() is null
+SAK-20413 Creating a course with example data and clicking on the 'Save and add another section' fails silently
+SAK-20799 PageOrder: Add Ability to Hide a Tool without Disabling a Tool
+DAC-33 Allow admins and instructors to have an interface so that they set tools that can be available to logged in but not to public
+DAC-30 Shopping Admins should be able to remove auth or anon options for instructor settings in site info
+DAC-34 Don't show role option if there is only one role option for instructors shopping period settings
+SAK-21323 Allow LessonBuilder to use Import from Site -> Merge by rewriting fake tool ids with real ones
+SAK-19298 - Prepopulate suitable email addresses for users

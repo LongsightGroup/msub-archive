@@ -1,0 +1,1 @@
+SAK-22226 - Remove legacy rewrite code in syllabus for BHC-334989

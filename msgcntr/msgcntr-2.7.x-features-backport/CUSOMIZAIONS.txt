@@ -1,0 +1,7 @@
+MSGCNTR-523 Add ability for user to customize size of the WYSIWYG Editor (requires jsf custom SAK-20546 and prop msgcntr.editor.rows)
+MSGCNTR-527 Synoptic Job: Allow updating of synoptic counts even when unread counts are 0
+MSGCNTR-551 Null Pointer Exception for getTopicById in MessageForumsForumManagerImpl.java
+MSGCNTR-231 - Ability to create Forum Topics/Forums based on groups
+MSGCNTR-542 - Redo Forum/Topic Permissions setting UI
+MSGCNTR-549 - Allow user to change name of forum/topic when duplicating 
+MSGCNTR-677 msgcntr findEntityRefs calls isInstructor with siteId not siteRef causing incorrect responses

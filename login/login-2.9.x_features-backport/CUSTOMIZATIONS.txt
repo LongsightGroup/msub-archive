@@ -1,0 +1,4 @@
+SAK-16499 Ability to lock a user account
+SAK-21498 Auth choice when using container login like CAS or Shibboleth
+ * SAK-23252 add specific CSS ids to choice.vm
+ * SAK-22769 auth choice was intercepting login links from /portal/

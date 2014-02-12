@@ -1,0 +1,17 @@
+<!-- $Id$ -->
+<!-- start:  assignment_macros.vm -->
+#macro( propertyDetails $props )
+	<span class="textPanelFooter">(
+	#if (!$props.getBooleanProperty($props.NamePropIsCollection))
+		$props.getPropertyFormatted($props.NamePropContentLength);
+	#end
+	$props.getPropertyFormatted($props.NamePropCreationDate)
+	)</span>
+#end
+#macro (toolDirectParam $toolLinkJunk $toolLinkAction $toolLinkQuery $toolLinkSite $portalUrl)
+$portalUrl/directtool/sakai.assignment.grades?sakai.site=$toolLinkSite&panel=Main&$toolLinkQuery&sakai_action=$toolLinkAction
+#end
+
+<!-- end:  assignment_macros.vm -->
+
+

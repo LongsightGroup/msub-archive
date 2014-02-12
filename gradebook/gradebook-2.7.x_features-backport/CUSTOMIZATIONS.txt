@@ -1,0 +1,2 @@
+SAK-19461 Gradebook: a long name effects row alignment
+

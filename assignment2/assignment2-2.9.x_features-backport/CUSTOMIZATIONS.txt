@@ -1,0 +1,4 @@
+ASNN-746 Sync TurnItIn Sakai.Property Options with Assignments1
+IRubric Patch https://source.sakaiproject.org/contrib/irubric/trunk/sakai-2.9.1/patches/asm2.diff
+ASNN-772 Add GradeMark Integration to Assignment2
+

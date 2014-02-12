@@ -1,0 +1,3 @@
+Modifications to the JLDAP provider to better failover among three available LDAP servers. Also modification to getUsers to request hundreds of users at once instead of one at a time.
+
+SAK-21619 Findbugs fixes

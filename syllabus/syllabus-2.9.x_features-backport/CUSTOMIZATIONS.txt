@@ -1,0 +1,7 @@
+SAK-23270 Add Start and End Dates to Syllabus and allow linking to Calendar
+SAK-23303 Bulk Create Syllabus Items by Date
+SAK-23342 Create a Table of Contents Style view for Syllabus
+SAK-23441 Bulk Update Syllabus Items
+SAK-23355 add syllabus entity provider
+SAK-23531 Improve Syllabus Main and Edit page performance
+

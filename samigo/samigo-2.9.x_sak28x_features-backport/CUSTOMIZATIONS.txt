@@ -1,0 +1,14 @@
+SAM-1239 Properties wording change for data_discrepancy_1
+SAM-1330 Allow disabling of browser-based data discrepancy errors
+SAM-1402 Mutliple Choice: All or Nothing option
+SAM-948 'Minimum value' option for questions
+SEMS-39 Turn off warning to users of Edited Quiz
+LS-66 Samigo 5-min warning needs better color constrast; comment provided on SAM-822
+LS-67 Spell quizes correctly
+LS-4 Test Description 60k limit; patch submitted but not committed on SAM-1200
+LS-112: Allow 60k chars instead of 4k chars for Part Information textarea
+SAM-1256 Add classes to metadata tables to make it easy to hide them in question pools add/edit screens
+SAM-1755 Firefox 13 deprecated use of -moz-border prefix
+SAM-1257 Move action labels to CommonMessages bundles
+r110699: Merging r106906 through r110698 into sam backport
+SAM-1733 use jquery ui accordion for settings pages

@@ -1,0 +1,2 @@
+KNL-655 Upgrade to Ehcache to 1.7.2
+SAK-20715 Slowness/performance issues in Matrices tool

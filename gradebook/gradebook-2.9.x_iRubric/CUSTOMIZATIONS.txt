@@ -1,0 +1,17 @@
+Process used for this branch:
+
+1) SVN co immediately before 2.9.2 was cut 
+$ svn cp -r 125348 https://source.sakaiproject.org/svn/gradebook/branches/sakai-2.9.x https://source.sakaiproject.org/svn/msub/longsight.com/gradebook/gradebook-2.9.x_iRubric
+
+2) Generate patch file by comparing irubric 2.9.2 with standard 2.9.2
+$ git diff --no-prefix remotes/upstream/tags/sakai-2.9.2..tags/sakai-2.9.2 > /tmp/irubric-gb.patch
+
+3) Apply patch file
+$ patch -p0 < /tmp/irubric-gb.patch
+
+4) Make sure all pom.xml files are using 2.9-SNAPSHOT artifact
+$ find ./ -name pom.xml|xargs perl -pi -e 's/2.9.2/2.9-SNAPSHOT/g'
+
+5) Merge our backport fixes like Extra Credit
+$ svn merge -c106896,108033,119426 https://source.sakaiproject.org/svn/msub/longsight.com/gradebook/gradebook-2.9.x_features-backport/
+

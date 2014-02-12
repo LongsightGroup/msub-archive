@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>chat-base</artifactId>
+    <groupId>org.sakaiproject</groupId>
+    <version>2.7-SNAPSHOT</version>
+    <relativePath>../../pom.xml</relativePath>
+  </parent>
+  <name>sakai-chat-impl</name>
+  <groupId>org.sakaiproject</groupId>
+  <artifactId>sakai-chat-impl</artifactId>
+  <organization>
+    <name>University of Michigan</name>
+    <url>http://sakaiproject.org/</url>
+  </organization>
+  <inceptionYear>2003</inceptionYear>
+  <packaging>jar</packaging>
+  <properties>
+    <deploy.target/>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>org.sakaiproject.kernel</groupId>
+      <artifactId>sakai-kernel-util</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject.kernel</groupId>
+      <artifactId>sakai-kernel-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject.kernel</groupId>
+      <artifactId>sakai-component-manager</artifactId>
+    </dependency>
+<!--
+      This has been relocated to sakai-kernel-util
+      org.sakaiproject.kernel.utilsakai-event-util-->
+<!--
+      This has been relocated to sakai-kernel-util
+      org.sakaiproject.kernel.utilsakai-db-storage-->
+<!--
+      This has been relocated to sakai-kernel-util
+      org.sakaiproject.kernel.utilsakai-util-->
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-chat-api</artifactId>
+    </dependency>
+<!--org.sakaiprojectsakai-authz-api${sakai.version}-->
+<!--org.sakaiprojectsakai-alias-api${sakai.version}-->
+<!--org.sakaiprojectsakai-component-api${sakai.version}-->
+<!--org.sakaiprojectsakai-content-api${sakai.version}-->
+<!--org.sakaiprojectsakai-db-api${sakai.version}-->
+<!--org.sakaiprojectsakai-entity-api${sakai.version}-->
+<!--org.sakaiprojectsakai-event-api${sakai.version}-->
+<!--org.sakaiprojectsakai-memory-api${sakai.version}-->
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-message-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject.search</groupId>
+      <artifactId>search-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject.entitybroker</groupId>
+      <artifactId>entitybroker-api</artifactId>
+    </dependency>
+     
+<!--org.sakaiprojectsakai-site-api${sakai.version}-->
+<!--org.sakaiprojectsakai-tool-api${sakai.version}-->
+<!--org.sakaiprojectsakai-user-api${sakai.version}-->
+<!--org.sakaiprojectsakai-util-api${sakai.version}-->
+<!--org.sakaiprojectsakai-util${sakai.version}-->
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-message-impl</artifactId>
+    </dependency>
+<!--org.sakaiprojectsakai-event-util${sakai.version}-->
+<!--org.sakaiprojectsakai-db-storage${sakai.version}-->
+<!--javax.servletservlet-api${sakai.servletapi.version}-->
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+      <version>1.0.4</version>
+    </dependency>
+<!--${sakai.hibernate.groupId}${sakai.hibernate.artifactId}${sakai.hibernate.version}-->
+<!--${sakai.spring.groupId}${sakai.spring.artifactId}${sakai.spring.version}-->
+  </dependencies>
+  <build>
+    <resources>
+      <resource>
+        <directory>${basedir}/src/sql</directory>
+        <includes>
+          <include>**/*.sql</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>${basedir}/src/bundle</directory>
+        <includes>
+          <include>**/*.properties</include>
+        </includes>
+      </resource>
+    </resources>
+  </build>
+</project>

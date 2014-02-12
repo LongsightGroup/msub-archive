@@ -1,0 +1,11 @@
+SEMS-28 Hiding Melete pages
+SEMS-29 Making Melete modules group aware
+SEMS-40 Melete Import Doesn't handle Unexpected File Crashes
+custom_patch1.patch
+SEMS-13 Provide area for including subtitles to modules that would be visible without opening module
+LS-2 General Custom Melete Distrobution (https://jira.longsight.com/browse/LS-2)
+SAK 20931 Melete: Add Print All Feature
+LS-54 OHSU contributed patch for using sakai Resources
+LS-55 OHSU contributed patch for rtsp links
+LS-73 ME-1370 Handle null pointer exception with expand/collapse icon
+LS-58 SAK-16568 for melete

@@ -1,0 +1,11 @@
+SAK-20702 Add functionality to assignments UI to show the error message for Content Review Service
+SAK-21059 Upgrade Assignment 1 Integration with TurnItIn 2.9.2 *(relies on -Dsakai.contentreview.version=2.9.2-SNAPSHOT)
+SAK-21613 A1 TII student submission page shows error when its waiting for report
+SAK-21957 Change Assignment TII note from "Attachments only" to "Single upload file only"
+SAK-21520 Impossible to set points using IE9 when creating new assignment
+SAK-21869 Resubmit deadline can override "Accept until" deadline
+SAK-21335 Calendar in Assignments has 2012 as year limit
+SAK-23232 Add an indicator for students to know that an assignment is being submitted for content review
+SAK-23237 Add additional Exclusion options to TII settings in Assignments
+SAK-23517 Standardize the parsing of grades in assignments
+

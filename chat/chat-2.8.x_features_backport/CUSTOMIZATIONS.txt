@@ -1,0 +1,1 @@
+SAK-22191 - Add a way in the UI to view all chat messages

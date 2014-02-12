@@ -1,0 +1,1 @@
+KNL-111 Allow for configurable cookie name and domain

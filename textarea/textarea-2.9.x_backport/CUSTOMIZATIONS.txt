@@ -1,0 +1,7 @@
+SAK-23040 iSyllabus Editor Entity Link UI
+SAK-23174 Unable to add images through rich text editor
+SAK-23866 Support security advisor for new melete version
+SAK-23686 fMath plugin should store generated images in a configurable subfolder
+SAK-24209 Private collections (meleteDocs) not supported by iSyllabus
+
+

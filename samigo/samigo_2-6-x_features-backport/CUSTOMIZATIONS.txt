@@ -1,0 +1,4 @@
+SAM-705 Dollar sign $ in answer for 'Fill in the Blank' type question causes error on edit.
+SAM-801 Allow student use of rich-text editor (FCKeditor)
+SAM-756 Character limit of 4000 in Test/Quizzes - QUICK question.
+SAM-758 Hiberante assertion error from T&Q

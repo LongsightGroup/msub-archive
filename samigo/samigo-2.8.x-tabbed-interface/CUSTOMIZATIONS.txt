@@ -1,0 +1,65 @@
+Branched from:  https://source.sakaiproject.org/svn/sam/trunk
+Revisions: 1-93686
+
+SAM-894 Reduce confusion over core, published, inactive by using Javascript tabbed display
+SAM-1238  With showAssessmentTypes=false, Assessment Types link still shows when adding a new multiple choice question
+SAM-1239 Properties wording change for data_discrepancy_1
+SAM-1252 Code Review: Stack trace when null value in Section Author Type
+SAM-904 Option to set all remaining students who have not yet submitted an assessment to zero (or some other grade)
+SEMS-39 Turn off warning to users of Edited Quiz
+SAM-1330 (patch not in trunk as of 8/24/2011) Allow disabling of browser-based data discrepancy errors
+SAM-1313 (patch not in trunk as pf 8/24/2011) Settings: Description/Intro not displayed to assessment takers
+SAM-1286 Samigo/score is not correct for timed assessment with average score option and linked to gradebook. 
+SAM-1379 Statistics Only shows First Part of tests for Students (no dropdown for other parts)
+SAM-1383 Imported Samigo Tests with Groups crashes tool
+SAM-1376 Samigo no longer works when creating an assessment through markup text
+SAM-1181 Linear assessment does not allow more than 1 submission
+SAM-1399 Thursday is misspelled
+SAM-1388 Issues taking assessment via URL; reversion of SAM-1003
+SAM-1208 timed assessment with no due date but has retraction date problems
+SAM-1402 Mutliple Choice: All or Nothing option
+LS-66 Samigo 5-min warning needs better color constrast; comment provided on SAM-822
+SAM-1431 Duplicating Tests crashes sites on publish
+LS-67 Spell quizes correctly
+SAM-1475 Published Test Can Change Settings to Save to GB Item that already exists
+SAM-1535 Mutliple Choice Partial Credit: Checkmark and cross marks show up when it shouldn't
+LS-4 Test Description 60k limit; patch submitted but not committed on SAM-1200
+SAM-1532 Can't update published tests settings when tied to Gradebook
+SAM-1541 MarkupText assessment creation doesn't use default (or selected) template
+SAM-1552 Question Statistics Links go missing when a section doesn't have metadata
+SAM-1398 Default the "Release to" to Site if the imported assessment release to group
+SAM-948 'Minimum value' option for questions
+SEMS-46 Grammatical Error in samigo
+SAM-1299 Use the new kernel API to participate in Reference Migration during Site Import
+SAM-1232 Accessibility: Many Question Types Marked-Up Entirely As a Level 5 Heading
+SAM-1205 SAMigo integration with Respondus LockDown Browser
+SAM-1251 LS-111: print to pdf failing
+LS-112: Allow 60k chars instead of 4k chars for Part Information textarea
+SAM-1393 Timer starts even if the username and password is not correct
+SAM-1677 to longsight branch of samigo
+SAM-1401 "Delivery Date is not of correct format" is seen even if the date is in correct format
+SAM-1748 Missing key org.sakaiproject.tool.assessment.bundle.EvaluationMessages feedback
+SAM-1249 Change the email feature into mailto links because of ConcurrentModificationException and other Chrome/Safari issues
+SAM-1499 deleting a group renders a released assessment inaccessible
+SAM-1119 fix performance issues with redundant queries
+SAM-1551 use the stream not the byte[] 
+r112013 (HYS-498313) adding debug code only to understand MC grading issues
+SAM-1591 timed assessments via URL should not allow user to start
+LS-133 SAM-1641 SAM-1726 float comparison found by Findbugs. Manual merge because of issues found with the original SAM commit.
+SAM-1755 rounded corners in latest firefox because of deprecation of -moz- prefix
+SAM-1591 Timed assessments delivered via URL allow students to "begin" after due date 
+SAM-1438 formatByPart null workaround; do not merge into 2.9+ as may be resolved elsewhere
+SAM-1643 show/hide rich-text editor adds visible HTML paragraph tags
+SAM-1994 - FIB shows green checkmark on incorrect answers after pressing update
+SAM-1997 - Configure Samigo to use released audio jar for custom builds
+SAM-925 NPE occurs in DeliveryBean.timeExpired
+SAM-1088 Continue to see data discrepancy errors despite JavaScript button disabling (Make Auto Submission run after retract date) 
+LS-145 Set Samigo Feedback Text field limit to 60k
+SAM-2041 better XML parsing defaults
+SAM-1606 Problems exporting and importing assessments 
+SAM-1648 Using & in an assessment title will display as &amp; in some situations
+SAM-1493 The published assessment name should get unescaped.
+SAM-2147 Do not allow instructors to edit or remove a published test after any activity
+SAM-2128 Modify the auto submit job to handle errors and continue
+SAM-1605 MissingResourceException: Can't find resource for bundle java.util.PropertyResourceBundle, key correct
+

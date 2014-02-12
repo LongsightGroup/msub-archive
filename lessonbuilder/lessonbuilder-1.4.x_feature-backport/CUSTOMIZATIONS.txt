@@ -1,0 +1,5 @@
+r110686: modify tool/pom.xml to build A2 (1.1-SNAPSHOT)
+r110701: also build yaft and mneme to get A2 working
+r114065: LSNBLDR-112 - Page and subpage length needs string length checking
+LS-152 SAK22283 iSyllabus patch for Lesson Builder for Sakai 28x
+

@@ -1,0 +1,4 @@
+SAK-23232 Add an indicator for students to know that an assignment is being submitted for content review
+SAK-23237 Add additional Exclusion options to TII settings in Assignments
+SAK-23517 Standardize the parsing of grades in assignments
+SAK-25435 Methods assignmentsForContextAndUser and allowAddAnySubmissionUsers are not thread-safe

@@ -1,0 +1,1 @@
+SAK-19231 If site has spaces in the site id, attachments cannot be added to instructor response

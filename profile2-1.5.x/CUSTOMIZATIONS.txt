@@ -1,0 +1,1 @@
+PRFL-828 fix menu apply patch attached to the JIRA

@@ -1,0 +1,1 @@
+SAK-20546 Regression: no longer possible for tool to set custom width and height for Sakai editor

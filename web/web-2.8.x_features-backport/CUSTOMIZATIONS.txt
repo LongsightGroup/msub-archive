@@ -1,0 +1,1 @@
+LS-113 Web Content Doesn't resize correctly

@@ -1,0 +1,23 @@
+Notes from Nicola:
+
+mod on melete-app/src/java/org/etudes/tool/melete/SectionPage.java: this is for the file browser - this fix was recommended by an etudes developer when i complained about something, but i dont think there was ever a jira - may be in future version of melete
+
+i have an email on it, but cant find it just now
+
+obvs pom changes are so it works with our version
+
+melete-impl/src/java/org/etudes/component/app/melete/MeleteImportfromSiteServiceImpl.java
+
+i added the melete.translateLinks sakai.properties setting
+
+vive rejected this feature when i sent it to her
+
+but many of our clients find it helpful so they can control the behavior of what gets copied into meleteDocs when they do a course copy
+
+the change on melete-impl/src/java/org/etudes/component/app/melete/MeleteCHServiceImpl.java
+
+i think there may actually be a JIRA for this
+
+but this was a change to accomodate kernel changes in how mime type is handled
+
+i believe etudes did accept this patch, so it may be in future versions

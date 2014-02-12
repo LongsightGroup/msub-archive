@@ -1,0 +1,23 @@
+MSGCNTR-308 Improvements for deleted forum posts
+MSGCNTR-607 Option to Import Start & End Dates for Forums
+MSGCNTR-677 msgcntr findEntityRefs calls isInstructor with siteId not siteRef causing incorrect responses
+r112159 changing pom to reference 2.8-SNAPSHOT instead of 2.9-SNAPSHOT
+MSGCNTR-717 - Copy Link in messages sometimes isn't set (QXP-864059)
+MSGCNTR-741
+LS-143 Check for site.upd to create new forums or topics because of DA and permissions
+MSGCNTR-748 Option to disable CC settings at the Institution Level 
+MSGCNTR-749 Option to Disabled auto forwarding at the institution Level
+MSGCNTR-790 Add property to set default start and end times for Forums
+SAK-23040 iSyllabus Editor Entity Link UI
+MSGCNTR-817 Open Close Dates don't hide topics properly when instructor enters student view
+MSGCNTR-823 messages being sent in iso-8859-1 not in utf-8
+MSGCNTR-825 Option to show full description by default instead of hiding it for forums and topics
+SAK-23897 Site Info -> Import from site needs to run in a seperate thread and email user when finished
+MSGCNTR-822 Special characters in titles, short description do not display correctly
+SAK-25274 Forum Statistics page brings in too much data and creates slow page loads
+SAK-25471 NPE for open and close dates sync job when it can't find a user
+LS-167 Don't allow 12am for open or close date in msgcntr
+SAK-25473 One forums reply results in 4 separate events
+SAK-25681 Imported Forums and Topics with open and close dates in the future do not work
+SAK-25694 Topic Settings Group Permission cached when using breadcrumbs
+

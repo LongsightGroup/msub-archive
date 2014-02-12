@@ -1,0 +1,44 @@
+
+Property changes on: .
+___________________________________________________________________
+Added: svn:mergeinfo
+   Merged /msub/longsight.com/melete-2.8m1-custom:r89057
+
+Index: melete-app/src/webapp/melete/add_module.jsp
+===================================================================
+--- melete-app/src/webapp/melete/add_module.jsp	(revision 92413)
++++ melete-app/src/webapp/melete/add_module.jsp	(working copy)
+@@ -188,7 +188,10 @@
+ 		         <h:outputText id="addtoScheduleTxt" value="#{msgs.add_module_schedule}" rendered="#{addModulePage.calendarFlag}"/>
+ 			</td>
+ 		  </tr>
+-		  </td></tr>	
++		  </td></tr>
++		<f:subview id="noGroupAccess" rendered="#{!addModulePage.siteHasGroups}">
++        		<h:selectBooleanCheckbox id="groupRestrictionFlag" title="groupRestrictionFlag" value="#{addModulePage.module.groupRestrictionFlag}" style="display: none"/>
++		</f:subview>	
+ <f:subview id="noGroupAccess" rendered="#{!addModulePage.siteHasGroups}">
+         <h:selectBooleanCheckbox id="groupRestrictionFlag" title="groupRestrictionFlag" value="#{addModulePage.module.groupRestrictionFlag}" style="display: none"/>
+ </f:subview>
+Index: melete-impl/src/java/org/etudes/component/app/melete/ModuleDB.java
+===================================================================
+--- melete-impl/src/java/org/etudes/component/app/melete/ModuleDB.java	(revision 92413)
++++ melete-impl/src/java/org/etudes/component/app/melete/ModuleDB.java	(working copy)
+@@ -921,6 +921,7 @@
+ 				//Check the special access table to see if there are any records
+ 				//for this user in this course
+ 		    	ResultSet accRs,rs,agRs = null;
++
+ 		    	String sql = "select a.module_id,a.start_date,a.end_date from melete_special_access a,melete_course_module c where a.users like ? and a.module_id=c.module_id and c.course_id = ?";
+ 		    	PreparedStatement accPstmt = dbConnection.prepareStatement(sql);
+ 		    	accPstmt.setString(1,"%"+userId+"%");
+@@ -937,7 +938,8 @@
+ 		    			accMap.put(accModuleId,ad);
+ 		    		}
+ 		    	}
+-	            sql = "select m.module_id,c.seq_no,m.title as modTitle,m.whats_next,m.seq_xml,d.start_date,d.end_date,s.section_id,s.content_type,s.title as secTitle, m.group_restriction_flag as groupRestrictionFlag from melete_module m inner join melete_module_shdates d on m.module_id=d.module_id inner join melete_course_module c on m.module_id=c.module_id left outer join melete_section s on m.module_id = s.module_id where c.course_id = ? and c.delete_flag=0 and c.archv_flag=0 and (s.delete_flag=0 or s.delete_flag is NULL) order by c.seq_no";
++	            sql = "select m.module_id,c.seq_no,m.title as modTitle, m.group_restriction_flag as groupRestrictionFlag, m.subtitle as modSubtitle, m.whats_next,m.seq_xml,d.start_date,d.end_date,s.section_id,s.content_type,s.title as secTitle,s.subtitle as secSubtitle,  m.group_restriction_flag as groupRestrictionFlag from melete_module m inner join melete_module_shdates d on m.module_id=d.module_id inner join melete_course_module c on m.module_id=c.module_id left outer join melete_section s on m.module_id = s.module_id where c.course_id = ? and c.delete_flag=0 and c.archv_flag=0 and (s.delete_flag=0 or s.delete_flag is NULL) order by c.seq_no";
++
+ 	            PreparedStatement pstmt = dbConnection.prepareStatement(sql);
+ 	            pstmt.setString(1,courseId);
+ 		    	rs = pstmt.executeQuery();

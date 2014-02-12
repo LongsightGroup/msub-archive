@@ -1,0 +1,9 @@
+KNL-629 Allow content from CHS to be filtered when served
+KNL-273 Outstanding issues with SAK-800
+LS-36 kernel API backwards compatability
+LS-126 allow site description to be styled distinctly KNL-931
+KNL-934 precaching the role keys 
+KNL-967 Dropbox notifications go to participants that are not members of the site
+LS-138 Allow ability to show unpublished sites in My Actives Sites
+KNL-994 Ability to lock a user account (*relies on login and user mods, but will compile & run w/o them)
+

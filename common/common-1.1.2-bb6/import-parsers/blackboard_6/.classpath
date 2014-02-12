@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="impl/src/java"/>
+	<classpathentry kind="src" path="api/src/config"/>
+	<classpathentry kind="src" path="impl/src/test"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="var" path="M2_REPO/junit/junit/3.8.2/junit-3.8.2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/springframework/spring/2.5.6/spring-2.5.6.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-import-api/2.7.0-SNAPSHOT/sakai-import-api-2.7.0-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-archive-api/2.7.0-SNAPSHOT/sakai-archive-api-2.7.0-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-import-impl/2.7.0-SNAPSHOT/sakai-import-impl-2.7.0-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="M2_REPO/javax/activation/activation/1.1/activation-1.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/jaxen/jaxen/1.1.1/jaxen-1.1.1.jar"/>
+	<classpathentry kind="output" path="impl/target"/>
+</classpath>

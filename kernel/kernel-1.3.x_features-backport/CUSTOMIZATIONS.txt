@@ -1,0 +1,6 @@
+Delegated Access kernel patch @r113864 kernel/trunk
+KNL-1007: FormattedText does not allow valueless or data-* attributes
+KNL-1015: AntiSamy merge (two commits)
+  119898,119952,119964,121906,121942,121944,121945,121947,121971
+
+## THIS BRANCH ABANDONED AFTER ANTISAMY MERGED INTO KERNEL 1.3.X ##

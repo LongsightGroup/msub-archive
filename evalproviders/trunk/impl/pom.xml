@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+    <artifactId>evalproviders</artifactId>
+    <groupId>org.sakaiproject.evaluation</groupId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+	
+	<name>evalproviders - Implementation</name>
+	<groupId>org.sakaiproject.evaluation</groupId>
+		<artifactId>evalproviders-impl</artifactId>
+
+	<packaging>jar</packaging>
+	
+  	<dependencies>
+
+    	<!-- project dependencies -->
+    	<dependency>
+			<groupId>org.sakaiproject.evaluation</groupId>
+		<artifactId>evalproviders-api</artifactId>
+		</dependency>
+		<dependency>
+      <groupId>org.sakaiproject.evaluation</groupId>
+      <artifactId>sakai-evaluation-api</artifactId>
+      <version>1.4-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject.hierarchy</groupId>
+      <artifactId>hierarchy-api</artifactId>
+      <version>${hierarchy.version}</version>
+    </dependency>
+    	
+    <!-- third party dependencies -->
+    <!--
+    <dependency>
+      <groupId>org.apache.wicket</groupId>
+      <artifactId>wicket</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.wicket</groupId>
+      <artifactId>wicket-extensions</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.wicket</groupId>
+      <artifactId>wicket-spring</artifactId>
+    </dependency> -->
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.ehcache</groupId>
+			<artifactId>ehcache-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-configuration</groupId>
+			<artifactId>commons-configuration</artifactId>
+		</dependency>
+		
+		<!-- Sakai dependencies -->
+        <dependency>
+            <groupId>org.sakaiproject.kernel</groupId>
+            <artifactId>sakai-kernel-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.sakaiproject.kernel</groupId>
+            <artifactId>sakai-component-manager</artifactId>
+        </dependency>
+        <dependency>
+			<groupId>org.sakaiproject.kernel</groupId>
+  			<artifactId>sakai-kernel-util</artifactId>
+		</dependency>
+		
+  	</dependencies>
+  	
+	<build>
+		<resources>
+            <resource>
+                <directory>${basedir}/src/resources</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
+        </resources>
+	</build>
+	
+</project>
