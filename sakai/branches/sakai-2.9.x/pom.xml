@@ -138,7 +138,6 @@
 		<module>assignment2</module>
 		<module>blogwow</module>
 		<module>bigbluebutton-sakai/bbb-tool</module>
-		<module>delegatedaccess</module>
 		<module>evaluation</module>
 		<module>melete</module>
 		<!-- end LS custom builds -->
