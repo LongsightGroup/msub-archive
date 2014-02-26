@@ -201,6 +201,9 @@ public class SiteAction extends PagedResourceActionII {
 	
 	private static final String TERM_OPTION_ALL = "-1";
 
+	static final String EVENT_SITE_ROSTER_ADD = "site.roster.add";
+	static final String EVENT_SITE_ROSTER_REMOVE = "site.roster.remove";
+
 	protected final static String[] TEMPLATE = {
 			"-list",// 0
 			"-type",
@@ -5530,6 +5533,8 @@ public class SiteAction extends PagedResourceActionII {
 			}
 
 			sendSiteNotification(state, getStateSite(state), providerCourseList);
+			//Track add changes
+			trackRosterChanges(EVENT_SITE_ROSTER_ADD,providerCourseList);
 		}
 
 		if (manualAddNumber != 0) {
@@ -7899,6 +7904,9 @@ public class SiteAction extends PagedResourceActionII {
 							.listIterator(); i.hasNext();) {
 						providerCourseList.remove((String) i.next());
 					}
+
+					//Track provider deletes, seems like the only place to do it. If a confirmation is ever added somewhere, don't do this.
+					trackRosterChanges(EVENT_SITE_ROSTER_REMOVE,providerCourseDeleteList);
 					state.setAttribute(SITE_PROVIDER_COURSE_LIST,
 							providerCourseList);
 				}
@@ -7992,6 +8000,21 @@ public class SiteAction extends PagedResourceActionII {
 		}
 
 	}// actionFor Template
+
+	/**
+	 * 
+	 * @param action
+	 * @param providers
+	 */
+	private void trackRosterChanges(String event, List <String> rosters) {
+		if (ServerConfigurationService.getBoolean(
+				SiteHelper.WSETUP_TRACK_ROSTER_CHANGE, false)) {
+			// event for each individual update
+			for (String roster : rosters) {
+				EventTrackingService.post(EventTrackingService.newEvent(event, "roster="+roster, true));
+			}
+		}
+	}
 
 	/**
 	 * import not-provided users from selected sites
