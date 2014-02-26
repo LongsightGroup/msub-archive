@@ -8010,10 +8010,12 @@ public class SiteAction extends PagedResourceActionII {
 		if (ServerConfigurationService.getBoolean(
 				SiteHelper.WSETUP_TRACK_ROSTER_CHANGE, false)) {
 			// event for each individual update
+			if (rosters != null) {
 			for (String roster : rosters) {
 				EventTrackingService.post(EventTrackingService.newEvent(event, "roster="+roster, true));
 			}
 		}
+	}
 	}
 
 	/**
