@@ -38,6 +38,7 @@ SEMS-72 Fix author settings issues with expand-all and groups
 SAK-25677 store JSF session data on client not server
 SAM-2281 NPE for ResourceLoader
 SAM-2273 Update poi, joda-time versions
+SAM-2220 Cannot set incorrect feedback after assessment has been published
 ----------------------
 Removed from backport
 ----------------------
