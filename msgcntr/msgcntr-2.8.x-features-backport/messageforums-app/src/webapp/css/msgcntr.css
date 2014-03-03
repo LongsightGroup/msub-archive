@@ -587,3 +587,15 @@ img.authorImage {
 .profile2-profile-content{
 	width: 270px !important;
 }
+
+#buttonBlocker,.buttonBlocker {
+    z-index:2;
+    display:none;
+    padding:0 8px;
+    background: transparent url(../images/trans.gif) top left repeat;
+    opacity:0;
+    position:absolute
+}
+#buttonBlocker:hover, .buttonBlocker:hover {
+    cursor:progress;
+}

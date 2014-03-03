@@ -41,4 +41,4 @@ MSGCNTR-791 findReadMessagesForStudent does not need to order in sql as it does 
 MSGCNTR-584 Need property to control display of profile pic feature 
 MSGCNTR-825 Option to show full description by default instead of hiding it for forums and topics
 SAK-25274 Forum Statistics page brings in too much data and creates slow page loads
-
+SAK-24819 Block multiple submissions in forums

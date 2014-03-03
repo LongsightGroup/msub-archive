@@ -163,9 +163,10 @@
         </sakai:panel_titled>
 --%>		        
 			<p style="padding:0" class="act">
-				<h:commandButton action="#{ForumTool.processDfMsgPost}" value="#{msgs.cdfm_button_bar_post_message}" accesskey="s" styleClass="active"/>
+				<h:commandButton action="#{ForumTool.processDfMsgPost}" value="#{msgs.cdfm_button_bar_post_message}" accesskey="s" styleClass="active blockMe"/>
 				<%--  <sakai:button_bar_item action="#{ForumTool.processDfMsgSaveDraft}" value="#{msgs.cdfm_button_bar_save_draft}" /> --%>
 				<h:commandButton action="#{ForumTool.processDfMsgCancel}" value="#{msgs.cdfm_button_bar_cancel}" immediate="true" accesskey="x" />
+			<h:outputText styleClass="messageProgress" style="display:none" value="#{msgs.cdfm_processing_submit_message}" />
 			</p>
 			<%--
       <sakai:button_bar>
