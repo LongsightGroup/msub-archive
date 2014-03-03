@@ -540,7 +540,6 @@ function InsertHTML(header) {
 $(document).ready(function(){
     $('.blockMe').click(function(e){
         var $buttonContainer = $(this).parents('.act');
-        var pos = $(this).position();
         var blockerWidth = $(this).width();
         var blockerHeight = $(this).height();
 
@@ -559,8 +558,8 @@ $(document).ready(function(){
         $('#buttonBlocker').css({
             'width': blockerWidth,
             'height': blockerHeight,
-            'top': pos.top,
-            'left': pos.left,
+            'top': this.offsetTop,
+            'left': this.offsetLeft,
             'display': 'block'
         });
         $buttonContainer.find('.messageProgress').fadeIn('slow')
