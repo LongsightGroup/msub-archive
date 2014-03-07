@@ -69,6 +69,7 @@ private static final String msgResource =
   private boolean selectFromQuestionBank;
   private boolean showMatrixSurvey;
   private boolean showCalculatedQuestion; // CALCULATED_QUESTION
+  private boolean showImageMapQuestion; //IMAGEMAP_QUESTION
 
   /**
    * Should we show extended matching items question?
@@ -288,6 +289,23 @@ private static final String msgResource =
   }
   
   /**
+   * Should we show ImageMapQuestion?
+   * @return if true
+   */
+  public boolean isImageMapQuestion()
+  {
+    return showImageMapQuestion;
+  }
+  /**
+   * Set whether ImageMap should be shown.
+   * @param showImageMap if this type should be shown
+   */
+  public void setShowImageMapQuestion(boolean showImageMapQuestion)
+  {
+    this.showImageMapQuestion = showImageMapQuestion;
+  }
+  
+  /**
    * Derived property.  Get arraylist of item type SelectItems.
    * We are not lazy loading this so that we can change these dynamically.
    * Most are being injected from the faces-config, but whether we select from
@@ -352,6 +370,9 @@ private static final String msgResource =
 
     if (showCalculatedQuestion)
         list.add(new SelectItem(String.valueOf(TypeIfc.CALCULATED_QUESTION), getResourceDisplayName("calculated_question"))); // CALCULATED_QUESTION
+    
+    if (showImageMapQuestion)
+        list.add(new SelectItem("16", getResourceDisplayName("image_map_question"))); // IMAGEMAP_QUESTION
 
     if (isSelectFromQuestionBank()) {
     	// Check if the question bank tool is installed and not stealthed or hidden
