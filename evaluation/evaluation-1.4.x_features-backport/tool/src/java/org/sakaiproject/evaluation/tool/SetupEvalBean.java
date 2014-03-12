@@ -119,6 +119,10 @@ public class SetupEvalBean {
 	 * the selected hierarchy nodes to bind to this evaluation when creating it
 	 */
 	public String[] selectedHierarchyNodeIDs = new String[] {};
+	
+	public String nodeClicked = null;
+	
+	public String[] expanded = new String[] {};
     
     /**
 	 * the selected option (eg. for TAs and Instructors) in this evaluation. see

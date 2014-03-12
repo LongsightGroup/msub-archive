@@ -5,3 +5,4 @@ EVALSYS-991 Hide Instructor/TA selection when no corresponding category items ex
 COL-99 When editing a template > add item, you get a drop-down for hierarchy that can be slow to load
 EVALSYS-1375 Comma in survey title breaks results PDF in Google Chrome
 EVALSYS-1386 Scale options are outside the evaluation border in some browsers
+COL-148 better support for assigning evaluations to courses in different nodes
