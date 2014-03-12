@@ -1121,6 +1121,57 @@ public String searchCalendarEvent(String sessionid, String siteId, String search
 	return searchResults;
 }
 
+/**
+ * Search a course site for all events with a particular title
+ *
+ * @param sessionid		the id of a valid session
+ * @param siteId		the id of the site you want to search
+ * @return 				empty string for non found, event details in json string, error
+ * @throws AxisFault
+ *
+ */
+public String getAllCalendarEvents(String sessionid, String siteId) throws AxisFault {
+	Session session = establishSession(sessionid);
+	
+	String searchResults = "";
+	
+	try {
+		String calId = "/calendar/calendar/"+siteId+"/main";
+		Calendar calendar = CalendarService.getCalendar(calId); 
+		//get all the events on this site's calendar
+		List<CalendarEvent> eventList = calendar.getEvents(null, null);
+		
+        searchResults += "{\"events\": [ ";
+
+		for (CalendarEvent event : eventList) {
+                if (searchResults.equals("{\"events\": [ ")) {
+                    // this is the first record
+                } else {
+                    // not the first record, so add a comma in fromt
+                    searchResults += ", ";
+                }
+				
+				if (event.getRecurrenceRule() != null) {
+
+					searchResults += "{ \"id\": \""+event.getId()+"\", \"title\": \""+event.getDisplayName()+"\", \"range\": \""+event.getRange().toStringHR()+"\", \"type\": \""+event.getType();
+					searchResults += "\", \"location\": \""+event.getLocation()+"\", \"frequency\": \""+event.getRecurrenceRule().getFrequencyDescription()+"\", \"interval\": \"";
+					searchResults += event.getRecurrenceRule().getInterval()+"\", \"until\": \""+event.getRecurrenceRule().getUntil().toStringLocalFull()+"\"}";
+				
+				} else {
+					searchResults += "{ \"title\": \""+event.getDisplayName()+"\", \"range\": \""+event.getRange().toStringHR()+"\", \"typ     e\"     : \""+event.getType()+"\", \"location\": \""+event.getLocation()+"\" }";
+				}
+		}
+
+        searchResults += "]}";
+		
+	} catch (Exception e) {
+	    LOG.error("WS getAllCalendarEvents(): error " + e.getClass().getName() + " : " + e.getMessage());
+        return e.getClass().getName() + " : " + e.getMessage();	
+	}
+
+	return searchResults;
+}
+
 /** 
  * Create a calendar event for a specfied site
  *
