@@ -39,6 +39,8 @@ SAK-25677 store JSF session data on client not server
 SAM-2281 NPE for ResourceLoader
 SAM-2273 Update poi, joda-time versions
 SAM-2220 Cannot set incorrect feedback after assessment has been published
+SAM-2289 Auto submit assessment job does not take into account record highest/average
+
 ----------------------
 Removed from backport
 ----------------------
@@ -46,3 +48,4 @@ SAM-2185 Mark For Review Doesn't Save Answer
   * Merged into 2.9.x in r128449
 SAM-1994 - FIB shows green checkmark on incorrect answers after pressing update
   * Superceded by SAM-973
+
