@@ -131,7 +131,7 @@
 
 
 		<!-- Longsight custom builds -->
-		<module>formbuilder</module>
+		<!-- module>formbuilder</module -->
                 <module>etudes-util</module>
 		<module>hierarchy</module>
 		<!-- module>dashboard</module -->
