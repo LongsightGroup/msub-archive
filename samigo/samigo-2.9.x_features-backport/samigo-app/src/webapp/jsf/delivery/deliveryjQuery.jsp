@@ -28,6 +28,8 @@
 <script type="text/javascript">
      $(document).ready(function(){
 	
+		//Turn off browser autocomplete on all forms
+		$("form").attr("autocomplete", "off");
 		$('input[type=submit]').click(function() { 
 			$.blockUI({ message: '',
 						overlayCSS: { 
