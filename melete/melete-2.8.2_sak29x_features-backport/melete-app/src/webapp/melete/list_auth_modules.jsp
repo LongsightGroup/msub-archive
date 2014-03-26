@@ -301,6 +301,14 @@ if (msg != null)
 <!--End Content-->
    </td>
   </tr>
+
+  <tr>
+	  <td>
+		  <f:subview id="authbottom">
+		  <jsp:include page="authnavbar.jsp"/> 
+		  </f:subview>
+	  </td>
+  </tr>
  </table>
 </h:form>
 </sakai:view>

@@ -10,3 +10,8 @@ LS-55 OHSU contributed patch for rtsp links
 LS-73 ME-1370 Handle null pointer exception with expand/collapse icon
 LS-58 SAK-16568 for melete
 UMICH-694 - Enable CKEditor 
+
+UBalt customizations
+ Change "Author" to "Edit"
+ Add toolbar to bottom of edit pages
+https://source.sakaiproject.org/viewsvn?view=revision&root=contrib&revision=78368
