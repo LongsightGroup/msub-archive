@@ -445,24 +445,18 @@ public class PortletIFrame extends GenericPortlet {
         Pattern p = null;
         Matcher m = null;
         pattern = ServerConfigurationService.getString(IFRAME_XFRAME_POPUP, null);
-System.out.println("Pattern1: " + pattern);
         if ( pattern != null && pattern.length() > 1 ) {
             p = Pattern.compile(pattern);
-System.out.println("Pattern11: " + p + ":" + url);
             m = p.matcher(url.toLowerCase());
             if ( m.find() ) {
-System.out.println("Pattern12: " + m + ":" + url);
                 return true;
             }
         }
         pattern = ServerConfigurationService.getString(IFRAME_XFRAME_INLINE, null);
-System.out.println("Pattern2: " + pattern);
         if ( pattern != null && pattern.length() > 1 ) {
             p = Pattern.compile(pattern);
-System.out.println("Pattern21: " + p + ":" + url);
             m = p.matcher(url.toLowerCase());
             if ( m.find() ) {
-System.out.println("Pattern21: " + m + ":" + url);
                 return false;
             }
         }
