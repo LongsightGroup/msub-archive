@@ -12,7 +12,7 @@
         <!-- <bean id="org.sakaiproject.importer.api.ImportFileParser-CommonCartridge"
 			class="org.sakaiproject.importer.impl.CommonCartridgeFileParser"
 			singleton="false"> -->
-	</bean>
+	<!-- /bean -->
 	
 	<bean id="org.sakaiproject.importer.api.ImportFileParser-Bb6" 
 	 		class="org.sakaiproject.importer.impl.Blackboard6FileParser" 
