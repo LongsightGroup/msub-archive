@@ -1,1 +1,2 @@
 STAT-359 - Sitestats to report on some new events
+STAT-338 sitestats options menu
