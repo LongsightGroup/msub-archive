@@ -9,3 +9,4 @@ LS-54 OHSU contributed patch for using sakai Resources
 LS-55 OHSU contributed patch for rtsp links
 LS-73 ME-1370 Handle null pointer exception with expand/collapse icon
 LS-58 SAK-16568 for melete
+LS-170 Set Modules default to true for open window for links

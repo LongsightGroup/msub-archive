@@ -72,7 +72,7 @@ public class Section implements Serializable,SectionObjService {
     private boolean textualContent;
 
     /** nullable persistent field */
-    private boolean openWindow;
+    private boolean openWindow = true;
 
     /** nullable persistent field */
     private boolean deleteFlag;
