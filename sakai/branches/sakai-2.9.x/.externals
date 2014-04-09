@@ -13,6 +13,7 @@ help https://source.sakaiproject.org/svn/help/branches/sakai-2.9.x
 kernel https://source.sakaiproject.org/svn/kernel/branches/kernel-1.3.x/
 linktool https://source.sakaiproject.org/svn/linktool/branches/sakai-2.9.x
 login https://source.sakaiproject.org/svn/login/branches/sakai-2.9.x
+master https://source.sakaiproject.org/svn/master/branches/sakai-2.9.x
 memory https://source.sakaiproject.org/svn/memory/branches/sakai-2.9.x
 metaobj https://source.sakaiproject.org/svn/metaobj/branches/sakai-2.9.x
 osp https://source.sakaiproject.org/svn/osp/branches/sakai-2.9.x
