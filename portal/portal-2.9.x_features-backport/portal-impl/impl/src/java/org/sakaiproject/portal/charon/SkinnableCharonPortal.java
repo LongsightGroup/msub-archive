@@ -94,6 +94,7 @@ import org.sakaiproject.portal.render.cover.ToolRenderService;
 import org.sakaiproject.portal.util.ErrorReporter;
 import org.sakaiproject.portal.util.ToolURLManagerImpl;
 import org.sakaiproject.portal.util.URLUtils;
+import org.sakaiproject.portal.util.CSSUtils;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SitePage;
 import org.sakaiproject.site.api.ToolConfiguration;
@@ -647,7 +648,7 @@ public class SkinnableCharonPortal extends HttpServlet implements Portal
 		{
 			resetActionUrl = Web.serverUrl(req)
 			+ ServerConfigurationService.getString("portalPath")
-			+ req.getPathInfo() + "?sakai.state.reset=true";
+			+ URLUtils.getSafePathInfo(req) + "?sakai.state.reset=true";
 		}
 
 		// for the help button
@@ -835,7 +836,7 @@ public class SkinnableCharonPortal extends HttpServlet implements Portal
 			Session session = SessionManager.getCurrentSession();
 
 			// recognize what to do from the path
-			String option = req.getPathInfo();
+			String option = URLUtils.getSafePathInfo(req);
 
 			//FindBugs thinks this is not used but is passed to the portal handler
 			String[] parts = {};
@@ -981,8 +982,13 @@ public class SkinnableCharonPortal extends HttpServlet implements Portal
 		// internaly, set the "extreme" login path
 
 		String loginPath = (!forceContainer  && skipContainer ? "/xlogin" : "/relogin");
-
+		
 		String context = req.getContextPath() + req.getServletPath() + loginPath;
+		
+		if ("/pda".equals(returnPath)) {
+			context = req.getContextPath() + req.getServletPath() + returnPath + loginPath;
+		}
+		
 		tool.help(req, res, context, loginPath);
 	}
 
@@ -1238,7 +1244,7 @@ public class SkinnableCharonPortal extends HttpServlet implements Portal
 			Session session = SessionManager.getCurrentSession();
 
 			// recognize what to do from the path
-			String option = req.getPathInfo();
+			String option = URLUtils.getSafePathInfo(req);
 
 			// if missing, we have a stray post
 			if ((option == null) || ("/".equals(option)))
@@ -1336,7 +1342,7 @@ public class SkinnableCharonPortal extends HttpServlet implements Portal
 		    // you aren't known to the system.
 		    if (session.getUserId() == null)
 			{
-			    doLogin(req, res, session, req.getPathInfo(), false);
+			    doLogin(req, res, session, URLUtils.getSafePathInfo(req), false);
 			}
 		    // If the login was successful lookup the myworkworkspace site.
 		    if (session.getUserId() != null) {
@@ -1361,7 +1367,7 @@ public class SkinnableCharonPortal extends HttpServlet implements Portal
 			// punt
 			if (session.getUserId() == null)
 			{
-				doLogin(req, res, session, req.getPathInfo(), false);
+				doLogin(req, res, session, URLUtils.getSafePathInfo(req), false);
 				return null;
 			}
 			return placementId; // cannot resolve placement
@@ -1398,12 +1404,12 @@ public class SkinnableCharonPortal extends HttpServlet implements Portal
 		String templates = ServerConfigurationService.getString("portal.templates", "neoskin");
 		String skinRepo = ServerConfigurationService.getString("skin.repo");
 		// Adjust skin name if we are in the neo Portal
-		skin = getSkin(skin);
 		String headCssToolBase = "<link href=\""
-			+ skinRepo
-			+ "/tool_base.css\" type=\"text/css\" rel=\"stylesheet\" media=\"all\" />\n";
-		String headCssToolSkin = "<link href=\"" + skinRepo + "/" + skin
-		+ "/tool.css\" type=\"text/css\" rel=\"stylesheet\" media=\"all\" />\n";
+			+ CSSUtils.getCssToolBase()
+			+ "\" type=\"text/css\" rel=\"stylesheet\" media=\"all\" />\n";
+		String headCssToolSkin = "<link href=\"" 
+			+ CSSUtils.getCssToolSkin(skin)
+			+ "\" type=\"text/css\" rel=\"stylesheet\" media=\"all\" />\n";
 		String headCss = headCssToolBase + headCssToolSkin;
 		
 		Editor editor = portalService.getActiveEditor(placement);
@@ -1674,6 +1680,7 @@ public class SkinnableCharonPortal extends HttpServlet implements Portal
 
 			// for a possible second link
 			String logInOutUrl2 = null;
+			String logInOutUrl2Pda = null;
 			String message2 = null;
 			String image2 = null;
 
@@ -1724,6 +1731,9 @@ public class SkinnableCharonPortal extends HttpServlet implements Portal
 								.getString("xlogin.icon"));
 						logInOutUrl2 = ServerConfigurationService.getString("portalPath")
 						+ "/xlogin";
+						
+						logInOutUrl2Pda = ServerConfigurationService.getString("portalPath")
+						+ "/pda/xlogin";
 					}
 				}
 			}
@@ -1769,6 +1779,7 @@ public class SkinnableCharonPortal extends HttpServlet implements Portal
 				rcontext.put("loginImage1", image1);
 				rcontext.put("loginHasImage1", Boolean.valueOf(image1 != null));
 				rcontext.put("loginLogInOutUrl2", logInOutUrl2);
+				rcontext.put("loginLogInOutUrl2Pda", logInOutUrl2Pda);
 				rcontext.put("loginHasLogInOutUrl2", Boolean
 						.valueOf(logInOutUrl2 != null));
 				rcontext.put("loginMessage2", message2);
@@ -2161,15 +2172,7 @@ public class SkinnableCharonPortal extends HttpServlet implements Portal
 	 */
 	protected String getSkin(String skin)
 	{
-		if (skin == null)
-		{
-			skin = ServerConfigurationService.getString("skin.default");
-		}
-		String templates = ServerConfigurationService.getString("portal.templates", "neoskin");
-		String prefix = portalService.getSkinPrefix();
-		// Don't add the prefix twice
-		if ( "neoskin".equals(templates) && !StringUtils.startsWith(skin, prefix) ) skin = prefix + skin;
-		return skin;
+		return CSSUtils.adjustCssSkinFolder(skin);
 	}
 
 }

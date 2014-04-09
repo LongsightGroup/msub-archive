@@ -41,6 +41,7 @@ import org.sakaiproject.portal.api.Portal;
 import org.sakaiproject.portal.api.PortalHandlerException;
 import org.sakaiproject.portal.api.PortalRenderContext;
 import org.sakaiproject.portal.util.ByteArrayServletResponse;
+import org.sakaiproject.portal.util.URLUtils;
 import org.sakaiproject.site.api.SitePage;
 import org.sakaiproject.site.api.ToolConfiguration;
 import org.sakaiproject.site.cover.SiteService;
@@ -102,7 +103,18 @@ public class PDAHandler extends PageHandler
 	public int doGet(String[] parts, HttpServletRequest req, HttpServletResponse res,
 			Session session) throws PortalHandlerException
 			{
-		if ((parts.length >= 2) && (parts[1].equals("pda")))
+		if ((parts.length == 3) && parts[1].equals(PDAHandler.URL_FRAGMENT) && parts[2].equals(XLoginHandler.URL_FRAGMENT))
+		{
+			try
+			{
+				portal.doLogin(req, res, session, "/pda", true);
+				return END;
+			}
+			catch (Exception ex)
+			{
+				throw new PortalHandlerException(ex);
+			}
+		} else if ((parts.length >= 2) && (parts[1].equals("pda")))
 		{
 			// Indicate that we are the controlling portal
 			session.setAttribute("sakai-controlling-portal",PDAHandler.URL_FRAGMENT);
@@ -197,7 +209,7 @@ public class PDAHandler extends PageHandler
 					if ("yes".equalsIgnoreCase(forceLogin)
 							|| "true".equalsIgnoreCase(forceLogin))
 					{
-						portal.doLogin(req, res, session, req.getPathInfo(), false);
+						portal.doLogin(req, res, session, URLUtils.getSafePathInfo(req), false);
 						return END;
 					}
 				}
