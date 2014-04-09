@@ -117,9 +117,9 @@ webservices https://source.sakaiproject.org/svn/msub/longsight.com/webservices/w
 #shell_command git clone https://github.com/blindsidenetworks/bigbluebutton-sakai/
 #shell_command cd bigbluebutton-sakai/bbb-tool
 #shell_command mvn versions:update-parent
-#shell_command cat pom.xml | sed "s/<entitybroker\.version>.*<\/entitybroker\.version>/<entitybroker\.version>1.5-SNAPSHOT<\/entitybroker\.version>/g" > pom2.xml
+#shell_command cat pom.xml | sed "s/<entitybroker\.version>.*<\/entitybroker\.version>/<entitybroker\.version>1.5.3<\/entitybroker\.version>/g" > pom2.xml
 #shell_command mv pom2.xml pom.xml
-#shell_command cat pom.xml | sed "s/<entitybroker-utils\.version>.*<\/entitybroker-utils\.version>/<entitybroker-utils\.version>1.5-SNAPSHOT<\/entitybroker-utils\.version>/g" > pom2.xml 
+#shell_command cat pom.xml | sed "s/<entitybroker-utils\.version>.*<\/entitybroker-utils\.version>/<entitybroker-utils\.version>1.5.3<\/entitybroker-utils\.version>/g" > pom2.xml 
 #shell_command mv pom2.xml pom.xml
 
 #GIT Projects
