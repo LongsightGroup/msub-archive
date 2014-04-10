@@ -307,7 +307,7 @@
 	<dependency>
 		<groupId>org.sakaiproject.portal</groupId>
 		<artifactId>sakai-portal-util</artifactId>
-		<version>${sakai.version}</version>
+		<version>${sakai.portal.version}</version>
 	</dependency>
 
 	<dependency>
