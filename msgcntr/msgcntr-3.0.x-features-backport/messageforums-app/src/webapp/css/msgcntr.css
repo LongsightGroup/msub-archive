@@ -157,7 +157,6 @@
 }
 .messagesThreaded tbody tr td div.hierItemBlock .textPanel{
 	clear: both;
-	width: 60%;
 }
 .titleBarBorder{
 	/*create an underline under message title + metadata in view body thread view*/

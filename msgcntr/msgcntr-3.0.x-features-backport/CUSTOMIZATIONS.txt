@@ -20,4 +20,5 @@ LS-167 Don't allow 12am for open or close date in msgcntr
 SAK-25473 One forums reply results in 4 separate events
 SAK-25681 Imported Forums and Topics with open and close dates in the future do not work
 SAK-25694 Topic Settings Group Permission cached when using breadcrumbs
+SAK-26134 forum message width does not fill enough space
 
