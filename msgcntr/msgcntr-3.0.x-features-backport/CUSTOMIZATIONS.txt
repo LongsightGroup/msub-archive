@@ -21,4 +21,5 @@ SAK-25473 One forums reply results in 4 separate events
 SAK-25681 Imported Forums and Topics with open and close dates in the future do not work
 SAK-25694 Topic Settings Group Permission cached when using breadcrumbs
 SAK-26134 forum message width does not fill enough space
+SAK-26173 Forum Mobile View: bottom links for next conversation overlap with mobile footer
 
