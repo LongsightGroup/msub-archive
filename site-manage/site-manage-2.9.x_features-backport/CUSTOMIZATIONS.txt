@@ -9,5 +9,5 @@ SAK-23814 Site Info add the "Remove?" label back
 SAK-23555 - Create new events that differentiate the site.upd and realm.upd events 
 SAK-23016 - Unable to import group membership from good CSV file after bad upload
 SAK-24408 - Unable to import groups from csv file after clicking cancel in manage groups tab
-
+SAK-25867 - Improvements to Site Archive tool
 
