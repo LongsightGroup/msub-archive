@@ -599,3 +599,8 @@ background-color:#DBDBDB;
 }
 
 }
+
+.mcAnswerText {
+    display:inline-table;
+    width: 80%;
+}
