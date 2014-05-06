@@ -398,8 +398,7 @@ public class PortletIFrame extends GenericPortlet {
                 if ( csrfToken != null ) context.put("sakai_csrf_token", csrfToken);
 				context.put("tlang", rb);
 				context.put("validator", validator);
-				// http://stackoverflow.com/questions/573184/java-convert-string-to-valid-uri-object
-				context.put("source",URIUtil.encodeQuery(url));
+				context.put("source",url);
 				context.put("height",height);
 				sendAlert(request,context);
 				context.put("popup", Boolean.valueOf(popup));
@@ -1420,48 +1419,45 @@ public class PortletIFrame extends GenericPortlet {
         return urlValidator.isValid(urlToValidate);
     }
 
-    /* (non-Javadoc)
-     * @see org.sakaiproject.util.api.FormattedText#sanitizeHrefURL(java.lang.String)
-     */
-    public String sanitizeHrefURL(String urlToEscape) {
-		// return FormattedText.sanitizeHrefURL(urlToEscape); // KNL-1105
-        if ( urlToEscape == null ) return null;
-        if (StringUtils.isBlank(urlToEscape)) return null;
-		if ( ABOUT_BLANK.equals(urlToEscape) ) return ABOUT_BLANK;
+
+    public String sanitizeHrefURL(String urlToSanitize) {
+        if ( urlToSanitize == null ) return null;
+        if (StringUtils.isBlank(urlToSanitize)) return null;
+        if ( ABOUT_BLANK.equals(urlToSanitize) ) return ABOUT_BLANK;
 
         boolean trimProtocol = false;
         boolean trimHost = false;
         // For a protocol-relative URL, we validate with protocol attached 
         // RFC 1808 Section 4
-        if ((urlToEscape.startsWith("//")) && (urlToEscape.indexOf("://") == -1))
+        if ((urlToSanitize.startsWith("//")) && (urlToSanitize.indexOf("://") == -1))
         {
-            urlToEscape = PROTOCOL_PREFIX + urlToEscape;
+            urlToSanitize = PROTOCOL_PREFIX + urlToSanitize;
             trimProtocol = true;
         }
 
         // For a site-relative URL, we validate with host name and protocol attached 
         // SAK-13787 SAK-23752
-        if ((urlToEscape.startsWith("/")) && (urlToEscape.indexOf("://") == -1))
+        if ((urlToSanitize.startsWith("/")) && (urlToSanitize.indexOf("://") == -1))
         {
-            urlToEscape = HOST_PREFIX + urlToEscape;
+            urlToSanitize = HOST_PREFIX + urlToSanitize;
             trimHost = true;
         }
 
         // KNL-1105
         try {
-            URL rawUrl = new URL(urlToEscape);
-            URI uri = new URI(rawUrl.getProtocol(), rawUrl.getUserInfo(), rawUrl.getHost(), 
+            URL rawUrl = new URL(urlToSanitize);
+            URI uri = new URI(rawUrl.getProtocol(), rawUrl.getUserInfo(), rawUrl.getHost(),
                 rawUrl.getPort(), rawUrl.getPath(), rawUrl.getQuery(), rawUrl.getRef());
             URL encoded = uri.toURL();
             String retval = encoded.toString();
 
             // Un-trim the added bits
-            if ( trimHost && retval.startsWith(HOST_PREFIX) ) 
+            if ( trimHost && retval.startsWith(HOST_PREFIX) )
             {
                 retval = retval.substring(HOST_PREFIX.length());
             }
 
-            if ( trimProtocol && retval.startsWith(PROTOCOL_PREFIX) ) 
+            if ( trimProtocol && retval.startsWith(PROTOCOL_PREFIX) )
             {
                 retval = retval.substring(PROTOCOL_PREFIX.length());
             }
@@ -1474,6 +1470,7 @@ public class PortletIFrame extends GenericPortlet {
             // Sorry - these just need to come out - they cause to much trouble
             // Note that ampersand is not encoded as it is used for parameters.
             retval = retval.replace("&#", "");
+            retval = retval.replace("%25","%");
             return retval;
         } catch ( java.net.URISyntaxException e ) {
             M_log.info("Failure during encode of href url: " + e);
@@ -1483,4 +1480,5 @@ public class PortletIFrame extends GenericPortlet {
             return null;
         }
     }
+
 }

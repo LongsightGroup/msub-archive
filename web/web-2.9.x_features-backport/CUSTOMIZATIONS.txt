@@ -4,4 +4,6 @@ SAK-23230: XSS in URL input box in the sakai.iframe.site tool
 SAK-23841: PortletIFrame.popupXFrame() method generates high database CPU load
    svn merge -c128908 ^/web/trunk
 SAK-23566 SAK-25704 - Adding web event tracking to Portlet
+SAK-25357 - Web Content / cannot display pages with spaces (local backport of KNL-1105)
+
   
