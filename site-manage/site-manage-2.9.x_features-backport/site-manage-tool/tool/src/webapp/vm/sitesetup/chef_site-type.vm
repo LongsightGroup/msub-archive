@@ -40,7 +40,6 @@
                         <input type="radio" name="createMode" id="buildOwn" value="buildOwn" checked="checked"/>
                         <label for="buildOwn">$tlang.getString("sitetype.buildown")</label>
                 </p>
-                <p class="indnt4 textPanelFooter" style="margin-bottom:5px;">$tlang.getString("sitetype.chothetyp.withtemplate.build.own.info")</p>
 
 		## NOTE: end if create from template enabled
 		#* following block should show if "build own" has been selected,
@@ -200,7 +199,7 @@ table.templates p{margin:0 !important;  padding:0}
                     #foreach ($type in $siteTypes)
                         #if (
                                 ($type == $projectSiteType && $canAddProject) || 
-                                ($courseSiteTypeStrings.contains($type) && $canAddCourse) || 
+                                ($type == $courseSiteType && $canAddCourse) || 
                                 ($type == $portfolioSiteType && $canAddPortfolio)
                             )
                             <option value="$!type">$tlang.getFormattedMessage("sitetype.websit", $type)</option>

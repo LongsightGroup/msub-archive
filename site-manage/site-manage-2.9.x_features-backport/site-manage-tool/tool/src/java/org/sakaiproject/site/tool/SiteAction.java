@@ -106,7 +106,6 @@ import org.sakaiproject.exception.PermissionException;
 import org.sakaiproject.id.cover.IdManager;
 import org.sakaiproject.importer.api.ImportDataSource;
 import org.sakaiproject.importer.api.ImportService;
-import org.sakaiproject.importer.api.ResetOnCloseInputStream;
 import org.sakaiproject.importer.api.SakaiArchive;
 import org.sakaiproject.javax.PagingPosition;
 import org.sakaiproject.site.api.Group;
@@ -121,7 +120,6 @@ import org.sakaiproject.site.util.SiteConstants;
 import org.sakaiproject.site.util.SiteParticipantHelper;
 import org.sakaiproject.site.util.SiteSetupQuestionFileParser;
 import org.sakaiproject.site.util.SiteTextEditUtil;
-import org.sakaiproject.site.util.SiteTypeUtil;
 import org.sakaiproject.site.util.ToolComparator;
 import org.sakaiproject.sitemanage.api.SectionField;
 import org.sakaiproject.sitemanage.api.SiteHelper;
@@ -736,12 +734,7 @@ public class SiteAction extends PagedResourceActionII {
 	private static final String STATE_CREATE_FROM_ARCHIVE = "createFromArchive";
 	private static final String STATE_UPLOADED_ARCHIVE_PATH = "uploadedArchivePath";
 	private static final String STATE_UPLOADED_ARCHIVE_NAME = "uploadedArchiveNAme";
-	
-	private static UserAuditRegistration userAuditRegistration = (UserAuditRegistration) ComponentManager.get("org.sakaiproject.userauditservice.api.UserAuditRegistration.sitemanage");
-	private static UserAuditService userAuditService = (UserAuditService) ComponentManager.get(UserAuditService.class);
-	
-	private PrivacyManager privacyManager = (PrivacyManager) ComponentManager.get(PrivacyManager.class);
-
+		
 	/**
 	 * what are the tool ids within Home page?
 	 * If this is for a newly added Home tool, get the tool ids from template site or system set default
@@ -13028,7 +13021,7 @@ public class SiteAction extends PagedResourceActionII {
 	 */
 	private void doMergeArchiveIntoNewSite(String siteId, SessionState state) {	
 		
-		 String currentUserId = userDirectoryService.getCurrentUser().getId();
+		 String currentUserId = UserDirectoryService.getCurrentUser().getId();
 		
 		 try {
 		   

@@ -168,8 +168,8 @@ sakai.siteTypeSetup = function(){
 
         //hide/reset archive parts
         $('#archiveSettings').hide();
-        $('#archive').prop('checked', false);
-        $('#submitBuildOwn').prop('disabled', true);
+        $('#archive').attr('checked', '');
+        $('#submitBuildOwn').attr('disabled', 'disabled');
         $('#submitFromArchive').hide();
 
         utils.resizeFrame('grow');
@@ -192,8 +192,8 @@ sakai.siteTypeSetup = function(){
 
         //hide/reset archive parts
         $('#archiveSettings').hide();
-        $('#archive').prop('checked', false);
-        $('#submitBuildOwn').prop('disabled', true);
+        $('#archive').attr('checked', '');
+        $('#submitBuildOwn').attr('disabled', 'disabled');
         $('#submitFromArchive').hide();
 
         utils.resizeFrame('grow');
@@ -205,25 +205,25 @@ sakai.siteTypeSetup = function(){
         //show archive settings
         $('#archiveSettings').show();
         $('#submitFromArchive').show();
-        $('#submitBuildOwn').prop('disabled', false);
+        $('#submitBuildOwn').attr('disabled', '');
         toggleArchiveTermList();
                                      
         //hide and disable buildOwn section
-        $('#buildOwn').prop('checked', false);
+        $('#buildOwn').attr('checked', '');
         $('#siteTypeList').hide();
         $('#termList').hide();
         $('#submitBuildOwn').hide();
-        $('#submitBuildOwn').prop('disabled', true);
+        $('#submitBuildOwn').attr('disabled', 'disabled');
                                                                                  
         //hide create from template section
-        $('#copy').prop('checked', false);
+        $('#copy').attr('checked', '');
         $('#templateSettings').hide();
-        $('#templateSettings input:checked').prop('checked', false);
+        $('#templateSettings input:checked').attr('checked', '');
         $('#allTemplateSettings').hide();
-        $('#siteTitleField').prop('value', '');
-        $('#templateSettings select').prop('selectedIndex', 0);
+        $('#siteTitleField').attr('value', '');
+        $('#templateSettings select').attr('selectedIndex', 0);
         $('#templateSettingsTitleTerm span.templateTitleTerm').hide();
-        $('#submitFromTemplate').hide().prop('disabled', true);
+        $('#submitFromTemplate').hide().attr('disabled', 'disabled');
         $('#submitFromTemplateCourse').hide();
                                                                                                                            
         utils.resizeFrame('grow');
