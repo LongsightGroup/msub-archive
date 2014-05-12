@@ -20,12 +20,10 @@
   <modules>
     <module>allhands</module>
     <module>cm-authz-provider</module>
-    <module>cm-authz-integration-test</module>
     <module>component</module>
     <module>federating</module>
     <module>imsent</module>
     <module>jldap</module>
-    <module>jldap-mock</module>
     <module>kerberos</module>
     <module>openldap</module>
     <module>sample</module>
@@ -66,12 +64,6 @@
         <groupId>org.sakaiproject</groupId>
         <artifactId>sakai-allhands-provider</artifactId>
         <version>10-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.sakaiproject</groupId>
-        <artifactId>sakai-jldap-provider-mock</artifactId>
-        <version>10-SNAPSHOT</version>
-<!-- <scope>test</scope> removed to fix build - Chuck -->
       </dependency>
     </dependencies>
   </dependencyManagement>
