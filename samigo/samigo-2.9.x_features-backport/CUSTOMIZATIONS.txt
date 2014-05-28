@@ -43,6 +43,7 @@ SAM-2289 Auto submit assessment job does not take into account record highest/av
 SAM-2304 - Disable autocomplete in assignment delivery
 03/28/2014 Merging up to revision: 307597
 SAM-2097 Download PDF function in Print view creates unusuable file when link added to question or part with rich-text editor
+SAM-1660 Patch for samigo to participate in archive/merge
 ----------------------
 Removed from backport
 ----------------------

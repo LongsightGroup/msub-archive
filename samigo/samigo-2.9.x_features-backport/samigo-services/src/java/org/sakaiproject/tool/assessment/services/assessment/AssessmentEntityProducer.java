@@ -2,6 +2,9 @@ package org.sakaiproject.tool.assessment.services.assessment;
 
 import org.sakaiproject.entity.cover.EntityManager;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -23,18 +26,27 @@ import org.sakaiproject.tool.assessment.data.dao.assessment.ItemData;
 import org.sakaiproject.tool.assessment.data.dao.assessment.ItemText;
 import org.sakaiproject.tool.assessment.data.dao.assessment.SectionData;
 import org.sakaiproject.tool.assessment.data.ifc.shared.TypeIfc;
+import org.sakaiproject.tool.assessment.data.ifc.assessment.AssessmentIfc;
 import org.sakaiproject.tool.assessment.facade.AssessmentFacade;
 import org.sakaiproject.tool.assessment.facade.SectionFacade;
+import org.sakaiproject.tool.assessment.shared.api.qti.QTIServiceAPI;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.w3c.dom.NodeList;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 
 
 public class AssessmentEntityProducer implements EntityTransferrer,
 		EntityProducer, EntityTransferrerRefMigrator {
 
-	private static Log log = LogFactory.getLog(AssessmentEntityProducer.class);
+    private static final int QTI_VERSION = 1;
+    private static final String ARCHIVED_ELEMENT = "assessment";
+    private static Log log = LogFactory.getLog(AssessmentEntityProducer.class);
+    private QTIServiceAPI qtiService;
 
 	public void init() {
 		log.info("init()");
@@ -48,6 +60,10 @@ public class AssessmentEntityProducer implements EntityTransferrer,
 
 	public void destroy() {
 	}
+
+    public void setQtiService(QTIServiceAPI qtiService)  {
+        this.qtiService = qtiService;
+    }
 
 	public String[] myToolIds() {
 		String[] toolIds = { "sakai.samigo" };
@@ -67,8 +83,51 @@ public class AssessmentEntityProducer implements EntityTransferrer,
 	}
 
 	public String archive(String siteId, Document doc, Stack stack,
-			String archivePath, List attachments) {
-		return null;
+
+                          String archivePath, List attachments) {
+        StringBuilder results = new StringBuilder();
+        results.append("archiving ").append(getLabel()).append("\n");
+
+        String qtiPath = archivePath + File.separator + "qti";
+        File qtiDir = new File(qtiPath);
+        if (!qtiDir.isDirectory() && !qtiDir.mkdir()) {
+            log.error("Could not create directory " + qtiPath);
+            results.append("Could not create " + qtiPath + "\n");
+            return  results.toString();
+        }
+
+        Element element = doc.createElement(this.getClass().getName());
+        ((Element) stack.peek()).appendChild(element);
+        stack.push(element);
+        AssessmentService assessmentService = new AssessmentService();
+        List<AssessmentData> assessmentList 
+                = (List<AssessmentData>) assessmentService.getAllActiveAssessmentsbyAgent(siteId);
+        for (AssessmentData data : assessmentList) {
+            Element assessmentXml = doc.createElement(ARCHIVED_ELEMENT);
+            String id = data.getAssessmentId().toString();
+            assessmentXml.setAttribute("id", id);
+            FileWriter writer = null;
+            try {
+                File assessmentFile = new File(qtiPath + File.separator + ARCHIVED_ELEMENT + id + ".xml");
+                writer = new FileWriter(assessmentFile);
+                writer.write(qtiService.getExportedAssessmentAsString(id, QTI_VERSION));
+            } catch (IOException e) {
+                results.append(e.getMessage() + "\n");
+                log.error(e.getMessage(), e);
+            } finally {
+                if (writer != null) {
+                    try {
+                        writer.close();
+                    } catch (Throwable t) {
+                        log.error(t.getMessage(), t);
+                    }
+                } 
+            }
+            element.appendChild(assessmentXml);
+
+        }
+        stack.pop();
+		return results.toString();
 	}
 
 	public Entity getEntity(Reference ref) {
@@ -102,7 +161,35 @@ public class AssessmentEntityProducer implements EntityTransferrer,
 	public String merge(String siteId, Element root, String archivePath,
 			String fromSiteId, Map attachmentNames, Map userIdTrans,
 			Set userListAllowImport) {
-		return null;
+	if (log.isDebugEnabled()) log.debug("merging " + getLabel());
+        StringBuilder results = new StringBuilder();
+        String qtiPath = (new File(archivePath)).getParent() 
+                         + File.separator + "qti" + File.separator;
+        //TODO: replaced by getChildren when we make sure we have the
+        NodeList assessments = root.getElementsByTagName(ARCHIVED_ELEMENT);
+
+        DocumentBuilder dbuilder = null;
+        try {
+            dbuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        } catch (Throwable t) {
+            log.error(t.getMessage(), t);
+            return getLabel() + " Error: " + t.getMessage();
+        }
+
+        for (int i=0; i<assessments.getLength(); ++i) {
+            Element element = (Element) assessments.item(i);
+            String id = element.getAttribute("id");
+            String path = qtiPath + ARCHIVED_ELEMENT + id + ".xml";
+            try {
+                AssessmentIfc assessment = qtiService.createImportedAssessment(path, QTI_VERSION,  siteId);
+                results.append(getLabel() + " imported assessment '" + assessment.getTitle() + "'\n");            
+            } catch (Throwable t) {
+                log.error(t.getMessage(), t);
+                results.append(getLabel() + " error with assessment "  
+                               + id + ": " + t.getMessage() + "\n");
+            }
+        }
+        return results.toString();
 	}
 
 	public boolean parseEntityReference(String reference, Reference ref) {
@@ -110,7 +197,7 @@ public class AssessmentEntityProducer implements EntityTransferrer,
 	}
 
 	public boolean willArchiveMerge() {
-		return false;
+		return true;
 	}
 
 	 
@@ -125,7 +212,7 @@ public class AssessmentEntityProducer implements EntityTransferrer,
 		{
 			if(cleanup == true)
 			{
-				log.debug("deleting assessments from " + toContext);
+			        if (log.isDebugEnabled()) log.debug("deleting assessments from " + toContext);
 				AssessmentService service = new AssessmentService();
 				List assessmentList = service.getAllActiveAssessmentsbyAgent(toContext);
 				log.debug("found " + assessmentList.size() + " assessments in site: " + toContext);
@@ -140,7 +227,7 @@ public class AssessmentEntityProducer implements EntityTransferrer,
 		catch (Exception e)
 		{
 			e.printStackTrace();
-			log.debug("transferCopyEntities: End removing Assessment data");
+			log.info("transferCopyEntities: End removing Assessment data");
 		}
 		transferCopyEntitiesRefMigrator(fromContext, toContext, ids);
 
