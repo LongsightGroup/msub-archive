@@ -1,1 +1,2 @@
 SAK-25867 Improvements to Site Archive tool
+SAM-1660 Patch for samigo to participate in archive/merge
