@@ -5,11 +5,12 @@
         <groupId>org.sakaiproject</groupId>
         <artifactId>master</artifactId>
         <version>2.9-SNAPSHOT</version>
+		<relativePath>../master/pom.xml</relativePath>
     </parent>
 
     <name>Sakai Common Project</name>
     <groupId>org.sakaiproject.common</groupId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.2.4-SNAPSHOT</version>
     <artifactId>common</artifactId>
     <packaging>pom</packaging>
 
@@ -51,84 +52,84 @@
             <dependency>
                 <groupId>org.sakaiproject.common</groupId>
                 <artifactId>sakai-common-composite-component</artifactId>
-                <version>1.2-SNAPSHOT</version>
+                <version>1.2.4-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.sakaiproject.common</groupId>
                 <artifactId>sakai-common-manager-api</artifactId>
-                <version>1.2-SNAPSHOT</version>
+                <version>1.2.4-SNAPSHOT</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.sakaiproject.common</groupId>
                 <artifactId>sakai-common-type-api</artifactId>
-                <version>1.2-SNAPSHOT</version>
+                <version>1.2.4-SNAPSHOT</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.sakaiproject.common</groupId>
                 <artifactId>sakai-common-edu-person-api</artifactId>
-                <version>1.2-SNAPSHOT</version>
+                <version>1.2.4-SNAPSHOT</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.sakaiproject.common</groupId>
                 <artifactId>sakai-common-composite-component-data</artifactId>
-                <version>1.2-SNAPSHOT</version>
+                <version>1.2.4-SNAPSHOT</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.sakaiproject.common</groupId>
                 <artifactId>sakai-privacy-hbm</artifactId>
-                <version>1.2-SNAPSHOT</version>
+                <version>1.2.4-SNAPSHOT</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.sakaiproject.common</groupId>
                 <artifactId>sakai-privacy-api</artifactId>
-                <version>1.2-SNAPSHOT</version>
+                <version>1.2.4-SNAPSHOT</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.sakaiproject.common</groupId>
                 <artifactId>sakai-privacy-impl</artifactId>
-                <version>1.2-SNAPSHOT</version>
+                <version>1.2.4-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.sakaiproject.common</groupId>
                 <artifactId>archive-api</artifactId>
-                <version>1.2-SNAPSHOT</version>
+                <version>1.2.4-SNAPSHOT</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.sakaiproject.common</groupId>
                 <artifactId>archive-impl2</artifactId>
-                <version>1.2-SNAPSHOT</version>
+                <version>1.2.4-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.sakaiproject.common</groupId>
                 <artifactId>archive-impl</artifactId>
-                <version>1.2-SNAPSHOT</version>
+                <version>1.2.4-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.sakaiproject.common</groupId>
                 <artifactId>import-impl</artifactId>
-                <version>1.2-SNAPSHOT</version>
+                <version>1.2.4-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.sakaiproject.common</groupId>
                 <artifactId>sakai-import-content</artifactId>
-                <version>1.2-SNAPSHOT</version>
+                <version>1.2.4-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.sakaiproject.common</groupId>
                 <artifactId>common-cartridge</artifactId>
-                <version>1.2-SNAPSHOT</version>
+                <version>1.2.4-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.sakaiproject.common</groupId>
                 <artifactId>sakai-archive-import</artifactId>
-                <version>1.2-SNAPSHOT</version>
+                <version>1.2.4-SNAPSHOT</version>
             </dependency>
 
             <!-- external dependencies -->
@@ -175,5 +176,19 @@
             </plugin>
         </plugins>
     </reporting>
+    
+    <repositories> 
+		<repository> 
+			<id>sonatype-nexus-snapshots</id> 
+			<name>Sonatype Nexus Snapshots</name> 
+			<url> https://oss.sonatype.org/content/repositories/snapshots </url> 
+			<releases> 
+				<enabled>false</enabled> 
+			</releases> 
+			<snapshots> 
+				<enabled>true</enabled> 
+			</snapshots> 
+		</repository> 
+	</repositories>
    
 </project>
