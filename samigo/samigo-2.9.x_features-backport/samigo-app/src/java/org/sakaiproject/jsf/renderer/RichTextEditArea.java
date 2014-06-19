@@ -440,6 +440,9 @@ public class RichTextEditArea extends Renderer
     }
     
     writer.write("\n\t<script type=\"text/javascript\" src=\"" + FCK_BASE + FCK_SCRIPT + "\"></script>");
+    writer.write("<script type=\"text/javascript\" language=\"JavaScript\">var CKEDITOR_BASEPATH='/library/editor/ckeditor/';</script>");
+    writer.write("<script type=\"text/javascript\" language=\"JavaScript\" src=\"/library/editor/ckeditor/ckeditor.js\"></script>");
+    writer.write("\n\t<script type=\"text/javascript\" src=\"/library/editor/ckeditor.launch.js\"></script>");
 
     writer.write("<script type=\"text/javascript\">\n");
     
