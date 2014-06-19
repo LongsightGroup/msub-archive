@@ -53,6 +53,7 @@ import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.velocity.tools.generic.SortTool;
 import org.sakaiproject.alias.api.Alias;
 import org.sakaiproject.alias.cover.AliasService;
@@ -158,6 +159,9 @@ import org.sakaiproject.util.Web;
  * </p>
  */
 public class SiteAction extends PagedResourceActionII {
+	// SAK-23491 add template_used property
+	private static final String TEMPLATE_USED = "template_used";
+	
 	/** Our log (commons). */
 	private static Log M_log = LogFactory.getLog(SiteAction.class);
 	
@@ -2147,6 +2151,7 @@ public class SiteAction extends PagedResourceActionII {
 				{
 					// filter out only those groups that are manageable by site-info
 					Collection<Group> filteredGroups = new ArrayList<Group>();
+					Collection<Group> filteredSections = new ArrayList<Group>();
 					for (Group g : groups)
 					{
 						Object gProp = g.getProperties().getProperty(SiteConstants.GROUP_PROP_WSETUP_CREATED);
@@ -2154,8 +2159,13 @@ public class SiteAction extends PagedResourceActionII {
 						{
 							filteredGroups.add(g);
 						}
+						else
+						{
+							filteredSections.add(g);
+					}
 					}
 					context.put("groups", filteredGroups);
+					context.put("sections", filteredSections);
 				}
 			} catch (Exception e) {
 				M_log.warn(this + " buildContextForTemplate chef_site-siteInfo-list.vm ", e);
@@ -6414,6 +6424,7 @@ public class SiteAction extends PagedResourceActionII {
 			state.setAttribute(STATE_TEMPLATE_INDEX, params
 					.getString("continue"));
 		}
+		resetVisitedTemplateListToIndex(state, (String) state.getAttribute(STATE_TEMPLATE_INDEX));
 
 		// refresh the whole page
 		scheduleTopRefresh();
@@ -8810,12 +8821,7 @@ public class SiteAction extends PagedResourceActionII {
 		String email = StringUtils.trimToEmpty(params
 				.getString("siteContactEmail"));
 		if (email != null) {
-			String[] parts = email.split("@");
-
-			if (email.length() > 0
-					&& (email.indexOf("@") == -1 || parts.length != 2
-							|| parts[0].length() == 0 || !Validator
-							.checkEmailLocal(parts[0]))) {
+			if (!EmailValidator.getInstance().isValid(email)) {
 				// invalid email
 				addAlert(state, rb.getFormattedMessage("java.invalid.email", new Object[]{email}));
 			}
@@ -9899,6 +9905,12 @@ public class SiteAction extends PagedResourceActionII {
 						siteInfo.site_contact_name);
 				rp.addProperty(Site.PROP_SITE_CONTACT_EMAIL,
 						siteInfo.site_contact_email);
+				
+				// SAK-23491 add template_used property
+				if (templateSite != null) {
+					// if the site was created from template
+					rp.addProperty(TEMPLATE_USED, templateSite.getId());
+				}
 
 				state.setAttribute(STATE_SITE_INSTANCE_ID, site.getId());
 
@@ -11101,8 +11113,8 @@ public class SiteAction extends PagedResourceActionII {
 					edit.setTitle(siteInfo.title);
 					edit.setPublished(true);
 					edit.setPubView(false);
-					//edit.setType(templateId);
-					// ResourcePropertiesEdit rpe = edit.getPropertiesEdit();
+					// SAK-23491 add template_used property
+					edit.getPropertiesEdit().addProperty(TEMPLATE_USED, templateId);
 					try {
 						SiteService.save(edit);
 					} catch (Exception e) {
@@ -12403,6 +12415,10 @@ public class SiteAction extends PagedResourceActionII {
 					addRequestedSection(state);
 				}
 				if (state.getAttribute(STATE_MESSAGE) == null) {
+					// no manual add
+					state.removeAttribute(STATE_MANUAL_ADD_COURSE_NUMBER);
+					state.removeAttribute(STATE_MANUAL_ADD_COURSE_FIELDS);
+
 					if (getStateSite(state) == null) {
 						if (state.getAttribute(STATE_TEMPLATE_SITE) != null)
 						{
