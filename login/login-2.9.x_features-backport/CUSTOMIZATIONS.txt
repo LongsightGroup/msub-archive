@@ -3,4 +3,4 @@ SAK-21498 Auth choice when using container login like CAS or Shibboleth
  * SAK-23252 add specific CSS ids to choice.vm
  * SAK-22769 auth choice was intercepting login links from /portal/
 Updating login from branch --- Merging r131402 through r308057 into '.':
-
+SAK-21927 backport of linking to password reset from login tool
