@@ -45,6 +45,7 @@ SAM-2304 - Disable autocomplete in assignment delivery
 SAM-2097 Download PDF function in Print view creates unusuable file when link added to question or part with rich-text editor
 SAM-1660 Patch for samigo to participate in archive/merge
 SAM-2044 RTE doesn't Show when "show/hide" is clicked for tests via URL
+SAM-2352 Don't run on assessment attempts with a null submittedDate ; Tests and Quizzes - Autosubmit issues (MND-488196)
 ----------------------
 Removed from backport
 ----------------------
