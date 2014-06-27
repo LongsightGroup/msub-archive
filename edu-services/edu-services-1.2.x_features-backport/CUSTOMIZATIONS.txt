@@ -5,3 +5,4 @@ SAK-23544 Course Management should return academic sessions in descending order
 SAK-23570 getAcademicSessions (course management) should utilize hibernate L2Cache
 SAK-25659 record the gradebook.updateItemScore event when grading an assignment attached to an existing gradebook item (Estimate 271)
 SAK-14519 Add Point Total column on the Gradebook Items Summary screen
+SAK-23787 Assignments / comments sent to gb along with grades
