@@ -66,7 +66,7 @@
 
   <h:panelGrid>
    <samigo:wysiwyg rows="140" value="#{sectionBean.sectionDescription}" hasToggle="yes">
-     <f:validateLength minimum="1" maximum="4000"/>
+     <f:validateLength minimum="1" maximum="60000"/>
    </samigo:wysiwyg>
   </h:panelGrid>
 
