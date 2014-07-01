@@ -1,1 +1,1 @@
-
+SAM-1239 Properties wording change for data_discrepancy_1
