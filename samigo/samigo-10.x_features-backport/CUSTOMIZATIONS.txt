@@ -1,1 +1,2 @@
 SAM-1239 Properties wording change for data_discrepancy_1
+SAM-1330 Allow disabling of browser-based data discrepancy errors
