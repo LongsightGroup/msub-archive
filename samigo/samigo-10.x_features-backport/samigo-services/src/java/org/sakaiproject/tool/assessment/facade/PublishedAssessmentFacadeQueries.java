@@ -274,6 +274,7 @@ public class PublishedAssessmentFacadeQueries extends HibernateDaoSupport
 		publishedAccessControl.setAutoSubmit(a.getAutoSubmit());
 		publishedAccessControl.setItemNavigation(a.getItemNavigation());
 		publishedAccessControl.setItemNumbering(a.getItemNumbering());
+		publishedAccessControl.setDisplayScoreDuringAssessments(a.getDisplayScoreDuringAssessments());
 		publishedAccessControl.setSubmissionMessage(a.getSubmissionMessage());
 		publishedAccessControl.setReleaseTo(a.getReleaseTo());
 		publishedAccessControl.setUsername(a.getUsername());
@@ -386,7 +387,7 @@ public class PublishedAssessmentFacadeQueries extends HibernateDaoSupport
 			PublishedItemData publishedItem = new PublishedItemData(
 					publishedSection, item.getSequence(), item.getDuration(),
 					item.getInstruction(), item.getDescription(), item
-							.getTypeId(), item.getGrade(), item.getScore(), item.getDiscount(), item.getMinScore(),
+							.getTypeId(), item.getGrade(), item.getScore(), item.getScoreDisplayFlag(), item.getDiscount(), item.getMinScore(),
 					item.getHint(), item.getHasRationale(), item.getStatus(),
 					item.getCreatedBy(), item.getCreatedDate(), item
 							.getLastModifiedBy(), item.getLastModifiedDate(),

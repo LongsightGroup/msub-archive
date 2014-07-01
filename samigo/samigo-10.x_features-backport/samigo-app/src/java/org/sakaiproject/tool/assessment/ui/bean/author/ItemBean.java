@@ -73,6 +73,7 @@ public class ItemBean
   private String itemId;
   private String itemType;
   private String itemScore= "0";
+  private String itemScoreDisplayFlag= "true";
   private String itemMinScore;
   private String itemDiscount = "0";
   private String partialCreditFlag = "Defualt";
@@ -1994,5 +1995,13 @@ public class ItemBean
 
 	public void setItemMinScore(String itemMinScore) {
 		this.itemMinScore = itemMinScore;
+	}
+
+	public String getItemScoreDisplayFlag() {
+		return itemScoreDisplayFlag;
+	}
+
+	public void setItemScoreDisplayFlag(String itemScoreDisplayFlag) {
+		this.itemScoreDisplayFlag = itemScoreDisplayFlag;
 	}
 }

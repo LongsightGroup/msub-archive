@@ -6,3 +6,4 @@ LS-4 Test Description 60k limit; patch submitted but not committed on SAM-1200
 LS-112 Allow 60k chars instead of 4k chars for Part Information textarea
 LS-136 fill in the blank plus question type comming from a bb import 
 LS-145 Set Samigo Feedback Text field limit to 60k 
+SAM-1117 Option to Not Display how many points question worth in assessments

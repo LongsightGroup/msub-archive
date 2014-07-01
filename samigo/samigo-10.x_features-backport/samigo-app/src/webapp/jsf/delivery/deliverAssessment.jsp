@@ -383,7 +383,7 @@ document.links[newindex].onclick();
 <h:panelGroup>
 <h:outputText value=" #{question.pointsDisplayString} #{question.maxPoints} #{deliveryMessages.pt}" rendered="#{delivery.actionString=='reviewAssessment'}"/>
 
-        <h:outputText value="#{question.maxPoints} #{deliveryMessages.pt}" rendered="#{delivery.actionString!='reviewAssessment'}" />
+        <h:outputText value="#{question.maxPoints} #{deliveryMessages.pt}" rendered="#{delivery.settings.displayScoreDuringAssessments != '2' && question.itemData.scoreDisplayFlag && delivery.actionString!='reviewAssessment'}" />
 </h:panelGroup>
 </h:panelGrid>
           <f:verbatim><div class="tier3"></f:verbatim>

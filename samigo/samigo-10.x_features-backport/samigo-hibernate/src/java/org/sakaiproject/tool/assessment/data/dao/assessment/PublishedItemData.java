@@ -61,6 +61,7 @@ public class PublishedItemData
   private String grade;
   private Double score;
   private Double discount;
+  private Boolean scoreDisplayFlag = Boolean.TRUE;
   private String hint;
   private Boolean hasRationale;
   private Integer status;
@@ -91,7 +92,7 @@ public class PublishedItemData
   // this constructor should be deprecated, it is missing triesAllowed
   public PublishedItemData(SectionDataIfc section, Integer sequence,
                   Integer duration, String instruction, String description,
-                  Long typeId, String grade, Double score, Double discount, Float minScore, String hint,
+                  Long typeId, String grade, Double score, Boolean scoreDisplayFlag, Double discount, Float minScore, String hint,
                   Boolean hasRationale, Integer status, String createdBy,
                   Date createdDate, String lastModifiedBy,
                   Date lastModifiedDate,
@@ -104,6 +105,7 @@ public class PublishedItemData
     this.typeId = typeId;
     this.grade = grade;
     this.score = score;
+    this.scoreDisplayFlag = scoreDisplayFlag;
     this.discount = discount;
     this.hint = hint;
     this.hasRationale = hasRationale;
@@ -121,7 +123,7 @@ public class PublishedItemData
 
   public PublishedItemData(SectionDataIfc section, Integer sequence,
                   Integer duration, String instruction, String description,
-                  Long typeId, String grade, Double score, Double discount, Float minScore, String hint,
+                  Long typeId, String grade, Double score, Boolean scoreDisplayFlag, Double discount, Float minScore, String hint,
                   Boolean hasRationale, Integer status, String createdBy,
                   Date createdDate, String lastModifiedBy,
                   Date lastModifiedDate,
@@ -135,6 +137,7 @@ public class PublishedItemData
     this.typeId = typeId;
     this.grade = grade;
     this.score = score;
+    this.scoreDisplayFlag = scoreDisplayFlag;
     this.discount = discount;
     this.hint = hint;
     this.hasRationale = hasRationale;
@@ -230,6 +233,17 @@ public class PublishedItemData
 
   public void setScore(Double score) {
     this.score = score;
+  }
+  
+  public Boolean getScoreDisplayFlag(){
+	  if(this.scoreDisplayFlag == null){
+		  return Boolean.TRUE;
+	  }
+	  return this.scoreDisplayFlag;
+  }
+  
+  public void setScoreDisplayFlag(Boolean scoreDisplayFlag){
+	  this.scoreDisplayFlag = scoreDisplayFlag;
   }
 
   public Double getDiscount() {
