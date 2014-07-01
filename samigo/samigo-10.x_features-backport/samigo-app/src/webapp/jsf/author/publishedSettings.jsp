@@ -29,6 +29,16 @@
  *
  **********************************************************************************/
 -->
+
+	<%
+	  	String thisId = request.getParameter("panel");
+  		if (thisId == null) 
+  		{
+    		thisId = "Main" + org.sakaiproject.tool.cover.ToolManager.getCurrentPlacement().getId();
+  		}
+	%>
+	
+	
   <f:view>
     <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
       <head><%= request.getAttribute("html.head") %>
@@ -58,6 +68,19 @@
           lockdownMarkForReview(navVal);
           showHideReleaseGroups();
         });
+		function expandAccordion(iframId){
+			$('.ui-accordion-content').show();
+			mySetMainFrameHeight(iframId);
+			$("#collapseLink").show();
+			$("#expandLink").hide();
+		}
+
+		function collapseAccordion(iframId){
+			$('.ui-accordion-content').hide();
+			mySetMainFrameHeight(iframId);
+			$("#collapseLink").hide();
+			$("#expandLink").show();
+		}
       </script>
 
       </head>
@@ -74,13 +97,33 @@
   <!-- HEADINGS -->
   <%@ include file="/jsf/author/allHeadings.jsp" %>
 
-    <h3>
-     <h:outputText id="x1" value="#{assessmentSettingsMessages.settings} #{assessmentSettingsMessages.dash} #{publishedSettings.title}"/>
-    </h3>
+<p>
+  <h:messages styleClass="messageSamigo" rendered="#{! empty facesContext.maximumSeverity}" layout="table"/>
+  </p>
 <p>
   <h:messages styleClass="messageSamigo" rendered="#{! empty facesContext.maximumSeverity}" layout="table"/>
 </p>
 
+<span>
+    <h3>
+     <h:outputText id="x1" value="#{assessmentSettingsMessages.settings} #{assessmentSettingsMessages.dash} #{publishedSettings.title}"/>
+    </h3>
+    <f:verbatim>
+	<span style="float: right">
+		<a href="javascript:void(0)" id="expandLink" onclick="expandAccordion('<%= org.sakaiproject.util.Web.escapeJavascript(thisId)%>')">
+			</f:verbatim>
+				<h:outputText value="#{assessmentSettingsMessages.expandAll}"/>
+			<f:verbatim>
+		</a>
+		<a href="javascript:void(0)" id="collapseLink" style="display:none" onclick="collapseAccordion('<%= org.sakaiproject.util.Web.escapeJavascript(thisId)%>')">
+			</f:verbatim>
+				<h:outputText value="#{assessmentSettingsMessages.collapseAll}"/>
+			<f:verbatim>
+		</a>
+	</span>
+	</f:verbatim>
+	<br/>
+</span>
 <div class="tier1" id="jqueryui-accordion">
 
 <samigo:hideDivision title="#{assessmentSettingsMessages.heading_about}" >
