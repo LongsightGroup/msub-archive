@@ -115,6 +115,7 @@ public class DeliveryBean
 
   private String assessmentId;
   private String assessmentTitle;
+  private Boolean honorPledge = Boolean.FALSE;
   private ArrayList markedForReview;
   private ArrayList blankItems;
   private ArrayList markedForReviewIdents;
@@ -3877,6 +3878,14 @@ public class DeliveryBean
 	  public boolean isBrowserDataDiscrepancyEnabled() {
 	      return ServerConfigurationService.getBoolean("samigo.browserDataDiscrepancy", true);
  	  }
+
+	public Boolean getHonorPledge() {
+ 		return honorPledge;
+ 	}
+ 
+ 	public void setHonorPledge(Boolean honorPledge) {
+ 		this.honorPledge = honorPledge;
+ 	}
 	 
 	  public String getRecURL()
 	  {

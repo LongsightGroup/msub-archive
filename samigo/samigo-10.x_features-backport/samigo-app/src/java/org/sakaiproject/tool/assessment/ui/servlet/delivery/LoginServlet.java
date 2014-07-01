@@ -135,6 +135,8 @@ public class LoginServlet
     }
     delivery.setAssessmentId(pub.getPublishedAssessmentId().toString());
     delivery.setAssessmentTitle(pub.getTitle());
+    delivery.setHonorPledge(pub.getAssessmentMetaDataByLabel("honorpledge_isInstructorEditable") != null &&
+    		pub.getAssessmentMetaDataByLabel("honorpledge_isInstructorEditable").toLowerCase().equals("true"));
     delivery.setPublishedAssessment(pub);
 
     RequestDispatcher dispatcher = null;
