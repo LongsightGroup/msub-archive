@@ -871,7 +871,6 @@ public class GradingService
         }
         Long itemType = item.getTypeId();  
     	autoScore = (double) 0;
-
         itemGrading.setAssessmentGradingId(data.getAssessmentGradingId());
         //itemGrading.setSubmittedDate(new Date());
         itemGrading.setAgentId(agent);
@@ -937,6 +936,9 @@ public class GradingService
       //since the itr goes through each answer (multiple answers for a signle mc question), keep track
       //of its total score by itemId -> autoScore[]{user's score, total possible}
       Map<Long, Double[]> mcmcAllOrNothingCheck = new HashMap<Long, Double[]>();
+      //collect min score information to determine if the auto score will need to be adjusted
+      Float minScore = null;
+      float totalAutoScoreCheck = 0;
       //get item information to check if it's MCMS and Not Partial Credit
       Long itemType2 = -1l;
       String mcmsPartialCredit = "";
@@ -951,6 +953,7 @@ public class GradingService
         	log.error("unable to retrive itemDataIfc for: " + publishedItemHash.get(itemId));
         	continue;
         }
+	minScore = item.getMinScore();
         itemType2 = item.getTypeId();
         //get item information to check if it's MCMS and Not Partial Credit
         mcmsPartialCredit = item.getItemMetaDataByLabel(ItemMetaDataIfc.MCMS_PARTIAL_CREDIT);
@@ -1028,6 +1031,7 @@ public class GradingService
     				  .get(itemGrading.getPublishedItemTextId())
     				  .get(itemGrading.getPublishedAnswerId()).effectiveScore);
     	  }
+    	  totalAutoScoreCheck = 0;
       }
       
       // if it's MCMS and Not Partial Credit and the score isn't 100% (totalAutoScoreCheck != itemScore),
@@ -1046,6 +1050,17 @@ public class GradingService
     	  }
       }
       
+      //if there is a minimum score value, then make sure the auto score is at least the minimum
+      if(minScore != null && totalAutoScoreCheck < minScore){    	  
+          iter = itemGradingSet.iterator();
+          while(iter.hasNext())
+          {
+            ItemGradingData itemGrading = (ItemGradingData) iter.next();
+           	itemGrading.setAutoScore( Double.valueOf(minScore / itemGradingSet.size()));
+          }
+    	  
+      }
+      
       log.debug("****x4. "+(new Date()).getTime());
 
       // save#1: this itemGrading Set is a partial set of answers submitted. it contains new answers and
@@ -1058,11 +1073,14 @@ public class GradingService
       }
       log.debug("****x5. "+(new Date()).getTime());
 
+      
+
       // save#2: now, we need to get the full set so we can calculate the total score accumulate for the
       // whole assessment.
       Set fullItemGradingSet = getItemGradingSet(data.getAssessmentGradingId().toString());
       double totalAutoScore = getTotalAutoScore(fullItemGradingSet);
       data.setTotalAutoScore( Double.valueOf(totalAutoScore));
+     
       //log.debug("**#1 total AutoScore"+totalAutoScore);
       if (Double.compare((totalAutoScore + data.getTotalOverrideScore().doubleValue()),new Double("0").doubleValue())<0){
     	  data.setFinalScore( Double.valueOf("0"));
@@ -1282,6 +1300,7 @@ public class GradingService
               }
               break;
     }
+    
     return autoScore;
   }
 

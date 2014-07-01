@@ -80,7 +80,11 @@ public interface ItemDataIfc extends Comparable<ItemDataIfc>, java.io.Serializab
   void setScore(Double score);
   
   Double getDiscount();
+  
+  Float getMinScore();
 
+  void setMinScore(Float minScore);
+  
   void setDiscount(Double discount);
 
   String getHint();

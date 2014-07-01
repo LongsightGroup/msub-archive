@@ -74,6 +74,7 @@ public class PublishedItemData
   private ItemGradingData lastItemGradingDataByAgent;
   private Set itemAttachmentSet;
   private Boolean partialCreditFlag;
+  private Float minScore;
 
   private String themeText;
   private String leadInText;
@@ -90,7 +91,7 @@ public class PublishedItemData
   // this constructor should be deprecated, it is missing triesAllowed
   public PublishedItemData(SectionDataIfc section, Integer sequence,
                   Integer duration, String instruction, String description,
-                  Long typeId, String grade, Double score, Double discount, String hint,
+                  Long typeId, String grade, Double score, Double discount, Float minScore, String hint,
                   Boolean hasRationale, Integer status, String createdBy,
                   Date createdDate, String lastModifiedBy,
                   Date lastModifiedDate,
@@ -115,11 +116,12 @@ public class PublishedItemData
     this.itemMetaDataSet = itemMetaDataSet;
     this.itemFeedbackSet = itemFeedbackSet;
     this.partialCreditFlag=partialCreditFlag;
+    this.minScore = minScore;
   }
 
   public PublishedItemData(SectionDataIfc section, Integer sequence,
                   Integer duration, String instruction, String description,
-                  Long typeId, String grade, Double score, Double discount, String hint,
+                  Long typeId, String grade, Double score, Double discount, Float minScore, String hint,
                   Boolean hasRationale, Integer status, String createdBy,
                   Date createdDate, String lastModifiedBy,
                   Date lastModifiedDate,
@@ -146,6 +148,7 @@ public class PublishedItemData
     this.itemFeedbackSet = itemFeedbackSet;
     this.triesAllowed = triesAllowed;
     this.partialCreditFlag=partialCreditFlag;
+    this.minScore = minScore;
   }
 
   public Long getItemId() {
@@ -955,4 +958,12 @@ public class PublishedItemData
 	  else
 		  return "";
   }
+
+ public Float getMinScore() {
+         return minScore;
+ }
+	  	 
+ public void setMinScore(Float minScore) {
+         this.minScore = minScore;
+ }
 }

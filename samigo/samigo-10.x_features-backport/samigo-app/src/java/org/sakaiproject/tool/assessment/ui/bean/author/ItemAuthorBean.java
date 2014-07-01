@@ -73,6 +73,7 @@ import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.exception.PermissionException;
 import org.sakaiproject.exception.TypeException;
 
+import org.sakaiproject.component.cover.ServerConfigurationService;
 import org.sakaiproject.content.api.ContentResource;
 import org.sakaiproject.content.api.FilePickerHelper;
 import org.sakaiproject.tool.cover.SessionManager;
@@ -141,7 +142,7 @@ public class ItemAuthorBean
   private String[] matchAnswers;
   private String[] matchFeedbackList;
   private String[] answerFeedbackList;
-
+  private Boolean allowMinScore;
   // for navigation
   private String outcome;
   
@@ -1306,4 +1307,15 @@ public class ItemAuthorBean
   public void setCurrentAnswer(AnswerBean currentAnswer) {
 	this.currentAnswer = currentAnswer;
   }
+  public Boolean getAllowMinScore() {
+	  if(allowMinScore == null){
+		  allowMinScore = ServerConfigurationService.getBoolean("samigo.allowMinScore", Boolean.FALSE);
+	  }
+	  return allowMinScore;
+  }
+
+  public void setAllowMinScore(Boolean allowMinScore) {
+	  this.allowMinScore = allowMinScore;
+  }
+
 }

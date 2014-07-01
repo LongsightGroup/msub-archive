@@ -713,6 +713,11 @@ public class ItemAddListener
       }
       item.setScore(Double.valueOf(bean.getItemScore()));
       item.setDiscount(Double.valueOf(bean.getItemDiscount()));
+      if(bean.getItemMinScore() != null && !"".equals(bean.getItemMinScore())){
+    	  item.setMinScore(Float.valueOf(bean.getItemMinScore()));
+      }else{
+    	  item.setMinScore(null);
+      }
       item.setHint("");
 
       item.setStatus(ItemDataIfc.ACTIVE_STATUS);
