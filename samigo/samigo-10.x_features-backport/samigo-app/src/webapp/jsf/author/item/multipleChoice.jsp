@@ -269,7 +269,7 @@ function toggleNegativePointVal(val){
         <!-- WYSIWYG -->
   <h:panelGrid rendered="#{itemauthor.target == 'questionpool' || (itemauthor.target != 'questionpool' && (author.isEditPendingAssessmentFlow && assessmentSettings.feedbackAuthoring ne '1') || (!author.isEditPendingAssessmentFlow && publishedSettings.feedbackAuthoring ne '1'))}">
          <samigo:wysiwyg rows="140" value="#{answer.feedback}" hasToggle="yes" >
-           <f:validateLength maximum="4000"/>
+           <f:validateLength maximum="60000"/>
          </samigo:wysiwyg>
   </h:panelGrid>
         </h:panelGrid>
@@ -378,7 +378,7 @@ function toggleNegativePointVal(val){
   <!-- WYSIWYG --> 
 <h:panelGrid>
    <samigo:wysiwyg rows="140" value="#{itemauthor.currentItem.corrFeedback}" hasToggle="yes" >
-     <f:validateLength maximum="4000"/>
+     <f:validateLength maximum="60000"/>
    </samigo:wysiwyg>
 </h:panelGrid>
  <f:verbatim><br/> </f:verbatim>
@@ -387,7 +387,7 @@ function toggleNegativePointVal(val){
   <!-- WYSIWYG -->
    <h:panelGrid>
    <samigo:wysiwyg rows="140" value="#{itemauthor.currentItem.incorrFeedback}"  hasToggle="yes" >
-     <f:validateLength maximum="4000"/>
+     <f:validateLength maximum="60000"/>
    </samigo:wysiwyg>
 </h:panelGrid>
  <f:verbatim></div> </f:verbatim>
