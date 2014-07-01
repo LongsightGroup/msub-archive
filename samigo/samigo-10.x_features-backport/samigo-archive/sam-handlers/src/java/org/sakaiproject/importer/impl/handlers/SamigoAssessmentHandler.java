@@ -58,6 +58,7 @@ public class SamigoAssessmentHandler implements HandlesImportable {
 	public static final int TRUE_FALSE = 4;
 	public static final int FILL_BLANK = 8;
 	public static final int MATCHING = 9;
+	public static final int FILL_BLANK_PLUS = 11;
 	
 	public static final String QUIZ_TYPE = "62";
 	public static final String QUIZ_TEMPLATE = "3";
@@ -156,6 +157,7 @@ public class SamigoAssessmentHandler implements HandlesImportable {
 			questionCount++;
 			Set correctAnswerIDs = importableQuestion.getCorrectAnswerIDs();
 			itemFacade = new ItemFacade();
+			itemFacade.setTypeId(new Long(importableQuestion.getQuestionType()));
 			textSet = new HashSet();
 			questionTextString = contextualizeUrls(importableQuestion.getQuestionText(), siteId);
 			if (importableQuestion.getQuestionType() == SamigoPoolHandler.MATCHING) {
@@ -213,6 +215,14 @@ public class SamigoAssessmentHandler implements HandlesImportable {
 					if (importableQuestion.getQuestionType() == SamigoPoolHandler.TRUE_FALSE) {
 						// Samigo only understands True/False answers in lower case
 						answer.setText(importableAnswer.getAnswerText().toLowerCase());
+					} else if (importableQuestion.getQuestionType() == SamigoPoolHandler.FILL_BLANK_PLUS) {
+						answer.setText(importableAnswer.getAnswerText());
+						Pattern pattern = Pattern.compile("_+|<<.*>>");
+						Matcher matcher = pattern.matcher(questionTextString);
+						if (matcher.find()) questionTextString = questionTextString.replaceFirst(matcher.group(),"{}");
+						text.setText(questionTextString);
+						itemFacade.setTypeId(Long.valueOf(SamigoPoolHandler.FILL_BLANK));
+						System.out.println("ZZ99: " + questionTextString + "::" + pattern.toString() + "::" + importableAnswer.getPosition());
 					} else if (importableQuestion.getQuestionType() == SamigoPoolHandler.FILL_BLANK) {
 						if (j.hasNext()) continue;
 						answer.setText(answerBuffer.toString());
