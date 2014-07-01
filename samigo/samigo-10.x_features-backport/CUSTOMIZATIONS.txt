@@ -2,3 +2,4 @@ SAM-1239 Properties wording change for data_discrepancy_1
 SAM-1330 Allow disabling of browser-based data discrepancy errors
 SAM-948 'Minimum value' option for questions
 SEMS-39 Turn off warning to users of Edited Quiz
+LS-4 Test Description 60k limit; patch submitted but not committed on SAM-1200
