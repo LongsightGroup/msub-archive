@@ -64,6 +64,8 @@ public class GradebookExportByTerm implements Job {
 	private final String JOB_NAME = "GradebookExportByTerm";
 	private final long COURSE_GRADE_ASSIGNMENT_ID = -1; // because no gradeable object in Sakai should have this value
 	private final long TOTAL_POINTS_EARNED = -2; // see above
+	private final long TOTAL_POINTS_POSSIBLE = -3; // see above
+
 	
 	// do all of the work
 	// this has been combined into one method. It's a lot of code but it reduces additional lookups and duplication of code, refactor if time allows
@@ -131,10 +133,7 @@ public class GradebookExportByTerm implements Job {
 	        
 	        //get any categories
 			List<CategoryDefinition> categoryDefinitions = gradebookService.getCategoryDefinitions(siteId);
-
-			//get a count of the total points possible for all assignments
-			String totalPointsPossible = getTotalPointsPossible(assignments);
-	        
+			   
 			//for each user, get the assignment results for each assignment, with TPE and course grade at the end
 			for(User u: users) {
 				
@@ -163,6 +162,9 @@ public class GradebookExportByTerm implements Job {
 				
 				//add total points earned
 				g.addGrade(TOTAL_POINTS_EARNED, this.getTotalPointsEarned(gradebook.getUid(), u.getId(), assignments));
+				
+				//add total points possible
+				g.addGrade(TOTAL_POINTS_POSSIBLE, this.getTotalPointsPossible(gradebook.getUid(), u.getId(), assignments));				
 				
 				//add the course grade. Note the map has eids.
 				g.addGrade(COURSE_GRADE_ASSIGNMENT_ID, courseGrades.get(u.getEid()));
@@ -205,12 +207,11 @@ public class GradebookExportByTerm implements Job {
 						header.add("Comments");
 					}
 					
-					//add the category headers
+					//add the category header (category name  + weighting percentage)
 					for(CategoryDefinition cd: categoryDefinitions) {
 						Double weight = cd.getWeight();
-						if(weight != null) {
-							header.add(cd.getName() + " [" + toPercentage(cd.getWeight(), 3) + "]"); //display as percentage. it's stored as a fraction  ie 0.1 for 10%
-						
+						if(weight != null && weight != 0) {
+							header.add(cd.getName() + " [" + fractionToPercentage(weight, 3) + "]"); //display as percentage. it's stored as a fraction  ie 0.1 for 10%
 						} else {
 							header.add(cd.getName());
 						}
@@ -252,7 +253,7 @@ public class GradebookExportByTerm implements Job {
 						}
 						
 						//add total points earned and possible
-						row.add(g.get(TOTAL_POINTS_EARNED) + " [" + totalPointsPossible + "]");
+						row.add(g.get(TOTAL_POINTS_EARNED) + " [" + g.get(TOTAL_POINTS_POSSIBLE) + "]");
 						
 						//add course grade
 						row.add(g.get(COURSE_GRADE_ASSIGNMENT_ID));
@@ -335,6 +336,14 @@ public class GradebookExportByTerm implements Job {
 		List<Site> sites = new ArrayList<Site>();
 			
 		List<Site> allSites = siteService.getSites(SelectionType.ANY, null, null, propertyCriteria, SortType.TITLE_ASC, null);		
+
+                // What if sites only have Term set, not term_eid?
+                if (allSites.size() == 0) {
+                        Map<String, String> propertyCriteria2 = new HashMap<String,String>();
+                        propertyCriteria2.put("term", serverConfigurationService.getString("gradebook.export.term", getMostRecentTerm()));
+
+                        allSites = siteService.getSites(SelectionType.ANY, null, null, propertyCriteria2, SortType.TITLE_ASC, null);
+                }
 		
 		for(Site s: allSites) {
 			//filter my workspace
@@ -424,18 +433,28 @@ public class GradebookExportByTerm implements Job {
 	
 	/**
 	 * Helper to get the total number of points possible for all assignments
+	 * Takes into account participation, ie student must have attempted the assignment (indicated by having a grade) for it to be included.
+	 * Also, EXCLUDES extra credit items.
+	 * 
+	 * @param gradebookUid
+	 * @param userId
 	 * @param assignments
 	 * @return
 	 */
-	private String getTotalPointsPossible(List<Assignment> assignments) {
+	private String getTotalPointsPossible(String gradebookUid, String userId, List<Assignment> assignments) {
 		double totalPointsPossible = 0;
 		
 		for(Assignment a: assignments) {
-			//if(a.isCounted()){
+			
+			if(a.isExtraCredit()){
+				continue;
+			}			
+			
+			if(StringUtils.isNotBlank(gradebookService.getAssignmentScoreString(gradebookUid, a.getId(), userId))){
 				totalPointsPossible += a.getPoints();
-			//}
+			}
 		}
-		
+				
 		return String.valueOf(totalPointsPossible);
 	}
 	
@@ -456,7 +475,7 @@ public class GradebookExportByTerm implements Job {
 			try {
 				totalPointsEarned += Double.valueOf(gradebookService.getAssignmentScoreString(gradebookUid, a.getId(), userId));
 			} catch (Exception e) {
-				return "N/A"; //not yet entered
+				//skip to next, nothing entered for this assignment
 			}
 		}
 		
@@ -464,12 +483,12 @@ public class GradebookExportByTerm implements Job {
 	}
 	
 	/**
-	 * Format a double into a percentage string
+	 * Format a fraction double into a percentage string
 	 * @param d double number. 0-3 decimal places as per gradebook allows
 	 * @param precision. number of decimal places
 	 * @return 12% string
 	 */
-	private String toPercentage(double d, int precision) {
+	private String fractionToPercentage(double d, int precision) {
 		int maxPrecision = 3;
 		if(precision > maxPrecision) {
 			precision = maxPrecision;
@@ -483,7 +502,8 @@ public class GradebookExportByTerm implements Job {
 	
 	/**
 	 * Determine a grade for all assignments in the given category categories. Formatted as a percentage. Returns null if not available
-	 *
+	 * Only takes into account those there there was an attempt.
+	 * 
 	 * @param gradebookUid
 	 * @param userId
 	 * @param cd
@@ -497,14 +517,22 @@ public class GradebookExportByTerm implements Job {
 
 		for(Assignment a: assignmentsInCategory) {
 			try {
-				userPoints += Double.valueOf(gradebookService.getAssignmentScoreString(gradebookUid, a.getId(), userId));
+				String scoreString = gradebookService.getAssignmentScoreString(gradebookUid, a.getId(), userId);
+				if(StringUtils.isNotBlank(scoreString)) {
+					userPoints += Double.valueOf(scoreString); //only add if student attempted
+					totalPoints += a.getPoints(); //only add if student attempted
+				}
 			} catch (Exception e) {
-				return null; //not yet entered
+				//skip to next
 			}
-			totalPoints += a.getPoints();
 		}
-		
-		String percentage = toPercentage(userPoints / totalPoints, 1);
+	
+		//cater for totalPoints=0, where student hasn't attempted anything in category
+		double fraction = 0;
+		if(totalPoints != 0) {
+			fraction = userPoints / totalPoints;
+		}
+		String percentage = fractionToPercentage(fraction, 1);
 		
 		return percentage;
 	}
