@@ -1,6 +1,9 @@
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.ByteArrayInputStream;
@@ -11,27 +14,32 @@ import org.sakaiproject.exception.IdUnusedException;
 import org.apache.axis.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserDirectoryService;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SiteService.SelectionType;
 import org.sakaiproject.site.api.SiteService.SortType;
 import org.sakaiproject.site.api.SiteService;
+import org.sakaiproject.tool.assessment.data.dao.grading.AssessmentGradingData;
 import org.sakaiproject.tool.assessment.samlite.api.QuestionGroup;
 import org.sakaiproject.tool.assessment.samlite.api.SamLiteService;
 import org.sakaiproject.component.cover.ComponentManager;
-import org.sakaiproject.tool.assessment.services.qti.QTIService;
 import org.sakaiproject.tool.assessment.qti.constants.QTIVersion;
 import org.sakaiproject.tool.assessment.facade.AssessmentFacade;
+import org.sakaiproject.tool.assessment.facade.AssessmentGradingFacade;
 import org.sakaiproject.tool.assessment.facade.AssessmentTemplateFacade;
+import org.sakaiproject.tool.assessment.facade.PublishedAssessmentFacade;
+import org.sakaiproject.tool.assessment.facade.PublishedAssessmentFacadeQueries;
 import org.sakaiproject.tool.assessment.services.assessment.AssessmentService;
-import org.sakaiproject.tool.assessment.qti.util.XmlUtil;
+import org.sakaiproject.tool.assessment.services.assessment.PublishedAssessmentService;
 import org.sakaiproject.util.FormattedText;
-import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
+import org.sakaiproject.util.Xml;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
 /**
  * Expose Test and Quizzes via web services
@@ -91,186 +99,6 @@ public class TestsAndQuizzes {
 		return session;
 	}
 
-	/** 
-	 * createAsessmentFromText - WS Endpoint, exposing the SamLite createImportedAssessment()
-	 *
-	 * @param	String sessionid		the id of a valid admin session
-	 * @param	String siteid			the enterprise/sakai id of the site to be archived
-	 * @param	String siteproperty		the property that holds the enterprise site id
-	 * @param	String title			the title of the assessment
-	 * @param	String description		the description of the assessment
-	 * @param	String template			the assessment template name to use when importing the assessment
-	 *						*note templates must be created with admin user
-	 * @param	String textdata			the question data in the word2qti format
-	 * @return	boolean	       		 	returns true if assessment created successfully, false if assessment is null
-	 * 
-	 * @throws	AxisFault			WS TestsAndQuizzes.createAssessmentFromText(): SamLiteService.parse() returned a null QuestionGroup
-	 *						WS TestsAndQuizzes.createAssessmentFromText(): SamLiteService.createDocument() returned a null QTI Document
-	 *
-	 */
-	public boolean createAssessmentFromText(String sessionid, String siteid, String siteproperty, String title, String description, String template, String textdata) throws AxisFault {
-		Session session = establishSession(sessionid); 
-		Document document = null;
-
-		QuestionGroup questionGroup = samLiteService.parse(FormattedText.escapeHtml(title, false), FormattedText.escapeHtml(description, false), FormattedText.escapeHtml(textdata, false));
-		if (questionGroup == null) {
-			throw new AxisFault("WS TestsAndQuizzes.createAssessmentFromText(): SamLiteService.parse() returned a null QuestionGroup");
-		}
-
-		document = samLiteService.createDocument(questionGroup);
-		if (document == null) {
-			throw new AxisFault("WS TestsAndQuizzes.createAssessmentFromText(): SamLiteService.createDocument() returned a null QTI Document");
-		}
-
-		return createAssessment(siteid, siteproperty, title, description, template, document);
-	}
-
-	/** 
-	 * createAsessmentFromExport - WS Endpoint, exposing the SamLite createImportedAssessment()
-	 *
-	 * @param	String sessionid		the id of a valid admin session
-	 * @param	String siteid			the enterprise/sakai id of the site to be archived
-	 * @param	String siteproperty		the property that holds the enterprise site id
-	 * @param	String xmlstring		the IMS QTI document containing the assessment
-	 * @return	boolean	       		 	returns true if assessment created successfully, false if assessment is null
-	 * 
-	 * @throws	AxisFault			WS TestsAndQuizzes.createAssessmentFromXml(): returned a null QTI Document
-	 *						WS TestsAndQuizzes.createAssessmentFromXml(): " + e.getMessage
-	 *
-	 */
-	public boolean createAssessmentFromExport(String sessionid, String siteid, String siteproperty, String xmlstring) throws AxisFault {
-		Session session = establishSession(sessionid); 
-		Document document = null;
-		InputStream inputStream = null;
-
-		try {
-			byte[] bytes = xmlstring.getBytes();
-
-			inputStream = new ByteArrayInputStream(bytes);
-
-			DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
-			builderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-			builderFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-			builderFactory.setNamespaceAware(true);
-			DocumentBuilder documentBuilder = builderFactory.newDocumentBuilder();
-			document = documentBuilder.parse(inputStream);
-		} catch(Exception e) {
-			LOG.error("WS TestsAndQuizzes.createAssessmentFromXml(): " + e.getMessage(), e);
-			throw new AxisFault("WS TestsAndQuizzes.createAssessmentFromXml(): " + e.getMessage());
-		} finally {
-			try {
-				if (inputStream != null) {
-					inputStream.close();
-				}
-			} catch (IOException e) {
-			}
-		}
-
-		if (document == null) {
-			throw new AxisFault("WS TestsAndQuizzes.createAssessmentFromXml(): returned a null QTI Document");
-		}
-		
-		return createAssessment(siteid, siteproperty, null, null, null, document);
-	}
-
-	/** 
-	 * createAsessmentFromExportFile - WS Endpoint, exposing the SamLite createImportedAssessment()
-	 *
-	 * @param	String sessionid		the id of a valid admin session
-	 * @param	String siteid			the enterprise/sakai id of the site to be archived
-	 * @param	String siteproperty		the property that holds the enterprise site id
-	 * @param	String xmlfile			path to the IMS QTI document containing the assessment
-	 * @return	boolean	       		 	returns true if assessment created successfully, false if assessment is null
-	 * 
-	 * @throws	AxisFault			WS TestsAndQuizzes.createAssessmentFromXml(): XmlUtil.createDocument() returned a null QTI Document
-	 * 						WS TestsAndQuizzes.createAssessmentFromXml(): XmlUtil.createDocument() ParserConfigurationException: 
-	 *						WS TestsAndQuizzes.createAssessmentFromXml(): XmlUtil.createDocument() SaxException:
-	 *						WS TestsAndQuizzes.createAssessmentFromXml(): XmlUtil.createDocument() IOException: 
-	 *
-	 */
-	public boolean createAssessmentFromExportFile(String sessionid, String siteid, String siteproperty, String xmlfile) throws AxisFault {
-		Session session = establishSession(sessionid); 
-		Document document = null;
-
-		try {
-			document = XmlUtil.readDocument(xmlfile, true);
-		} catch (ParserConfigurationException pce) {
-			LOG.error("WS TestsAndQuizzes.createAssessmentFromExportFile(): XmlUtil.createDocument() ParserConfigurationException: " + pce.getMessage(), pce);
-			throw new AxisFault("WS TestsAndQuizzes.createAssessmentFromExportFile(): XmlUtil.createDocument() ParserConfigurationException: " + pce.getMessage());
-		} catch (SAXException saxe) {
-			LOG.error("WS TestsAndQuizzes.createAssessmentFromExportFile(): XmlUtil.createDocument() SaxException: " + saxe.getMessage(), saxe);
-			throw new AxisFault("WS TestsAndQuizzes.createAssessmentFromExportFile(): XmlUtil.createDocument() SaxException: " + saxe.getMessage());
-		} catch (IOException ioe) {
-			LOG.error("WS TestsAndQuizzes.createAssessmentFromExportFile(): XmlUtil.createDocument() IOException: " + ioe.getMessage(), ioe);
-			throw new AxisFault("WS TestsAndQuizzes.createAssessmentFromExportFile(): XmlUtil.createDocument() IOException: " + ioe.getMessage());
-		}
-		if (document == null) {
-			throw new AxisFault("WS TestsAndQuizzes.createAssessmentFromExportFile(): XmlUtil.createDocument() returned a null QTI Document");
-		}
-		
-		return createAssessment(siteid, siteproperty, null, null, null, document);
-	}
-
-	/** 
-	 * createAsessment - WS Endpoint, exposing the SamLite createImportedAssessment()
-	 *
-	 * @param	String siteid			the enterprise/sakai id of the site to be archived
-	 * @param	String siteproperty		the property that holds the enterprise site id
-	 * @param	String title			the title of the assessment
-	 * @param	String description		the description of the assessment
-	 * @param	String template			the assessment template name to use when importing the assessment
-	 *						*note templates must be created with admin user
-	 * @param	Document document		the assessment document to import
-	 * @return	boolean	       		 	returns true if assessment created successfully, false if assessment is null
-	 * 
-	 * @throws	AxisFault			WS TestsAndQuizzes.createAssessment(): Site not found - "+ siteid
-	 *						WS TestsAndQuizzes.createAssessment(): Could not find template with name - " + template
-	 *
-	 */
-	
-	private boolean createAssessment(String siteid, String siteproperty, String title, String description, String template, Document document) throws AxisFault {
-	
-		Site site = null;
-		String templateId = null;
-
-		if (siteproperty != null && siteproperty.length() > 0) {
-			// find sakai site id using enterprise siteproperty=siteid
-			site = findSite(siteproperty, siteid);
-		} else {
-			try {
-				// use siteid as the sakai site id
-				site = siteService.getSite(siteid);
-			} catch (IdUnusedException ieu) {
-				site = null;
-			}
-		}
-
-		if (site == null) {
-			LOG.warn("WS TestsAndQuizzes.createAssessment(): Site not found - " + siteid);
-			throw new AxisFault("WS TestsAndQuizzes.createAssessment(): Site not found - "+ siteid);
-		}
-
-		if (template != null && template.length() > 0) {
-			// try and find a matching template
-			templateId  = findAssessmentTemplateId(template);
-			if (templateId == null) {
-				throw new AxisFault("WS TestsAndQuizzes.createAssessment(): Could not find template with name - " + template);
-			}
-		} else {
-			templateId = AssessmentTemplateFacade.DEFAULTTEMPLATE.toString();
-		}
-
-		LOG.debug("WS TestsAndQuizzes.createAssessment(): creating assessment - " + title + " in site " + site.getId());
-		
-		QTIService qtiService = new QTIService();
-		AssessmentFacade assessment = qtiService.createImportedAssessment(document, QTIVersion.VERSION_1_2, null, templateId, site.getId());
-
-		if (assessment == null) {
-			return false;
-		}
-		return true;
-	}
 
 	/** 
 	 * findSite - find the sakai site that contains a unique propertyName=propertyValue
@@ -331,4 +159,221 @@ public class TestsAndQuizzes {
 		return null;
 	}
 	
+	public String getPublishedAssessmentsForSite(String sessionid, String siteid) throws AxisFault {
+		Session session = establishSession(sessionid); 
+
+		PublishedAssessmentService publishedAssessmentService = new PublishedAssessmentService();
+
+		ArrayList publishedAssessmentList = publishedAssessmentService.getBasicInfoOfAllPublishedAssessments2(PublishedAssessmentFacadeQueries.TITLE, true, siteid);
+
+		Document dom = Xml.createDocument();
+		Node list = dom.createElement("list");
+		dom.appendChild(list);
+
+		for (int i = 0; i < publishedAssessmentList.size(); i++) {
+			PublishedAssessmentFacade f = (PublishedAssessmentFacade)publishedAssessmentList.get(i);
+			Node item = dom.createElement("item");
+
+			Node id = dom.createElement("id");
+			id.appendChild( dom.createTextNode(f.getPublishedAssessmentId().toString()));
+			item.appendChild(id);
+
+			Node title = dom.createElement("title");
+			title.appendChild( dom.createTextNode(f.getTitle()));
+			item.appendChild(title);
+
+			list.appendChild(item);
+		}
+
+		return Xml.writeDocumentToString(dom);
+	}
+
+
+public String getScoresForSite(String sessionid, String siteid) throws AxisFault {
+	Session session = establishSession(sessionid); 
+
+	// establish the xml document
+	Document dom = Xml.createDocument();
+	Node list = dom.createElement("list");
+	dom.appendChild(list);
+
+	PublishedAssessmentService publishedAssessmentService = new PublishedAssessmentService();
+
+	try {
+
+       	Site site = siteService.getSite(siteid);
+       	Set users = site.getUsersHasRole("Student");
+        if (users.size() == 0) {
+          users = site.getUsersHasRole("access");
+        }
+
+       	for (Iterator u = users.iterator(); u.hasNext();) {
+		String userid = (String) u.next();
+
+		ArrayList scores = publishedAssessmentService.getBasicInfoOfLastOrHighestOrAverageSubmittedAssessmentsByScoringOption(userid, siteid, true);
+
+		for (int i = 0; i < scores.size(); i++) {
+			AssessmentGradingFacade agf = (AssessmentGradingFacade) scores.get(i);
+
+			Node item = dom.createElement("item");
+
+			Node assessmentId = dom.createElement("assessmentId");
+			assessmentId.appendChild( dom.createTextNode(agf.getPublishedAssessmentId().toString()));
+			item.appendChild(assessmentId);
+
+			Node title = dom.createElement("title");
+			title.appendChild( dom.createTextNode(agf.getPublishedAssessmentTitle()));
+			item.appendChild(title);
+
+			Node finalScore = dom.createElement("finalScore");
+			finalScore.appendChild( dom.createTextNode(agf.getFinalScore().toString()));
+			item.appendChild(finalScore);
+
+			Node autoScore = dom.createElement("autoScore");
+			autoScore.appendChild( dom.createTextNode(agf.getTotalAutoScore().toString()));
+			item.appendChild(autoScore);
+
+			Node overrideScore = dom.createElement("overrideScore");
+			overrideScore.appendChild( dom.createTextNode(agf.getTotalOverrideScore().toString()));
+			item.appendChild(overrideScore);
+
+			Node attemptDate = dom.createElement("attemptDate");
+			attemptDate.appendChild( dom.createTextNode(agf.getAttemptDate().toString()));
+			item.appendChild(attemptDate);
+			
+            Node submitDate = dom.createElement("submitDate");
+            submitDate.appendChild( dom.createTextNode(agf.getSubmittedDate().toString()));
+            item.appendChild(submitDate);
+
+			Node comments = dom.createElement("comments");
+			comments.appendChild( dom.createTextNode(agf.getComments()));
+			item.appendChild(comments);
+
+			Node sakaiUserId = dom.createElement("userId");
+			sakaiUserId.appendChild( dom.createTextNode(agf.getAgentId()));
+			item.appendChild(sakaiUserId);
+
+			Node username = dom.createElement("username");
+			try {
+				User user = userDirectoryService.getUser(agf.getAgentId());
+				String eid = user.getEid();
+				username.appendChild( dom.createTextNode(eid) );
+
+				Node firstName = dom.createElement("firstName");
+				firstName.appendChild( dom.createTextNode(user.getFirstName()));
+				item.appendChild(firstName);
+				
+				Node lastName = dom.createElement("lastName");
+				lastName.appendChild( dom.createTextNode(user.getLastName()));
+				item.appendChild(lastName);
+			}
+			catch (Exception ee) {
+				username.appendChild( dom.createTextNode("nouser") );
+			}
+			item.appendChild(username);
+
+
+
+			list.appendChild(item);
+		}
+	}
+	}
+        catch (Exception e) {
+		e.printStackTrace();
+	}
+
+	return Xml.writeDocumentToString(dom);
+}
+
+
+public String getScoresForSiteForUser(String sessionid, String siteid, String userid) throws AxisFault {
+	Session session = establishSession(sessionid); 
+
+	// establish the xml document
+	Document dom = Xml.createDocument();
+	Node list = dom.createElement("list");
+	dom.appendChild(list);
+
+	PublishedAssessmentService publishedAssessmentService = new PublishedAssessmentService();
+
+	try {
+
+       	Site site = siteService.getSite(siteid);
+       	//Set users = site.getUsersHasRole("Student");
+        userid = userDirectoryService.getUserByEid(userid).getId();
+        
+
+		ArrayList scores = publishedAssessmentService.getBasicInfoOfLastOrHighestOrAverageSubmittedAssessmentsByScoringOption(userid, siteid, true);
+                System.out.println(userid+" "+scores.size());
+
+		for (int i = 0; i < scores.size(); i++) {
+			AssessmentGradingFacade agf = (AssessmentGradingFacade) scores.get(i);
+
+			Node item = dom.createElement("item");
+
+			Node assessmentId = dom.createElement("assessmentId");
+			assessmentId.appendChild( dom.createTextNode(agf.getPublishedAssessmentId().toString()));
+			item.appendChild(assessmentId);
+
+			Node title = dom.createElement("title");
+			title.appendChild( dom.createTextNode(agf.getPublishedAssessmentTitle()));
+			item.appendChild(title);
+
+			Node finalScore = dom.createElement("finalScore");
+			finalScore.appendChild( dom.createTextNode(agf.getFinalScore().toString()));
+			item.appendChild(finalScore);
+
+			Node autoScore = dom.createElement("autoScore");
+			autoScore.appendChild( dom.createTextNode(agf.getTotalAutoScore().toString()));
+			item.appendChild(autoScore);
+
+			Node overrideScore = dom.createElement("overrideScore");
+			overrideScore.appendChild( dom.createTextNode(agf.getTotalOverrideScore().toString()));
+			item.appendChild(overrideScore);
+
+			Node attemptDate = dom.createElement("attemptDate");
+			attemptDate.appendChild( dom.createTextNode(agf.getAttemptDate().toString()));
+			item.appendChild(attemptDate);
+			
+            Node submitDate = dom.createElement("submitDate");
+            submitDate.appendChild( dom.createTextNode(agf.getSubmittedDate().toString()));
+            item.appendChild(submitDate);
+
+			Node comments = dom.createElement("comments");
+			comments.appendChild( dom.createTextNode(agf.getComments()));
+			item.appendChild(comments);
+
+			Node sakaiUserId = dom.createElement("userId");
+			sakaiUserId.appendChild( dom.createTextNode(agf.getAgentId()));
+			item.appendChild(sakaiUserId);
+
+			Node username = dom.createElement("username");
+			try {
+				User user = userDirectoryService.getUser(agf.getAgentId());
+				String eid = user.getEid();
+				username.appendChild( dom.createTextNode(eid) );
+
+				Node firstName = dom.createElement("firstName");
+				firstName.appendChild( dom.createTextNode(user.getFirstName()));
+				item.appendChild(firstName);
+				
+				Node lastName = dom.createElement("lastName");
+				lastName.appendChild( dom.createTextNode(user.getLastName()));
+				item.appendChild(lastName);
+			}
+			catch (Exception ee) {
+				username.appendChild( dom.createTextNode("nouser") );
+			}
+			item.appendChild(username);
+			list.appendChild(item);
+		}
+	}
+        catch (Exception e) {
+		e.printStackTrace();
+	}
+
+	return Xml.writeDocumentToString(dom);
+}
+
+
 }

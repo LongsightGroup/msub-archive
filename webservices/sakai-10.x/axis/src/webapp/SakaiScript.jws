@@ -414,7 +414,7 @@ public String changeUserPassword( String sessionid, String eid, String password)
  * @throws	AxisFault
  *
  */
-public String getUserEmail( String sessionid ) throws AxisFault
+public String getUserEmailForSession( String sessionid ) throws AxisFault
 {
 	Session session = establishSession(sessionid);
 	User user = userDirectoryService.getCurrentUser();
@@ -453,7 +453,7 @@ public String getUserEmail( String sessionid, String userid ) throws AxisFault
  * @throws	AxisFault
  *
  */
-public String getUserDisplayName( String sessionid ) throws AxisFault
+public String getUserDisplayNameForSession( String sessionid ) throws AxisFault
 {
 	Session session = establishSession(sessionid);
 	User user = userDirectoryService.getCurrentUser();
@@ -1556,7 +1556,7 @@ public boolean checkForMemberInAuthzGroupWithRole(String sessionid, String eid, 
  *</list>
  *
  */
-public String getSitesUserCanAccess(String sessionid) throws AxisFault
+public String getSitesUserCanAccessForSession(String sessionid) throws AxisFault
 {
 	Session s = establishSession(sessionid);
 	
@@ -1620,7 +1620,7 @@ public String getSitesUserCanAccess(String sessionid, String userid) throws Axis
 	Session session = establishSession(newsessionid);
 	
 	//ok, so hand over to main method to get the list for us
-	return getSitesUserCanAccess(newsessionid);
+	return getSitesUserCanAccessForSession(newsessionid);
 	
 }
 
@@ -1642,7 +1642,7 @@ public String getSitesUserCanAccess(String sessionid, String userid) throws Axis
  *
  */
 
-public String getAllSitesForUser(String sessionid) throws AxisFault
+public String getAllSitesForUserForSession(String sessionid) throws AxisFault
 {
 	Session s = establishSession(sessionid);
 	
@@ -1711,7 +1711,7 @@ public String getAllSitesForUser(String sessionid, String userid) throws AxisFau
 	Session session = establishSession(newsessionid);
 	
 	//ok, so hand over to main method to get the list for us
-	return getAllSitesForUser(newsessionid);
+	return getAllSitesForUserForSession(newsessionid);
 }
 
 
@@ -3020,7 +3020,7 @@ public String getSessionForUser(String sessionid, String eid) throws AxisFault
  * @return					success or exception message
  *
  */
-public String addNewPageToSite(String sessionid, String siteid, String pagetitle, int pagelayout, int position, boolean popup) throws AxisFault
+public String addNewPageToSiteNew(String sessionid, String siteid, String pagetitle, int pagelayout, int position, boolean popup) throws AxisFault
 {
 	Session session = establishSession(sessionid);
 	
@@ -3263,7 +3263,7 @@ public String getPagesAndToolsForSite(String sessionid, String siteid) throws Ax
  * @return
  * @throws AxisFault
  */
-public String getPagesAndToolsForSite(String sessionid, String userid, String siteid) throws AxisFault
+public String getPagesAndToolsForSiteForUser(String sessionid, String userid, String siteid) throws AxisFault
 {
 	
 	//get a session for the other user, reuse if possible
