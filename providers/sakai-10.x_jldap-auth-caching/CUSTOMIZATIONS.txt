@@ -4,4 +4,4 @@ LS-131 domain-limiting and auth caching of LDAP users
 LS-140 check alternate LDAP attribute for user email address
 Encountered Anomalous Lookup Error for Add Participants >Non-official Participants (AEW-707564)
 LS-162 NPE in jldap search users
-
+LS-175 Update for Sakai 10.x

@@ -195,8 +195,6 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 	 * TODO: This is a naive implementation: cache
 	 * is completely isolated on each app node.
 	 */
-	private Cache userCache;
-
 	/** TTL for cachedUsers. Defaults to {@link #DEFAULT_CACHE_TTL} */
 	private long cacheTtl = DEFAULT_CACHE_TTL;
 
@@ -278,10 +276,8 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 		if ( M_log.isDebugEnabled() ) {
 			M_log.debug("init()");
 		}
-		userCache = memoryService.newCache(getClass().getName()+".userCache");
-		
 		// setup the authcache and the salt
-		authCache = memoryService.newCache(getClass().getName()+".authCache");
+		authCache = memoryService.getCache(getClass().getName()+".authCache");
 		authCacheSalt = RandomStringUtils.random(authCacheSaltLength);
 
 		// compile a pattern if the domain has been set
@@ -409,7 +405,6 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 			M_log.debug("clearCache()");
 		}
 
-		userCache.clear();
 		//authCache.clear();
 	}
 
@@ -1432,8 +1427,7 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 	public void setCacheTTL(long timeMs)
 	{
 		cacheTtl = timeMs;
-		M_log.warn("JLDAP cacheTTL has no effect, see SAK-21110. Set cache in sakai.properties: " + 
-			"memory.edu.amc.sakai.user.JLDAPDirectoryProvider.userCache=timeToLiveSeconds=3600,timeToIdleSeconds=0,maxElementsInMemory=20000"); 
+		M_log.warn("JLDAP cacheTTL has no effect, see SAK-21110.");
 	}
 
 	/**
@@ -1936,6 +1930,7 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 			M_log.debug("Caching auth attempt for: " + userLogin);
 		}
 
+		if (authCache == null) authCache = memoryService.getCache(getClass().getName()+".authCache");
 		authCache.put(userLogin, hashedPassword);	
 	}
 	
