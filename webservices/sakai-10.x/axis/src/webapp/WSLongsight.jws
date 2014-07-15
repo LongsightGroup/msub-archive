@@ -90,6 +90,7 @@ import org.sakaiproject.archive.api.ImportMetadata;
 import org.sakaiproject.importer.api.ImportDataSource;
 import org.sakaiproject.importer.api.ImportService;
 import org.sakaiproject.importer.api.SakaiArchive;
+import org.sakaiproject.importer.api.ResetOnCloseInputStream;
 
 import org.sakaiproject.api.app.syllabus.SyllabusData;
 import org.sakaiproject.api.app.syllabus.SyllabusItem;
@@ -118,7 +119,7 @@ import org.sakaiproject.assignment.api.AssignmentSubmission;
 
 import org.sakaiproject.service.gradebook.shared.GradebookService;
 import org.sakaiproject.tool.assessment.services.assessment.PublishedAssessmentService;
-import org.sakaiproject.tool.assessment.facade.AssessmentGradingFacade;
+import org.sakaiproject.tool.assessment.data.dao.grading.AssessmentGradingData;
 import org.sakaiproject.service.gradebook.shared.Assignment;
 import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.javax.PagingPosition;
@@ -1505,7 +1506,7 @@ public String longsightAddNewSiteWithProviderId( String sessionid, String siteid
         siteEdit.setSkin(skin);
         siteEdit.setType(type);
         siteEdit.setProviderGroupId(providerid);
-        SiteService.save(siteEdit);
+        siteService.save(siteEdit);
 
     }
     catch (Exception e) {
@@ -1591,7 +1592,7 @@ public String addConfigPropertyToPage( String sessionid, String siteid, String p
 
     try {
 
-        Site siteEdit = SiteService.getSite(siteid);
+        Site siteEdit = siteService.getSite(siteid);
         List pageEdits = siteEdit.getPages();
         for (Iterator i = pageEdits.iterator(); i.hasNext();)
         {
@@ -1602,7 +1603,7 @@ public String addConfigPropertyToPage( String sessionid, String siteid, String p
                 propsedit.addProperty(propname, propvalue); // is_home_page = true
             }
         }
-        SiteService.save(siteEdit);
+        siteService.save(siteEdit);
 
     }
     catch (Exception e) {
@@ -1617,10 +1618,10 @@ public String addInactiveMemberToSiteWithRole(String sessionid, String siteid, S
     Session session = establishSession(sessionid);
 
     try {
-        Site site = SiteService.getSite(siteid);
+        Site site = siteService.getSite(siteid);
         String userid = userDirectoryService.getUserByEid(eid).getId();
         site.addMember(userid,roleid,false,false);
-        SiteService.save(site);
+        siteService.save(site);
     }
     catch (Exception e) {
         return e.getClass().getName() + " : " + e.getMessage();
@@ -1635,10 +1636,10 @@ public String longsightChangeSiteDescriptions( String sessionid, String siteid, 
     try {
 
         Site siteEdit = null;
-        siteEdit = SiteService.getSite(siteid);
+        siteEdit = siteService.getSite(siteid);
         siteEdit.setDescription(description);
         siteEdit.setShortDescription(shortDescription);
-        SiteService.save(siteEdit);
+        siteService.save(siteEdit);
 
     }
     catch (Exception e) {
@@ -1700,9 +1701,9 @@ public String getSitesUserCanAccess(String sessionid)
 	
 	try 
 	{
-		List allSites = SiteService.getSites(SelectionType.ACCESS, null, null,
+		List allSites = siteService.getSites(SelectionType.ACCESS, null, null,
 														  null, SortType.TITLE_ASC, null);
-		List moreSites = SiteService.getSites(SelectionType.UPDATE, null, null,
+		List moreSites = siteService.getSites(SelectionType.UPDATE, null, null,
 															null, SortType.TITLE_ASC, null);
 		
 		if ( (allSites == null || moreSites == null) ||
@@ -1755,8 +1756,8 @@ public String getSitesUserCanAccessFilteredByTerm(String sessionid, String useri
                 Map propertyCriteria = new HashMap();
                 propertyCriteria.put("term_eid", termid);
 
-                List allSites = SiteService.getSites(SelectionType.ACCESS, null, null, propertyCriteria, SortType.TITLE_ASC, null);
-                List moreSites = SiteService.getSites(SelectionType.UPDATE, null, null, propertyCriteria, SortType.TITLE_ASC, null);
+                List allSites = siteService.getSites(SelectionType.ACCESS, null, null, propertyCriteria, SortType.TITLE_ASC, null);
+                List moreSites = siteService.getSites(SelectionType.UPDATE, null, null, propertyCriteria, SortType.TITLE_ASC, null);
 
                 if ( (allSites == null || moreSites == null) || (allSites.size() == 0 && moreSites.size() == 0) ) {
                         return "<list/>";
@@ -1826,9 +1827,9 @@ public String getSitesUserCanAccessFilteredFromPreferences(String sessionid)
 			System.out.println("Could not find preferences for this user");
 		}
 
-		List allSites = SiteService.getSites(SelectionType.ACCESS, null, null,
+		List allSites = siteService.getSites(SelectionType.ACCESS, null, null,
 														  null, SortType.TITLE_ASC, null);
-		List moreSites = SiteService.getSites(SelectionType.UPDATE, null, null,
+		List moreSites = siteService.getSites(SelectionType.UPDATE, null, null,
 															null, SortType.TITLE_ASC, null);
 		
 		if ( (allSites == null || moreSites == null) ||
@@ -1876,9 +1877,9 @@ public String longsightRemoveUserIdFromSite(String sessionid, String siteid, Str
     Session session = establishSession(sessionid);
 
     try {
-        Site site = SiteService.getSite(siteid);
+        Site site = siteService.getSite(siteid);
         site.removeMember(userid);
-        SiteService.save(site);
+        siteService.save(site);
     }
     catch (Exception e) {
         return e.getClass().getName() + " : " + e.getMessage();
@@ -1913,7 +1914,7 @@ public boolean doesGroupExistInSite(String sessionid, String siteid, String grou
     Session s = establishSession(sessionid);
 
     try {
-        Site site = SiteService.getSite(siteid);
+        Site site = siteService.getSite(siteid);
 
         for (Iterator iter = site.getGroups().iterator(); iter.hasNext();) {
             Group group = (Group) iter.next();
@@ -1933,7 +1934,7 @@ public String getGroupIdInSite(String sessionid, String siteid, String grouptitl
     Session s = establishSession(sessionid);
 
     try {
-        Site site = SiteService.getSite(siteid);
+        Site site = siteService.getSite(siteid);
 
         for (Iterator iter = site.getGroups().iterator(); iter.hasNext();) {
             Group group = (Group) iter.next();
@@ -2050,7 +2051,7 @@ public String getSynMsgcntr(String sessionid, String eid) throws AxisFault
             String fUrl = "";
             
             try {
-                Site site = SiteService.getSite(synopticSiteId);
+                Site site = siteService.getSite(synopticSiteId);
                 
                 // serverConfigurationService.getPortalUrl() was returning http://localhost/Apache-Axis, so I have removed it for now
                 // instead you should put in http://sakai/portal in it's place.
@@ -2116,7 +2117,7 @@ public Boolean longsightAddMemberToGroup( String sessionId, String siteId, Strin
     Session session = establishSession(sessionId);
     try
     {
-        Site site = SiteService.getSite(siteId);
+        Site site = siteService.getSite(siteId);
         Group group = site.getGroup(groupId);
         if ( group == null )
             return false;
@@ -2127,7 +2128,7 @@ public Boolean longsightAddMemberToGroup( String sessionId, String siteId, Strin
         Member m = site.getMember(userId);
         group.addMember(userId, r != null ? r.getId()   : "",
                              m != null ? m.isActive() : true,   false);
-        SiteService.save(site);
+        siteService.save(site);
         return true;
     }
     catch (Exception e)
@@ -2410,9 +2411,11 @@ public String longsightImportFromFile(String sessionId, String siteId, String fi
 		byte[] bytes = new byte[file.available()];
 		file.read(bytes);
 		file.close();
+		
+		ResetOnCloseInputStream inputStream = new ResetOnCloseInputStream(file);
 
-		if (importService.isValidArchive(bytes)) {
-			ImportDataSource importDataSource = importService.parseFromFile(bytes);
+		if (importService.isValidArchive(inputStream)) {
+			ImportDataSource importDataSource = importService.parseFromFile(inputStream);
 			LOG.info("Getting import items from manifest.");
 			List lst = importDataSource.getItemCategories();
 			if (lst != null && lst.size() > 0) {
@@ -2450,7 +2453,7 @@ public String longsightGetRoleForSite(String sessionid, String siteid, String ro
     String instruct = "";
 
     try {
-        Site site = SiteService.getSite(siteid);
+        Site site = siteService.getSite(siteid);
         Set users = site.getUsersHasRole(rolename);
 
         for (Iterator i = users.iterator(); i.hasNext();)
@@ -2585,7 +2588,7 @@ public String getGroupsForMember( String sessionId, String siteId, String eid ) 
     
     try
     {
-        Site site = SiteService.getSite(siteId);
+        Site site = siteService.getSite(siteId);
         ArrayList<Group> groups = new ArrayList<Group>(site.getGroups());
         
         Iterator i1 = groups.iterator();
@@ -2617,7 +2620,7 @@ public Boolean removeMemberFromGroup( String sessionId, String siteId, String gr
     Session session = establishSession(sessionId);
     try
     {
-        Site site = SiteService.getSite(siteId);
+        Site site = siteService.getSite(siteId);
         Group group = site.getGroup(groupId);
         if ( group == null )
             return false;
@@ -2627,7 +2630,7 @@ public Boolean removeMemberFromGroup( String sessionId, String siteId, String gr
         Role r = site.getUserRole(userId);
         Member m = site.getMember(userId);
         group.removeMember(userId);
-        SiteService.save(site);
+        siteService.save(site);
         return true;
     }
     catch (Exception e)
@@ -3230,11 +3233,11 @@ public String getUserAssesmentAttemptDate(String sessionid, String siteid, Strin
           System.out.println("Got this many assessments: "+scores.size());
 
           for (int i = 0; i < scores.size(); i++) {
-               AssessmentGradingFacade agf = (AssessmentGradingFacade) scores.get(i);
-               System.out.println("Got "+agf.getPublishedAssessmentTitle());
-               if (agf.getPublishedAssessmentTitle().equals(assessmentName)) {
+               AssessmentGradingData agd = (AssessmentGradingData) scores.get(i);
+               System.out.println("Got "+agd.getPublishedAssessmentTitle());
+               if (agd.getPublishedAssessmentTitle().equals(assessmentName)) {
 
-                  retVal = agf.getAttemptDate().toString();
+                  retVal = agd.getAttemptDate().toString();
                }
 
           }
@@ -3268,7 +3271,7 @@ public String getScoresForSite(String sessionid, String siteid) throws AxisFault
                 ArrayList scores = publishedAssessmentService.getBasicInfoOfLastOrHighestOrAverageSubmittedAssessmentsByScoringOption(userid, siteid, true);
 
                 for (int i = 0; i < scores.size(); i++) {
-                        AssessmentGradingFacade agf = (AssessmentGradingFacade) scores.get(i);
+                        AssessmentGradingData agf = (AssessmentGradingData) scores.get(i);
 
                         Node item = dom.createElement("item");
 
@@ -3468,10 +3471,10 @@ public String updateMembershipWithProvider (String sessionId, String siteid) thr
   
     Session s = establishSession(sessionId);
     
-    AuthzGroup realmEdit = AuthzGroupService.getAuthzGroup("/site/"+siteid);
-    AuthzGroupService.save(realmEdit);
+    AuthzGroup realmEdit = authzGroupService.getAuthzGroup("/site/"+siteid);
+    authzGroupService.save(realmEdit);
     
-    AuthzGroup realm = AuthzGroupService.getAuthzGroup("/site/"+siteid);
+    AuthzGroup realm = authzGroupService.getAuthzGroup("/site/"+siteid);
     
     return "success";
   } catch (Exception e) {
