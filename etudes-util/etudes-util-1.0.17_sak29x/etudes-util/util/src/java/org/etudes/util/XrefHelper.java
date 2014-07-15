@@ -1312,8 +1312,8 @@ public class XrefHelper
 			try
 			{
 				targetCollection = ContentHostingService.getCollection("/group/" + context + relativePath);
-				List<org.sakaiproject.content.api.ContentEntity> members = targetCollection.getMemberResources();
-				for (org.sakaiproject.content.api.ContentEntity member : members)
+				List<Object> members = targetCollection.getMemberResources();
+				for (Object member : members)
 				{
 					// ignore collections
 					if (member instanceof ContentResource)
