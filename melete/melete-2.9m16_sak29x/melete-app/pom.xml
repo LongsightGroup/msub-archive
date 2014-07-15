@@ -110,12 +110,12 @@
     <dependency>
       <groupId>org.sakaiproject.jsf</groupId>
       <artifactId>jsf-tool</artifactId>
-      <version>${sakai.jsf.version}</version> 
+      <version>${sakai.version}</version> 
     </dependency>
     <dependency>
       <groupId>org.sakaiproject.jsf</groupId>
       <artifactId>jsf-app</artifactId>
-      <version>${sakai.jsf.version}</version>
+      <version>${sakai.version}</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
@@ -145,7 +145,7 @@
 	 <dependency>
       <groupId>org.sakaiproject.jsf</groupId>
       <artifactId>jsf-tool-sun</artifactId>
-	<version>${sakai.jsf.version}</version>
+	<version>${sakai.version}</version>
       <type>pom</type>
     </dependency>
     <dependency>
@@ -184,6 +184,10 @@
     	<artifactId>etudes-util-util</artifactId>
         <version>${etudes.util.version}</version>
     </dependency>  
+    <dependency>
+        <groupId>javax.servlet.jsp</groupId>
+        <artifactId>jsp-api</artifactId>
+    </dependency>
   </dependencies>
   <build>
     <resources>
