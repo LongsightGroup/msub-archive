@@ -27,7 +27,7 @@
   <parent>
     <artifactId>base</artifactId>
     <groupId>org.sakaiproject</groupId>
-    <version>2.9-SNAPSHOT</version>
+    <version>10-SNAPSHOT</version>
   </parent>
   <name>Etudes</name>
   <groupId>org.etudes</groupId>
@@ -36,6 +36,7 @@
   <packaging>pom</packaging>
   <properties>
         <melete.version>2.9m16</melete.version>
+        <etudes.util.version>1.0.17</etudes.util.version>
   </properties>
   <modules>
     <module>components</module>
