@@ -150,6 +150,19 @@
         	<version>4.11</version>
             <scope>test</scope>
         </dependency>
+
+	<!-- Needed for WSLongsight only -->
+    <dependency>
+      <groupId>org.sakaiproject.edu-services.gradebook</groupId>
+      <artifactId>gradebook-service-hibernate</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject.edu-services.gradebook</groupId>
+      <artifactId>gradebook-service-impl</artifactId>
+      <version>${sakai.version}</version>
+    </dependency>
+	<!-- End WSLongsight only-->
+
     </dependencies>
 
     <build>
