@@ -162,7 +162,7 @@ public String checkSession(String sessionid) {
  * This is the preferred method of adding user accounts whereby their internal ID is automatically assigned a UUID.
  *
  */
-public String addNewUser( String sessionid, String eid, String firstname, String lastname, String email, String type, String password) throws AxisFault
+public String addNewUserOld( String sessionid, String eid, String firstname, String lastname, String email, String type, String password) throws AxisFault
 {
 	Session session = establishSession(sessionid);
 	
@@ -2816,7 +2816,7 @@ public String copyRole( String sessionid, String authzgroupid1, String authzgrou
  * @throws	AxisFault			if not a super user, if new role cannot be created, if functions differ after the new role is made
  *
  */
-public String copyRole( String sessionid, String authzgroupid1, String authzgroupid2, String roleid, String description) throws AxisFault
+public String copyRoleOriginal( String sessionid, String authzgroupid1, String authzgroupid2, String roleid, String description) throws AxisFault
 {
 	return copyRole(sessionid, authzgroupid1, authzgroupid2, roleid, description, false);
 	
@@ -3001,7 +3001,7 @@ public String getSessionForUser(String sessionid, String eid, boolean wsonly) th
  * 						not super user, 
  * 						or session cannot be established
  */
-public String getSessionForUser(String sessionid, String eid) throws AxisFault
+public String getSessionForUserOriginal(String sessionid, String eid) throws AxisFault
 {
 	return getSessionForUser(sessionid, eid, false);
 }
@@ -3085,7 +3085,7 @@ public String getUserId(String sessionid, String eid) throws AxisFault
  * @return				the user ID (generally a UUID) for the user associated with the given session, or an empty string ""
  * @throws AxisFault	
  */
-public String getUserId(String sessionid) throws AxisFault
+public String getUserIdForSession(String sessionid) throws AxisFault
 {
 	Session session = establishSession(sessionid);
 	
@@ -3683,7 +3683,7 @@ private String findSites(Map propertyCriteria) {
    * @param 	toolid		        the tool id for which content should be copied
    * @return						success or exception message
   */
- public String copySiteContent(String sessionid, String sourcesiteid, String destinationsiteid, String toolid) throws AxisFault{
+ public String copySiteContentForOneTool(String sessionid, String sourcesiteid, String destinationsiteid, String toolid) throws AxisFault{
 
  	Session session = establishSession(sessionid);
 

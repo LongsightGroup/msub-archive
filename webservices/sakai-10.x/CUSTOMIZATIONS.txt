@@ -1,0 +1,2 @@
+LS-176: copy all Axis methods to CXF
+LS-177: make sure no method overrides in SakaiScript
