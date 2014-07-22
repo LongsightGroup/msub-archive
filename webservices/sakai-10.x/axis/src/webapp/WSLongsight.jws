@@ -2736,7 +2736,7 @@ public Boolean removeMemberFromGroup( String sessionId, String siteId, String gr
 		return changeUserEid(sessionId, currentEid, newEid, false);
 	} */
 	
-	public String changeUserEidForce(String sessionId, String currentEid, String newEid, boolean force) throws AxisFault{
+	public String changeUserEid(String sessionId, String currentEid, String newEid, boolean force) throws AxisFault{
 		try{
 			Session session = establishSession(sessionId);
                         if (securityService.isSuperUser()) {
