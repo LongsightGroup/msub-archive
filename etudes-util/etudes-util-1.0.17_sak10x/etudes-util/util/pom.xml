@@ -62,7 +62,8 @@
 		<dependency>
 			<groupId>org.etudes</groupId>
 			<artifactId>etudes-util-api</artifactId>
-			<version>1.0.17</version>
+			<version>${etudes.util.version}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
