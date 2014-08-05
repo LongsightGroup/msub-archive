@@ -96,6 +96,7 @@ import org.sakaiproject.entity.api.Entity;
 import org.sakaiproject.entity.api.EntityProducer;
 import org.sakaiproject.entity.api.EntityTransferrer;
 import org.sakaiproject.entity.api.EntityTransferrerRefMigrator;
+import org.sakaiproject.entity.api.HardDeleteAware;
 import org.sakaiproject.entity.api.Reference;
 import org.sakaiproject.entity.api.ResourceProperties;
 import org.sakaiproject.entity.api.ResourcePropertiesEdit;
@@ -771,6 +772,8 @@ public class SiteAction extends PagedResourceActionII {
 	private String m_filePath;
 	private String moreInfoPath;
 	private String libraryPath;
+	
+	private static final String STATE_HARD_DELETE = "hardDelete";
 	
 	private static final String STATE_CREATE_FROM_ARCHIVE = "createFromArchive";
 	private static final String STATE_UPLOADED_ARCHIVE_PATH = "uploadedArchivePath";
@@ -1700,6 +1703,11 @@ public class SiteAction extends PagedResourceActionII {
 				context.put("softDelete", true);
 			}
 
+			
+			//check if hard deletes are wanted
+			if(StringUtils.equalsIgnoreCase((String)state.getAttribute(STATE_HARD_DELETE), Boolean.TRUE.toString())) {
+				context.put("hardDelete", true);
+			}
 			
 			return (String) getContext(data).get("template") + TEMPLATE[8];
 		case 10:
@@ -4717,20 +4725,76 @@ public class SiteAction extends PagedResourceActionII {
 		state.setAttribute(STATE_TEMPLATE_INDEX, "8");
 
 	} // doMenu_site_delete
+	
+	/**
+	 * doMenu_site_hard_delete is called when the Site list tool bar Hard Delete button is
+	 * clicked
+	 * 
+	 */
+	public void doMenu_site_hard_delete(RunData data) {
+		SessionState state = ((JetspeedRunData) data).getPortletSessionState(((JetspeedRunData) data).getJs_peid());
+		state.setAttribute(STATE_HARD_DELETE, Boolean.TRUE.toString());
+		
+		//piggyback on the normal delete method
+		doMenu_site_delete(data);
+		
+	} // doMenu_site_delete
+	
+	/**
+	 * Restore a softly deleted site
+	 * 
+	 */
+	public void doMenu_site_restore(RunData data) {
+		SessionState state = ((JetspeedRunData) data) .getPortletSessionState(((JetspeedRunData) data).getJs_peid());
+		ParameterParser params = data.getParameters();
+
+                if (params.getStrings("selectedMembers") == null) {
+                        addAlert(state, rb.getString("java.nosites"));
+                        state.setAttribute(STATE_TEMPLATE_INDEX, "0");
+                        return;
+                }
+
+                String[] toRestore = (String[]) params.getStrings("selectedMembers");
+                for (String siteId: toRestore) {
+                        try {
+                                Site s = SiteService.getSite(siteId);
+
+                                //check if softly deleted
+                                if(!s.isSoftlyDeleted()){
+                                        M_log.warn("Tried to restore site that has not been marked for deletion: " + siteId);
+                                        continue;
+                                }
+
+                                //reverse it
+                                s.setSoftlyDeleted(false);
+                                SiteService.save(s);
+
+                         } catch (IdUnusedException e) {
+                                 M_log.warn("Error restoring site:" + siteId + ":" + e.getClass() + ":" + e.getMessage());
+                                 addAlert(state, rb.getString("softly.deleted.invalidsite"));
+                         } catch (PermissionException e) {
+                                 M_log.warn("Error restoring site:" + siteId + ":" + e.getClass() + ":" + e.getMessage());
+                                 addAlert(state, rb.getString("softly.deleted.restore.nopermission"));
+                         }
+
+                }
+        } // doSite_restore
 
 	public void doSite_delete_confirmed(RunData data) {
 		SessionState state = ((JetspeedRunData) data)
 				.getPortletSessionState(((JetspeedRunData) data).getJs_peid());
 		ParameterParser params = data.getParameters();
 		if (params.getStrings("selectedMembers") == null) {
-			M_log
-					.warn("SiteAction.doSite_delete_confirmed selectedMembers null");
-			state.setAttribute(STATE_TEMPLATE_INDEX, "0"); // return to the
-			// site list
+			M_log.warn("SiteAction.doSite_delete_confirmed selectedMembers null");
+			state.setAttribute(STATE_TEMPLATE_INDEX, "0"); // return to the site list
 			return;
 		}
-		List chosenList = new ArrayList(Arrays.asList(params
-				.getStrings("selectedMembers"))); // Site id's of checked sites
+		List chosenList = new ArrayList(Arrays.asList(params.getStrings("selectedMembers"))); // Site id's of checked sites
+		
+		boolean hardDelete = false;
+		if(StringUtils.equalsIgnoreCase((String)state.getAttribute(STATE_HARD_DELETE), Boolean.TRUE.toString())) {
+			hardDelete = true;
+		}
 		
 		if (!chosenList.isEmpty()) {
 			
@@ -4741,6 +4805,11 @@ public class SiteAction extends PagedResourceActionII {
 					try {
 						Site site = SiteService.getSite(id);
 						site_title = site.getTitle();
+						
+						if(hardDelete) {
+							//hard delete. call upon all implementing services to hard delete their own content
+							doHardDelete(site.getId());
+						}
 						
 						//now delete the site
 						SiteService.removeSite(site);
@@ -14549,6 +14618,27 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 	    }   
 		
 	}
+	
+	/**
+	 * Helper to hard delete all implementing services
+	 * @param siteId siteId that we want to delete the content for
+	 * @return
+	 */
+	private void doHardDelete(String siteId) {
+				
+		// leverage the entityproducer registration system
+		for (Iterator i = EntityManager.getEntityProducers().iterator(); i.hasNext();) {
+			EntityProducer ep = (EntityProducer) i.next();
+			
+			//if a registered service implements hard delete, then ask it to delete itself
+			if (ep instanceof HardDeleteAware) {
+				HardDeleteAware hd = (HardDeleteAware) ep;
+				M_log.info("Requesting hard delete for site:" + siteId + ", tool: " + ep.getLabel());
+				hd.hardDelete(siteId);
+			}
+		}
+		
+	}	
 
 }
 

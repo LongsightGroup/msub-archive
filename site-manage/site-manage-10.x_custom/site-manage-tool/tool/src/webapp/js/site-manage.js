@@ -716,9 +716,17 @@ var setupCategTools = function(){
         	}
 
     		var selId = normalizedId($(this).attr('id'));
-                var iconId = iconizedId($(this).attr('id'));
-                $('#toolSelectionList ul').append('<li class=\"icon-' + iconId + '\" id=\"' + thisToolId + '\">' + $(this).next('label').text() + removeLink + '</li>');
-        	// append to selected tool list
+            var iconId = iconizedId($(this).attr('id'));
+            
+            // SAK-22384
+            var mathJaxCheckBox = buildMathJaxCheckBox(this);
+            var safeLabelText = $('<p></p>').text($(this).next('label').text()).html();
+            var newListItem = '<li id=\"' + thisToolId
+                    + '\"><span class=\"selectedToolTitle icon-' + iconId + '\">' + safeLabelText + "</span>"
+                    + mathJaxCheckBox + "<input type=\"text\" class=\"pageAliasInput\" >123<span>" + removeLink + '</span></li>';
+            $('#toolSelectionList ul').append(newListItem);
+            
+            // append to selected tool list
         	if ($(this).prop('checked')) {
         		// make the selectiion visible
         		//var selId = normalizedId($(this).attr('id'));
