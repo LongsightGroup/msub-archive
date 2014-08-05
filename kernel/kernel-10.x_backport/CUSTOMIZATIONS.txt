@@ -1,1 +1,2 @@
 KNL-1210 SAK-25867 Improvements to Site Archive tool
+KNL-1252 "Hard" Delete
