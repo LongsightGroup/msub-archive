@@ -7,3 +7,4 @@ EVALSYS-1375 Comma in survey title breaks results PDF in Google Chrome
 EVALSYS-1386 Scale options are outside the evaluation border in some browsers
 COL-148 better support for assigning evaluations to courses in different nodes
 EVALSYS-1395 Choose Report Groups page is unsorted
+EVALSYS-1417 When assigning an evaluation to a course with instructors, using a template with only course questions, the instructor selection box shows up when taking the evaluation.
