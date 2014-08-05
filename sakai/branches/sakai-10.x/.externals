@@ -75,3 +75,12 @@ usermembership https://source.sakaiproject.org/svn/usermembership/branches/sakai
 velocity https://source.sakaiproject.org/svn/velocity/branches/sakai-10.x
 warehouse https://source.sakaiproject.org/svn/warehouse/branches/sakai-10.x
 web https://source.sakaiproject.org/svn/web/branches/sakai-10.x
+
+# Backports
+
+archive https://source.sakaiproject.org/svn/msub/longsight.com/archive/archive-10.x_backport
+common https://source.sakaiproject.org/svn/msub/longsight.com/common/common-10.x_backport
+gradebook-export https://source.sakaiproject.org/svn/msub/longsight.com/gradebook-export/gradebook-export-1.5-src
+kernel https://source.sakaiproject.org/svn/msub/longsight.com/kernel/kernel-10.x_backport
+site-manage https://source.sakaiproject.org/svn/msub/longsight.com/site-manage/site-manage-10.x_backport
+
