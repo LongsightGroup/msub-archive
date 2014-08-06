@@ -23,3 +23,4 @@ SAK-25694 Topic Settings Group Permission cached when using breadcrumbs
 SAK-26134 forum message width does not fill enough space
 SAK-26173 Forum Mobile View: bottom links for next conversation overlap with mobile footer
 
+SAK-27570 Reduce forum db queries
