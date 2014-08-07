@@ -104,6 +104,9 @@ public class HistogramQuestionScoresBean
   private boolean randomType;   // this part is a random draw part
 
   private static Log log = LogFactory.getLog(HistogramQuestionScoresBean.class);
+  
+  private String objectives;
+  private String keywords;
 
   /**
    * Creates a new HistogramQuestionScoresBean object.
@@ -1130,4 +1133,20 @@ public class HistogramQuestionScoresBean
   }
   
   
+  
+  public String getObjectives() {
+      return objectives;
+  }
+   
+  public void setObjectives(String objectives) {
+      this.objectives = objectives;
+  }
+    
+  public String getKeywords() {
+      return keywords;
+  }
+ 
+  public void setKeywords(String keywords) {
+      this.keywords = keywords;
+  }
 }
