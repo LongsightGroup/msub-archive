@@ -1578,10 +1578,10 @@ public class WSLongsight extends AbstractWebService {
 	}
 
 	@WebMethod
-	@Path("/longsightAddNewSiteWithProviderId")
+	@Path("/copySiteWithProviderId")
 	@Produces("text/plain")
 	@GET
-	public String longsightCopySiteWithProviderId(
+	public String copySiteWithProviderId(
 			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
 			@WebParam(name = "siteidtocopy", partName = "siteidtocopy") @QueryParam("siteidtocopy") String siteidtocopy,
 			@WebParam(name = "newsiteid", partName = "newsiteid") @QueryParam("newsiteid") String newsiteid,
