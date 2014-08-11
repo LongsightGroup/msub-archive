@@ -1486,6 +1486,53 @@ public String setMemberStatus(String sessionid, String siteid, String eid, boole
 	return "success";
 }
 
+public String copySiteWithProviderId ( String sessionid, String siteidtocopy, String newsiteid, String title, String description, String shortdesc, String iconurl, String infourl, boolean joinable, String joinerrole, boolean published, boolean publicview, String skin, String type, String providerid) throws AxisFault
+{
+	Session session = establishSession(sessionid);
+	
+	try {
+
+		Site site = siteService.getSite(siteidtocopy);
+		
+		// If not admin, check maintainer membership in the source site
+		if (!securityService.isSuperUser(session.getUserId()) && 
+			!securityService.unlock(SiteService.SECURE_UPDATE_SITE, site.getReference())) {
+			LOG.warn("WS copySite(): Permission denied. Must be super user to copy a site in which you are not a maintainer.");
+			throw new AxisFault("WS copySite(): Permission denied. Must be super user to copy a site in which you are not a maintainer.");
+		}
+		
+	    // check description
+	    if (description != null) {
+	        StringBuilder alertMsg = new StringBuilder();
+	        description = FormattedText.processFormattedText(description, alertMsg);
+	        if (description == null) {
+	        	throw new AxisFault("Site description markup rejected: " + alertMsg.toString());
+	        }
+	    }            
+	    
+		Site siteEdit = siteService.addSite(newsiteid, site);
+		siteEdit.setTitle(title);
+		siteEdit.setDescription(description);
+		siteEdit.setShortDescription(shortdesc);
+		siteEdit.setIconUrl(iconurl);
+		siteEdit.setInfoUrl(infourl);
+		siteEdit.setJoinable(joinable);
+		siteEdit.setJoinerRole(joinerrole);
+		siteEdit.setPublished(published);
+		siteEdit.setPubView(publicview);
+		siteEdit.setSkin(skin);
+		siteEdit.setType(type);
+		siteEdit.setProviderGroupId(providerid);
+		siteService.save(siteEdit);
+	
+	}
+	catch (Exception e) {  
+		LOG.error("WS copySite(): " + e.getClass().getName() + " : " + e.getMessage());
+	 	return e.getClass().getName() + " : " + e.getMessage();
+	}
+	return "success";
+}
+
 public String longsightAddNewSiteWithProviderId( String sessionid, String siteid, String title, String description, String shortdesc, String iconurl, String infourl, boolean joinable, String joinerrole, boolean published, boolean publicview, String skin, String type, String providerid) throws AxisFault
 {
     Session session = establishSession(sessionid);

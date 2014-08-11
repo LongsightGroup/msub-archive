@@ -1581,6 +1581,52 @@ public class WSLongsight extends AbstractWebService {
 	@Path("/longsightAddNewSiteWithProviderId")
 	@Produces("text/plain")
 	@GET
+	public String longsightCopySiteWithProviderId(
+			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+			@WebParam(name = "siteidtocopy", partName = "siteidtocopy") @QueryParam("siteidtocopy") String siteidtocopy,
+			@WebParam(name = "newsiteid", partName = "newsiteid") @QueryParam("newsiteid") String newsiteid,
+			@WebParam(name = "title", partName = "title") @QueryParam("title") String title,
+			@WebParam(name = "description", partName = "description") @QueryParam("description") String description,
+			@WebParam(name = "shortdesc", partName = "shortdesc") @QueryParam("shortdesc") String shortdesc,
+			@WebParam(name = "iconurl", partName = "iconurl") @QueryParam("iconurl") String iconurl,
+			@WebParam(name = "infourl", partName = "infourl") @QueryParam("infourl") String infourl,
+			@WebParam(name = "joinable", partName = "joinable") @QueryParam("joinable") boolean joinable,
+			@WebParam(name = "joinerrole", partName = "joinerrole") @QueryParam("joinerrole") String joinerrole,
+			@WebParam(name = "published", partName = "published") @QueryParam("published") boolean published,
+			@WebParam(name = "publicview", partName = "publicview") @QueryParam("publicview") boolean publicview,
+			@WebParam(name = "skin", partName = "skin") @QueryParam("skin") String skin,
+			@WebParam(name = "type", partName = "type") @QueryParam("type") String type,
+			@WebParam(name = "providerid", partName = "providerid") @QueryParam("providerid") String providerid) 
+	{
+		Session session = establishSession(sessionid);
+	
+		try {
+			Site site = siteService.getSite(siteidtocopy);
+			Site siteEdit = siteService.addSite(newsiteid, site);
+			siteEdit.setTitle(title);
+			siteEdit.setDescription(description);
+			siteEdit.setShortDescription(shortdesc);
+			siteEdit.setIconUrl(iconurl);
+			siteEdit.setInfoUrl(infourl);
+			siteEdit.setJoinable(joinable);
+			siteEdit.setJoinerRole(joinerrole);
+			siteEdit.setPublished(published);
+			siteEdit.setPubView(publicview);
+			siteEdit.setSkin(skin);
+			siteEdit.setType(type);
+			siteEdit.setProviderGroupId(providerid);
+			siteService.save(siteEdit);
+		}
+		catch (Exception e) {  
+			return e.getClass().getName() + " : " + e.getMessage();
+		}
+		return "success";
+	}
+
+	@WebMethod
+	@Path("/longsightAddNewSiteWithProviderId")
+	@Produces("text/plain")
+	@GET
 	public String longsightAddNewSiteWithProviderId(
 			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
 			@WebParam(name = "siteid", partName = "siteid") @QueryParam("siteid") String siteid,
