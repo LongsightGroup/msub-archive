@@ -1890,9 +1890,14 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 	 */
 	@SuppressWarnings("rawtypes")
     public Collection findUsersByEmail(String email, UserFactory factory) {
+		List<User> users = new ArrayList<User>();
+
+		if ( !isSearchableEid(email) ) {
+			M_log.debug("findUsersByEmail(): passing on search because of domain [email = " + email + "].");
+			return users;
+		}
 
 		String filter = ldapAttributeMapper.getFindUserByEmailFilter(email);
-		List<User> users = new ArrayList<User>();
 		try {
 			List<LdapUserData> ldapUsers = searchDirectory(filter, null, null, null, null, 0);
 
