@@ -182,7 +182,7 @@ public class ConfirmPublishAssessmentListener
 
     if (!isFromActionSelect) {
     	if (assessmentSettings.getReleaseTo().equals(AssessmentAccessControl.RELEASE_TO_SELECTED_GROUPS)) {
-    		String[] groupsAuthorized = assessmentSettings.getGroupsAuthorizedToSave(); //getGroupsAuthorized();
+    		String[] groupsAuthorized = assessmentSettings.getGroupsAuthorized(); //getGroupsAuthorized();
     		if (groupsAuthorized == null || groupsAuthorized.length == 0) {
     			String releaseGroupError = ContextUtil.getLocalizedString("org.sakaiproject.tool.assessment.bundle.GeneralMessages","choose_one_group");
     			context.addMessage(null,new FacesMessage(releaseGroupError));
@@ -291,7 +291,7 @@ public class ConfirmPublishAssessmentListener
     }
     
     //Gradebook right now only excep if total score >0 check if total score<=0 then throw error.
-    if(assessmentSettings.getToDefaultGradebook() != null && assessmentSettings.getToDefaultGradebook().equals("1"))
+    if(assessmentSettings.getToDefaultGradebook())
 	{
  	    if(assessmentBean.getTotalScore()<=0)
 		{
@@ -307,10 +307,8 @@ public class ConfirmPublishAssessmentListener
       g = (GradebookExternalAssessmentService) SpringBeanLocator.getInstance().
             getBean("org.sakaiproject.service.gradebook.GradebookExternalAssessmentService");
     }
-    String toGradebook = assessmentSettings.getToDefaultGradebook();
     try{
-	if (toGradebook!=null && toGradebook.equals(EvaluationModelIfc.TO_DEFAULT_GRADEBOOK.toString()) &&
-	    gbsHelper.isAssignmentDefined(assessmentSettings.getTitle(), g)){
+	if (assessmentSettings.getToDefaultGradebook() && gbsHelper.isAssignmentDefined(assessmentSettings.getTitle(), g)){
         String gbConflict_err= ContextUtil.getLocalizedString("org.sakaiproject.tool.assessment.bundle.AssessmentSettingsMessages" , "gbConflict_error");
         context.addMessage(null,new FacesMessage(gbConflict_err));
         error=true;

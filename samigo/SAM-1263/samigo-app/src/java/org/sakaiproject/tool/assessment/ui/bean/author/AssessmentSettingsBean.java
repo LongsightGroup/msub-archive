@@ -175,9 +175,9 @@ public class AssessmentSettingsBean
   private boolean showStatistics = false;
 
   // properties of EvaluationModel
-  private String anonymousGrading;
+  private boolean anonymousGrading;
   private boolean gradebookExists;
-  private String toDefaultGradebook;
+  private boolean toDefaultGradebook;
   private String scoringType;
   private String bgColor;
   private String bgImage;
@@ -416,9 +416,9 @@ public class AssessmentSettingsBean
       EvaluationModelIfc evaluation = assessment.getEvaluationModel();
       if (evaluation != null) {
         if (evaluation.getAnonymousGrading()!=null)
-          this.anonymousGrading = evaluation.getAnonymousGrading().toString();
+          this.anonymousGrading = evaluation.getAnonymousGrading().toString().equals("1") ? true : false;
         if (evaluation.getToGradeBook()!=null )
-          this.toDefaultGradebook = evaluation.getToGradeBook();
+          this.toDefaultGradebook = evaluation.getToGradeBook().toString().equals("1") ? true : false;
         if (evaluation.getScoringType()!=null)
           this.scoringType = evaluation.getScoringType().toString();
 
@@ -459,7 +459,7 @@ public class AssessmentSettingsBean
       this.secureDeliveryModuleExitPassword = secureDeliveryService.decryptPassword( this.secureDeliveryModule, 
     		  (String) assessment.getAssessmentMetaDataByLabel( SecureDeliveryServiceAPI.EXITPWD_KEY ) );
       
-      if ( secureDeliveryModule == null ) {
+      if ( secureDeliveryModule == null || secureDeliveryModule.trim().length() == 0) {
     	  this.secureDeliveryModule = SecureDeliveryServiceAPI.NONE_ID;
       }
       else if ( ! secureDeliveryService.isSecureDeliveryModuleAvailable( secureDeliveryModule ) ) {
@@ -678,7 +678,7 @@ public class AssessmentSettingsBean
   }
 
   public void setTimedHours(Integer timedHours) {
-    this.timedHours = timedHours;
+    this.timedHours = (timedHours==null)?0:timedHours;
   }
 
   public Integer getTimedHours() {
@@ -686,7 +686,7 @@ public class AssessmentSettingsBean
   }
 
   public void setTimedMinutes(Integer timedMinutes) {
-    this.timedMinutes =  timedMinutes;
+    this.timedMinutes =  (timedMinutes==null)?0:timedMinutes;
   }
 
   public Integer getTimedMinutes() {
@@ -915,19 +915,19 @@ public class AssessmentSettingsBean
     this.showStatistics = showStatistics;
   }
 
-  public String getAnonymousGrading() {
+  public boolean getAnonymousGrading() {
     return this.anonymousGrading;
   }
 
-  public void setAnonymousGrading(String anonymousGrading) {
+  public void setAnonymousGrading(boolean anonymousGrading) {
     this.anonymousGrading = anonymousGrading;
   }
 
-  public String getToDefaultGradebook() {
+  public boolean getToDefaultGradebook() {
     return this.toDefaultGradebook;
   }
 
-  public void setToDefaultGradebook(String toDefaultGradebook) {
+  public void setToDefaultGradebook(boolean toDefaultGradebook) {
     this.toDefaultGradebook = toDefaultGradebook;
   }
 
@@ -1121,6 +1121,10 @@ public class AssessmentSettingsBean
     String dateString = "";
     if (date == null) {
       return dateString;
+    }
+
+    if (displayFormat == null) {   
+    	setDisplayFormat(ContextUtil.getLocalizedString("org.sakaiproject.tool.assessment.bundle.GeneralMessages","output_data_picker_w_sec"));
     }
 
     try {
@@ -1662,7 +1666,9 @@ public class AssessmentSettingsBean
               while (groupIter.hasNext()) {
                   Group group = (Group) groupIter.next();
                   String title = group.getTitle();
-                  sortedSelectItems.put(title.toUpperCase(), new SelectItem(group.getId(), title));
+                  String groupId = group.getId();
+                  String uniqueTitle = title + groupId;
+                  sortedSelectItems.put(uniqueTitle.toUpperCase(), new SelectItem(group.getId(), title));
               }
               Set keySet = sortedSelectItems.keySet();
               groupIter = keySet.iterator();
@@ -1764,6 +1770,10 @@ public class AssessmentSettingsBean
   
   public String getReleaseToGroupsAsString() {
 	  return releaseToGroupsAsString;
+  }
+  
+  public String getReleaseToGroupsAsHtml() {
+	  return FormattedText.escapeHtml(releaseToGroupsAsString,false);
   }
   
   public void setBlockDivs(String blockDivs){

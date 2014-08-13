@@ -1703,7 +1703,9 @@ public class AssessmentGradingFacadeQueries extends HibernateDaoSupport implemen
 	    while(iter.hasNext()) {
     		itemIds.add((Long) iter.next());
 	    }
-    
+
+	    if(itemIds.isEmpty()) return itemSet;
+	    
 	    final HibernateCallback hcb2 = new HibernateCallback() {
 	    	public Object doInHibernate(Session session) throws HibernateException, SQLException {
 	    		Query q = session.createQuery(
@@ -2991,8 +2993,9 @@ public class AssessmentGradingFacadeQueries extends HibernateDaoSupport implemen
 						" from AssessmentGradingData a, PublishedAccessControl c " +
 						" where a.publishedAssessmentId = c.assessment.publishedAssessmentId " +
 						" and current_timestamp() >= c.retractDate " +
-						" and a.status not in (4, 5) and (a.hasAutoSubmissionRun = 0 or a.hasAutoSubmissionRun is null) and c.autoSubmit = 1 " +
-						" order by a.publishedAssessmentId, a.agentId, a.forGrade desc ");
+						" and a.status not in (5) and (a.hasAutoSubmissionRun = 0 or a.hasAutoSubmissionRun is null) and c.autoSubmit = 1 " +
+						" and a.submittedDate is not null and a.attemptDate <= c.retractDate " +
+						" order by a.publishedAssessmentId, a.agentId, a.forGrade desc, a.assessmentGradingId");
 		
 	    Iterator iter = list.iterator();
 	    String lastAgentId = "";

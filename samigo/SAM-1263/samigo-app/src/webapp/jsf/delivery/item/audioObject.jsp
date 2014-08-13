@@ -38,21 +38,23 @@
     <h:outputFormat value=" #{deliveryMessages.audio_recorder_timelimit}" escape="false"> <f:param value="<span id=\"audio-time-allowed\"> </span>" /> </h:outputFormat>
   <f:verbatim></div></f:verbatim>
   <f:verbatim><div class="attempts-allowed"></f:verbatim>
-    <h:outputFormat value=" #{deliveryMessages.audio_recorder_attempts_allowed}" escape="false"/> <f:verbatim><span id="audio-attempts-allowed"> </span></f:verbatim>
+    <h:outputFormat value=" #{deliveryMessages.audio_recorder_attempts_allowed} " escape="false"/> <f:verbatim><span id="audio-attempts-allowed"> </span></f:verbatim>
   <f:verbatim></div></f:verbatim>
   <f:verbatim><div class="attempts-remaining"></f:verbatim>
-    <h:outputFormat value=" #{deliveryMessages.audio_recorder_attempts_remaining}" escape="false"/> <f:verbatim><span id="audio-attempts"> </span></f:verbatim>
+    <h:outputFormat value=" #{deliveryMessages.audio_recorder_attempts_remaining} " escape="false"/> <f:verbatim><span id="audio-attempts"> </span></f:verbatim>
+    <f:verbatim><span id="audio-last-attempt" style="display:none"></f:verbatim> <h:outputFormat value=" #{deliveryMessages.audio_recorder_last_attempt} " escape="false"/> <f:verbatim></span></f:verbatim>
   <f:verbatim></div></f:verbatim>
 <f:verbatim></div></f:verbatim>
 
 <f:verbatim>
+<div id="audio-posting" style="display:none"></f:verbatim><h:outputFormat value=" #{deliveryMessages.audio_recorder_posting}" /><f:verbatim></div>
+<div id="audio-finished" style="display:none"></f:verbatim><h:outputFormat value=" #{deliveryMessages.audio_recorder_complete}" /><f:verbatim></div>
+<div id="audio-browser-plea" style="display:none"></f:verbatim><h:outputFormat value=" #{deliveryMessages.audio_recorder_browser_plea}" /><f:verbatim></div>
+<div id="flashrecarea"> </div>
 <div id="audio-visual-container">
-  <div id="flashrecarea"> </div>
   <canvas id="audio-analyzer"></canvas>
 
   <div id="audio-controls">
-    <div id="audio-posting" style="display:none"></f:verbatim><h:outputFormat value=" #{deliveryMessages.audio_recorder_posting}" /><f:verbatim></div>
-    <div id="audio-finished" style="display:none"></f:verbatim><h:outputFormat value=" #{deliveryMessages.audio_recorder_complete}" /><f:verbatim></div>
     <div id="audio-statusbar" style="display:none"> </div>
     <div id="audio-levelbar"> </div>
     <div id="audio-timer-wrapper">
@@ -66,7 +68,8 @@
     <button id="audio-upload" onclick="postDataToServer(this);" disabled></f:verbatim><h:outputFormat value=" #{deliveryMessages.audio_recorder_post}" /><f:verbatim></button>
   </div>
 
-  <div id="audio-mic-check">
+  <%-- SAM-2317 We're going to keep the mic check hidden until more browsers support it --%>
+  <div id="audio-mic-check" style="display:none">
     <canvas id="volumemeter" width="16" height="54" style="background-color:#555;display:none"></canvas>
     <button id="mic-check" onclick="microphoneCheck(this)" disabled="disabled"> </button>
     <span></f:verbatim><h:outputFormat value=" #{deliveryMessages.audio_mic_check}" /><f:verbatim></span>

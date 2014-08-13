@@ -28,7 +28,7 @@ $(document).ready(function(){
 	var highestItemId = +59;
 	var maxAvailableItems = +30;
 	var minOptions = +2;
-	var currentOptions = 0;
+	var currentOptions = +$("select[id='itemForm:answerOptionsRichCount']").val();
 	var optionsAtStart = +8;
 	var itemsAtStart = +4;
 	var removeLabel = "X";
@@ -220,7 +220,9 @@ $(document).ready(function(){
 	//--------------------------------------//
 	//	Hide excess Options at start		//
 	//--------------------------------------//
-	updateSimpleTextOptionCount();
+	if(radioSimpleOrRichChecked.value === "0"){
+        updateSimpleTextOptionCount();
+    }
 	
 	//------------------------------------------//
 	//	Add OptionLabels for Paste Options		//
@@ -280,17 +282,19 @@ $(document).ready(function(){
 	//	Add Option			 			//
 	//									//
 	//----------------------------------//
-	emiOptionAddLink.bind('click', function(event){
-		var addCount = parseInt(addEmiAnswerOptionsSelect.val());
-		for (i=currentOptions; i<currentOptions+addCount; i++) {
-			$("table[id='itemForm:emiAnswerOptions:" + i + ":Row']").parent().parent().show();
-		}
-		setContainerHeight();
-		currentOptions += addCount;
-		updateAddEmiAnswerOptionsCount();
-		event.preventDefault();
-		return false;
-	});
+    if(emiOptionAddLink){
+        emiOptionAddLink.bind('click', function(event){
+            var addCount = parseInt(addEmiAnswerOptionsSelect.val());
+            for (i=currentOptions; i<currentOptions+addCount; i++) {
+                $("table[id='itemForm:emiAnswerOptions:" + i + ":Row']").parent().parent().show();
+            }
+            setContainerHeight();
+            currentOptions += addCount;
+            updateAddEmiAnswerOptionsCount();
+            event.preventDefault();
+            return false;
+        });
+    }
 	
 	//--------------------------------------//
 	//	updateSimpleTextOptionCount			//
@@ -465,42 +469,44 @@ $(document).ready(function(){
 	//	Add Items			 			//
 	//									//
 	//----------------------------------//
-	emiItemAddLink.bind('click', function(){
-		var j=+0;
-		var itemCount=+0;
-		var totalCount=+0;
-		availibleItems = +0;
-		var addCount = parseInt(addEmiItemSelect.val());
-		
-		for (i=0; i<=highestItemId; i++) {
-			var row = $("table[id='itemForm:emiQuestionAnswerCombinations:" + i + ":Row']");
-			var labelInput = $("input[id='itemForm:emiQuestionAnswerCombinations:" + i + ":Label']");
-			if (row && !row.is(':visible') && labelInput.val() !== removeLabel) {
-				if(addCount != 0){
-					itemCount++;
-					labelInput.val(itemCount);
-					labelInput.trigger('change');
-					emiVisibleItems.val(itemCount);
-					row.parent().parent().show();
-					addCount--;
-				}else{
-					availibleItems++;
-				}
-			}
-			else if (row && row.is(':visible')) {
-				itemCount++;
-				labelInput.val(itemCount);
-				labelInput.trigger('change');
-				emiVisibleItems.val(itemCount);
-			}
-			if(row){
-				totalCount++;
-			}
-		}
-		setContainerHeight();
-		updateAddEmiItemsCount(itemCount, availibleItems, totalCount);
-		return false;
-	});
+    if(emiItemAddLink){
+        emiItemAddLink.bind('click', function(){
+            var j=+0;
+            var itemCount=+0;
+            var totalCount=+0;
+            availibleItems = +0;
+            var addCount = parseInt(addEmiItemSelect.val());
+
+            for (i=0; i<=highestItemId; i++) {
+                var row = $("table[id='itemForm:emiQuestionAnswerCombinations:" + i + ":Row']");
+                var labelInput = $("input[id='itemForm:emiQuestionAnswerCombinations:" + i + ":Label']");
+                if (row && !row.is(':visible') && labelInput.val() !== removeLabel) {
+                    if(addCount != 0){
+                        itemCount++;
+                        labelInput.val(itemCount);
+                        labelInput.trigger('change');
+                        emiVisibleItems.val(itemCount);
+                        row.parent().parent().show();
+                        addCount--;
+                    }else{
+                        availibleItems++;
+                    }
+                }
+                else if (row && row.is(':visible')) {
+                    itemCount++;
+                    labelInput.val(itemCount);
+                    labelInput.trigger('change');
+                    emiVisibleItems.val(itemCount);
+                }
+                if(row){
+                    totalCount++;
+                }
+            }
+            setContainerHeight();
+            updateAddEmiItemsCount(itemCount, availibleItems, totalCount);
+            return false;
+        });
+    }
 	
 	//------------------------------------------//
 	//	updateAddEmiItemsCount					//

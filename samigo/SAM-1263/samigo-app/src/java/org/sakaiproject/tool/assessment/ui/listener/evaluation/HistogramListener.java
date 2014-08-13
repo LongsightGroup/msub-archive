@@ -12,7 +12,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.TreeSet;
 
 import javax.faces.component.html.HtmlSelectOneMenu;
@@ -34,8 +37,10 @@ import org.sakaiproject.tool.assessment.data.dao.grading.AssessmentGradingData;
 import org.sakaiproject.tool.assessment.data.dao.grading.ItemGradingData;
 import org.sakaiproject.tool.assessment.data.ifc.assessment.AnswerIfc;
 import org.sakaiproject.tool.assessment.data.ifc.assessment.AssessmentIfc;
+import org.sakaiproject.tool.assessment.data.ifc.assessment.AssessmentBaseIfc;
 import org.sakaiproject.tool.assessment.data.ifc.assessment.ItemDataIfc;
 import org.sakaiproject.tool.assessment.data.ifc.assessment.ItemTextIfc;
+import org.sakaiproject.tool.assessment.data.ifc.assessment.ItemMetaDataIfc;
 import org.sakaiproject.tool.assessment.data.ifc.assessment.PublishedAssessmentIfc;
 import org.sakaiproject.tool.assessment.data.ifc.assessment.SectionDataIfc;
 import org.sakaiproject.tool.assessment.data.ifc.shared.TypeIfc;
@@ -316,6 +321,12 @@ public class HistogramListener
 				   }
 			}
 
+			  boolean showObjectivesColumn = Boolean.parseBoolean(pub.getAssessmentMetaDataByLabel(AssessmentBaseIfc.HASMETADATAFORQUESTIONS));
+			  Map<String, Double> objectivesCorrect = new HashMap<String, Double>();
+			  Map<String, Integer> objectivesCounter = new HashMap<String, Integer>();
+			  Map<String, Double> keywordsCorrect = new HashMap<String, Double>();
+			  Map<String, Integer> keywordsCounter = new HashMap<String, Integer>();
+			  
 			  assessmentName = pub.getTitle();
 
 			  List<? extends SectionDataIfc> parts = pub.getSectionArraySorted();
@@ -398,6 +409,13 @@ public class HistogramListener
 					  questionScores.setRandomType(isRandompart);
                       questionScores.setPoolName(poolName);
 					  ItemDataIfc item = itemsIter.next();
+					  
+					  if (showObjectivesColumn) {
+						  String obj = item.getItemMetaDataByLabel(ItemMetaDataIfc.OBJECTIVE);
+						  questionScores.setObjectives(obj);
+						  String key = item.getItemMetaDataByLabel(ItemMetaDataIfc.KEYWORD);
+						  questionScores.setKeywords(key);
+					  }
 
 					  //String type = delegate.getTextForId(item.getTypeId());
 					  String type = getType(item.getTypeId().intValue());
@@ -466,12 +484,17 @@ public class HistogramListener
                                 //need to only get gradings for students that answered this question
                                 List<AssessmentGradingData> filteredGradings =
                             		filterGradingData(submissionsSortedForDiscrim, questionScores.getItemId());
+                                
+                                // SAM-2228: loop control issues because of unsynchronized collection access
+                                int filteredGradingsSize = filteredGradings.size();
+                                percent27ForThisQuestion = filteredGradingsSize*27/100;
+                                
                                 for (int i = 0; i < percent27ForThisQuestion; i++) {
                                     lowerQuartileStudents.add(((AssessmentGradingData)
                                 	filteredGradings.get(i)).getAgentId());
                                     //
                                     upperQuartileStudents.add(((AssessmentGradingData)
-                                    	filteredGradings.get(questionScores.getNumResponses()-1-i)).getAgentId());
+                                    filteredGradings.get(filteredGradingsSize-1-i)).getAgentId());
                                 }
                              }
                           }
@@ -552,6 +575,60 @@ public class HistogramListener
 						  maxNumOfAnswers = questionScores.getHistogramBars().length >maxNumOfAnswers ? questionScores.getHistogramBars().length : maxNumOfAnswers;
 					  }
 				  }
+				  
+				  if (showObjectivesColumn) {
+					  // Get the percentage correct by objective
+					  String obj = questionScores.getObjectives();
+					  if (obj != null && !"".equals(obj)) {
+						  String[] objs = obj.split(",");
+						  for (int i=0; i < objs.length; i++) {
+							  if (objectivesCorrect.get(objs[i]) != null) {
+								  int divisor = objectivesCounter.get(objs[i]) + 1;
+								  // newavg = avg + ((q3 - avg)/index)
+								  Double newAvg = objectivesCorrect.get(objs[i]) + (
+								  (Double.parseDouble(questionScores.getPercentCorrect()) - objectivesCorrect.get(objs[i])
+								  ) / divisor);
+                              
+								  newAvg = new BigDecimal(newAvg).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                              
+								  objectivesCounter.put(objs[i], divisor);
+								  objectivesCorrect.put(objs[i], newAvg);
+							  } else {
+								  Double newAvg = Double.parseDouble(questionScores.getPercentCorrect());
+								  newAvg = new BigDecimal(newAvg).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                              
+								  objectivesCounter.put(objs[i], 1);
+								  objectivesCorrect.put(objs[i], newAvg);
+							  }
+						  }
+					  }
+				                                                                   
+					  // Get the percentage correct by keyword
+					  String key = questionScores.getKeywords();
+					  if (key != null && !"".equals(key)) {
+						  String [] keys = key.split(",");
+						  for (int i=0; i < keys.length; i++) {
+							  if (keywordsCorrect.get(keys[i]) != null) {
+								  int divisor = keywordsCounter.get(keys[i]) + 1;
+								  Double newAvg = keywordsCorrect.get(keys[i]) + (
+								  (Double.parseDouble(questionScores.getPercentCorrect()) - keywordsCorrect.get(keys[i])
+								  ) / divisor);
+                              
+								  newAvg = new BigDecimal(newAvg).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                              
+								  keywordsCounter.put(keys[i], divisor);
+								  keywordsCorrect.put(keys[i], newAvg);
+							  } else {
+								  Double newAvg = Double.parseDouble(questionScores.getPercentCorrect());
+								  newAvg = new BigDecimal(newAvg).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                              
+								  keywordsCounter.put(keys[i], 1);
+								  keywordsCorrect.put(keys[i], newAvg);
+							  }
+						  }
+					  }
+				  }
+				  
 				  //i.e. for EMI questions we add detailed stats for the whole
 				  //question as well as for the sub-questions
 				  if (questionScores.getQuestionType().equals(TypeIfc.EXTENDED_MATCHING_ITEMS.toString()) 
@@ -584,6 +661,26 @@ public class HistogramListener
 			  sortQuestionScoresByLabel(detailedStatistics);
 			  histogramScores.setDetailedStatistics(detailedStatistics);
 			  histogramScores.setMaxNumberOfAnswers(maxNumOfAnswers);
+			  histogramScores.setShowObjectivesColumn(showObjectivesColumn);
+			  
+			  if (showObjectivesColumn) {
+				  List<Entry<String, Double>> objectivesList = new ArrayList<Entry<String, Double>>(objectivesCorrect.entrySet());
+				  Collections.sort(objectivesList, new Comparator<Entry<String, Double>>() {
+					  public int compare(Entry<String, Double> e1, Entry<String, Double> e2) {
+						  return e1.getKey().compareTo(e2.getKey());
+					  }
+				  });
+				  histogramScores.setObjectives(objectivesList);
+				  
+				  List<Entry<String, Double>> keywordsList = new ArrayList<Entry<String, Double>>(keywordsCorrect.entrySet());
+				  
+				  Collections.sort(keywordsList, new Comparator<Entry<String, Double>>() {
+					  public int compare(Entry<String, Double> e1, Entry<String, Double> e2) {
+						  return e1.getKey().compareTo(e2.getKey());
+					  }
+				  });
+				  histogramScores.setKeywords(keywordsList);
+			  }
 
 			  // test to see if it gets back empty map
 			  if (assessmentMap.isEmpty()) {
@@ -3102,53 +3199,34 @@ private void getImageMapQuestionScores(HashMap publishedItemTextHash, HashMap pu
 				HistogramQuestionScoresBean bean1 = (HistogramQuestionScoresBean) arg0;
 				HistogramQuestionScoresBean bean2 = (HistogramQuestionScoresBean) arg1;
 
-				String lable1 = bean1.getQuestionLabel();
-				String lable2 = bean2.getQuestionLabel();
-
-				if (bean1.getNumberOfParts() > 1 && bean2.getNumberOfParts() > 1) {
-
-					if (Integer.valueOf(lable1.substring(1, lable1.indexOf("-"))).compareTo(
-							Integer.valueOf(lable2.substring(1, lable2.indexOf("-")))) > 0) {
-						return 1;
-					} else if (Integer.valueOf(lable1.substring(1, lable1.indexOf("-"))).compareTo(
-							Integer.valueOf(lable2.substring(1, lable2.indexOf("-")))) < 0) {
-						return -1;
-					}
-
-					lable1 = lable1.substring(lable1.indexOf("-") + 1, lable1.length());
-					lable2 = lable2.substring(lable2.indexOf("-") + 1, lable2.length());
+                //first check the part number
+				int compare = Integer.valueOf(bean1.getPartNumber()) - Integer.valueOf(bean2.getPartNumber());
+				if (compare != 0) {
+                    return compare;
 				}
 
-				if (lable1.indexOf("-") == -1 && lable2.indexOf("-") == -1) {
-					return Integer.valueOf(lable1.substring(1)).compareTo(Integer.valueOf(lable2.substring(1)));
-
-				} else if (lable1.indexOf("-") == -1 && lable2.indexOf("-") != -1) {
-					int val = Integer.valueOf(lable1.substring(1)).compareTo(
-							Integer.valueOf(lable2.substring(1, lable2.lastIndexOf("-"))));
-					if (val == 0) {
-						val = -1;
-					}
-					return val;
-
-				} else if (lable1.indexOf("-") != -1 && lable2.indexOf("-") == -1) {
-					int val = Integer.valueOf(lable1.substring(1, lable1.lastIndexOf("-"))).compareTo(
-							Integer.valueOf(lable2.substring(1)));
-					if (val == 0) {
-						val = 1;
-					}
-					return val;
-
-				} else if (lable1.indexOf("-") != -1 && lable2.indexOf("-") != -1) {
-					int val = Integer.valueOf(lable1.substring(1, lable1.lastIndexOf("-"))).compareTo(
-							Integer.valueOf(lable2.substring(1, lable2.lastIndexOf("-"))));
-					if (val == 0) {
-						val = Integer.valueOf(lable1.substring(lable1.lastIndexOf("-") + 1, lable1.length())).compareTo(
-								Integer.valueOf(lable2.substring(lable2.lastIndexOf("-") + 1, lable2.length())));
-					}
-					return val;
-				}
-				return lable1.substring(1).compareTo(lable2.substring(1));
-
+                //now check the question number
+                int number1 = 0;
+                int number2 = 0;
+                //check if the question has a sub-question number, only test the question number now
+                if(bean1.getQuestionNumber().indexOf("-") == -1){
+                    number1 = Integer.valueOf(bean1.getQuestionNumber());
+                }else{
+                    number1 = Integer.valueOf(bean1.getQuestionNumber().substring(0, bean1.getQuestionNumber().indexOf("-")));
+                }
+                if(bean2.getQuestionNumber().indexOf("-") == -1){
+                    number2 = Integer.valueOf(bean2.getQuestionNumber());
+                }else{
+                    number2 = Integer.valueOf(bean2.getQuestionNumber().substring(0, bean2.getQuestionNumber().indexOf("-")));
+                }
+                compare = number1 - number2;
+                if(compare != 0){
+                    return compare;
+                }
+                //Now check the sub-question number. At this stage it will be from the same question
+                number1 = Integer.valueOf(bean1.getQuestionNumber().substring(bean1.getQuestionNumber().indexOf("-")+1));
+                number2 = Integer.valueOf(bean2.getQuestionNumber().substring(bean2.getQuestionNumber().indexOf("-")+1));
+                return number1 - number2;
 			}
 		});
 	}

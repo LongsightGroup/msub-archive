@@ -42,7 +42,6 @@
 
  <h:outputText value="<div class='portletBody' style='#{delivery.settings.divBgcolor};#{delivery.settings.divBackground}'>" escape="false"/>
 
- <!--h:outputText value="<div class='portletBody' style='background:#{delivery.settings.divBgcolor};background-image:url(http://www.w3.org/WAI/UA/TS/html401/images/test-background.gif)'>" escape="false"/-->
  
 <%@ include file="/js/delivery.js" %>
  
@@ -89,6 +88,9 @@ function clickSubmitForGrade(){
 
 <!-- DONE BUTTON FOR PREVIEW ASSESSMENT -->
 <h:form id="tableOfContentsForm">
+
+<h:inputHidden id="hasTimeLimit" value="#{delivery.hasTimeLimit}"/>   
+<h:inputHidden id="showTimeWarning" value="#{delivery.showTimeWarning}"/>
 
 <h:panelGroup rendered="#{delivery.actionString=='previewAssessment'}">
  <f:verbatim><div class="previewMessage"></f:verbatim>

@@ -67,11 +67,34 @@
             <groupId>org.sakaiproject.jsf</groupId>
             <artifactId>jsf-app</artifactId>
         </dependency>
+        <!-- remove the default api/imp 1.1_02 version from JSF prject with new 1.2 version  -->
         <dependency>
             <groupId>org.sakaiproject.jsf</groupId>
             <artifactId>jsf-widgets-sun-depend</artifactId>
+            <exclusions>
+	            <exclusion>
+	                    <groupId>javax.faces</groupId>
+	                    <artifactId>jsf-api</artifactId>
+	             </exclusion>
+	             <exclusion>
+	                    <groupId>javax.faces</groupId>
+	                    <artifactId>jsf-impl</artifactId>
+	             </exclusion>
+	        </exclusions>
             <type>pom</type>
         </dependency>
+        <dependency>
+            	<groupId>javax.faces</groupId>
+            	<artifactId>jsf-api</artifactId>
+            	<version>1.2_15</version>
+        </dependency>
+        <dependency>
+            	<groupId>javax.faces</groupId>
+            	<artifactId>jsf-impl</artifactId>
+               <version>1.2_15</version>
+        </dependency>
+		<!-- end of JSF related version issue -->
+		        
         <dependency>
             <groupId>org.sakaiproject.kernel</groupId>
             <artifactId>sakai-kernel-api</artifactId>
@@ -84,10 +107,24 @@
             <groupId>org.sakaiproject.kernel</groupId>
             <artifactId>sakai-kernel-util</artifactId>
         </dependency>
-		<dependency>
+        <dependency>
             <groupId>com.lowagie</groupId>
             <artifactId>itext</artifactId>
-            <version>2.0.7</version>
+            <version>2.1.7</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>bctsp-jdk14</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>bouncycastle</groupId>
+                    <artifactId>bcmail-jdk14</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>bouncycastle</groupId>
+                    <artifactId>bcprov-jdk14</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>commons-beanutils</groupId>
@@ -212,13 +249,6 @@
             <type>war</type>
         </dependency>
         <dependency>
-            <groupId>xalan</groupId>
-            <artifactId>xalan</artifactId>
-            <version>2.6.0</version>
-            <type>jar</type>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
             <groupId>xml-apis</groupId>
             <artifactId>xml-apis</artifactId>
             <version>2.0.2</version>
@@ -279,6 +309,13 @@
 				<directory>${basedir}/src/sql</directory>
 				<includes>
 					<include>**/*.sql</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>${basedir}/src/resources</directory>
+				<includes>
+					<include>**/*.ttf</include>
+					<include>**/*.ttc</include>
 				</includes>
 			</resource>
 		</resources>

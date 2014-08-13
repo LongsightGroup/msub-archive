@@ -20,7 +20,7 @@
 --%>
 -->
 <!-- ASSESSMENT ATTACHMENTS -->
- <div class="longtext"><h:outputLabel value="#{assessmentSettingsMessages.attachments}" />
+<h:outputLabel value="#{assessmentSettingsMessages.attachments}" />
   <br/>
   <h:panelGroup rendered="#{publishedSettings.hasAttachment}">
     <h:dataTable value="#{publishedSettings.attachmentList}" var="attach">
@@ -45,16 +45,16 @@
 
   <h:panelGroup rendered="#{!publishedSettings.hasAttachment}">
     <sakai:button_bar>
-      <sakai:button_bar_item action="#{publishedSettings.addAttachmentsRedirect}"
+      <h:commandButton action="#{publishedSettings.addAttachmentsRedirect}"
              value="#{assessmentSettingsMessages.add_attachments}"/>
     </sakai:button_bar>
   </h:panelGroup>
 
   <h:panelGroup rendered="#{publishedSettings.hasAttachment}">
     <sakai:button_bar>
-      <sakai:button_bar_item action="#{publishedSettings.addAttachmentsRedirect}"
+      <h:commandButton action="#{publishedSettings.addAttachmentsRedirect}"
              value="#{assessmentSettingsMessages.add_remove_attachments}"/>
     </sakai:button_bar>
   </h:panelGroup>
-</div>
+  
 

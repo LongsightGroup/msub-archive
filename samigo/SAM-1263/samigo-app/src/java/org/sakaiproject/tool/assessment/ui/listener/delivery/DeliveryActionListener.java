@@ -1207,7 +1207,7 @@ public class DeliveryActionListener
       itemBean.setFeedback(item.getGeneralItemFeedback());
     }
  
-    else if ( itemBean.getMaxPoints()>0) {
+    else if (itemBean.getMaxPoints()>0 && !item.getTypeId().equals(TypeIfc.MULTIPLE_CORRECT)) {
         // 
         // This is not really needed because the next Else{} will cover all other question types. 
     	// However it's much cheaper to check scores rather than looping through and check each answers. 
@@ -2627,7 +2627,7 @@ public class DeliveryActionListener
     AssessmentGradingData ag = delivery.getAssessmentGrading();
 
     delivery.setBeginTime(ag.getAttemptDate());
-    String timeLimitInSetting = control.getTimeLimit().toString();
+    String timeLimitInSetting = control.getTimeLimit() == null ? "0" : control.getTimeLimit().toString();
     String timeBeforeDueRetract = delivery.getTimeBeforeDueRetract(timeLimitInSetting);
     boolean isTimedAssessmentBySetting = delivery.getHasTimeLimit() && 
     		control.getTimeLimit() != null && control.getTimeLimit().intValue() > 0;

@@ -10,6 +10,12 @@ h4.samigo-category-subhead {
   color: black;
 }
 
+h4.samigo-category-subhead-2 {
+  font-weight: bold;
+  margin-top: -2px;
+  color: black;
+}
+
 .treefolder {
  background-repeat: no-repeat;
  height: 17px;
@@ -591,7 +597,7 @@ table.listHierEventLog {
     padding-bottom: 12px;
 }
 #audio-visual-container {
-    width: 590px;
+    width: 778px;
     height: 300px;
     padding: 2px;
     border: 1px solid black;
@@ -599,11 +605,11 @@ table.listHierEventLog {
 }
 #audio-analyzer {
     height: 180px;
-    width: 590px;
+    width: 778px;
     background-color: black;
 }
 #audio-timer-wrapper {
-    width: 588px;
+    width: 776px;
     height: 60px;
     background-color: #333;
     margin: 0 auto;
@@ -611,7 +617,7 @@ table.listHierEventLog {
     color: white;
 }
 #audio-scrubber {
-    width: 516px;
+    width: 704px;
     height: 12px;
     border-radius: 4px;
     background-color: #ccc;
@@ -682,7 +688,7 @@ table.listHierEventLog {
     background: transparent url(/library/image/play.png) no-repeat center 2px;
 }
 #audio-visual-container #audio-upload {
-    margin-left: 200px;
+    margin-left: 300px;
     width: 140px;
     border-radius: 5px;
     height: 40px;
@@ -690,11 +696,23 @@ table.listHierEventLog {
     margin-top: 8px;
     vertical-align: top;
 }
+#audio-posting, #audio-finished, #audio-browser-plea {
+    height: 200px;
+    font-size: 28px;
+    font-weight: bold;
+    text-align: center;
+    width: 100%;
+}
 div.attempts-remaining {
     font-weight: bold;
 }
 #audio-mic-check {
   padding: 8px 0;
+}
+#audio-last-attempt {
+  font-style: italic;
+  font-weight: normal;
+  padding-left: 100px;
 }
 #mic-check {
     background: transparent url(/library/image/mic-check.png) no-repeat center center;
@@ -871,4 +889,32 @@ background-color:#DBDBDB;
 	vertical-align:top;
 }
 
-<<<<<<< .working
+.alignBottom {
+    vertical-align: bottom;
+}
+
+.alignTop {
+    vertical-align: top;
+}
+
+.submissionAllowed {
+    margin-top: 3px;
+}
+
+.groupTable {
+	margin-top: 4px;
+    margin-left: 150px;
+}
+
+div.expand, div.collapse {
+    cursor: pointer !important;
+    padding-left: 1em !important;
+}
+
+div.expand {
+    background: url('/library/image/sakai/collapse.gif') no-repeat left !important;
+}
+
+div.collapse {
+    background: url('/library/image/sakai/expand.gif') no-repeat left !important;
+}

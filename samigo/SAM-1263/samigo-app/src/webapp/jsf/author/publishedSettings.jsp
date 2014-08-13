@@ -44,7 +44,9 @@
       <script type="text/javascript">
         $(document).ready(function() {
           // set up the accordion for settings
-          $("#jqueryui-accordion").accordion({ heightStyle: "content",collapsible: true });
+          $("#jqueryui-accordion").accordion({ heightStyle: "content", collapsible: true, active: 1 });
+          // This is a sub-accordion inside of the About the Assessment Panel
+          $("#jqueryui-accordion-metadata").accordion({ heightStyle: "content",collapsible: true,active: false });
           // This is a sub-accordion inside of the Availability and Submission Panel
           $("#jqueryui-accordion-security").accordion({ heightStyle: "content",collapsible: true,active: false });
           // adjust the height of the iframe to accomodate the expansion from the accordion
@@ -55,6 +57,7 @@
           lockdownQuestionLayout(navVal);
           lockdownMarkForReview(navVal);
           showHideReleaseGroups();
+          checkUncheckTimeBox();
         });
       </script>
 
@@ -85,7 +88,7 @@
 
 
   <!-- *** ASSESSMENT INTRODUCTION *** -->
-  <h:outputLabel value="<h4 class=\"samigo-category-subhead\"> #{assessmentSettingsMessages.heading_assessment_introduction} </h4>" />
+  <h:outputLabel escape="false" value="<h4 class=\"samigo-category-subhead\"> #{assessmentSettingsMessages.heading_assessment_introduction} </h4>" />
   <div class="tier2" id="assessment-intro">
     <h:panelGrid columns="2" columnClasses="samigoCell" id="first" summary="#{templateMessages.enter_template_info_section}">
 
@@ -106,7 +109,7 @@
         <h:outputLabel value="#{assessmentSettingsMessages.assessment_description}" rendered="#{publishedSettings.valueMap.description_isInstructorEditable==true}"/>
 
         <h:panelGrid rendered="#{publishedSettings.valueMap.description_isInstructorEditable==true}">
-          <samigo:wysiwyg rows="140" value="#{publishedSettings.description}" hasToggle="yes" >
+           <samigo:wysiwyg rows="100" columns="400" value="#{assessmentSettings.description}" hasToggle="yes" >
            <f:validateLength maximum="4000"/>
          </samigo:wysiwyg>
         </h:panelGrid>
@@ -120,11 +123,13 @@
 
     </h:panelGrid>
   </div>
+  
+<f:verbatim><div id="jqueryui-accordion-metadata"></f:verbatim><!-- This is sub-accordion for metadata -->  
 
  <!-- *** META *** -->
 <h:panelGroup rendered="#{publishedSettings.valueMap.metadataAssess_isInstructorEditable==true}">
-  <h:outputLabel value="<h4 class=\"samigo-category-subhead\"> #{assessmentSettingsMessages.heading_metadata} </h4>" />
-	<f:verbatim><div class="tier2"></f:verbatim>
+  <h:outputText escape="false" value="<h3> <a class=\"jqueryui-hideDivision\" href=\"#\"> #{assessmentSettingsMessages.heading_metadata} </a> </h3>" /> 
+   <f:verbatim><div class="tier2"></f:verbatim>
    <f:verbatim><div class="samigo-subheading"></f:verbatim> <h:outputLabel value="#{assessmentSettingsMessages.assessment_metadata}" /> <f:verbatim></div><div class="tier3"></f:verbatim>
     <h:panelGrid columns="2" columnClasses="samigoCell">
       <h:outputLabel for="keywords" value="#{assessmentSettingsMessages.metadata_keywords}"/>
@@ -147,149 +152,101 @@
     <f:verbatim></div></div></f:verbatim>
   </h:panelGroup>
 
+<f:verbatim></div></f:verbatim><!-- This is the end of the sub-accordion -->
+
 </samigo:hideDivision><!-- End the About this Assessment category -->
 
 <samigo:hideDivision title="#{assessmentSettingsMessages.heading_availability}"> 
 
-  <h:outputLabel value="<h4 class=\"samigo-category-subhead\"> #{assessmentSettingsMessages.heading_released_to} </h4>" />
+  <h:outputLabel escape="false" value="<h4 class=\"samigo-category-subhead\"> #{assessmentSettingsMessages.heading_released_to} </h4>" />
   <!-- *** RELEASED TO *** -->
-  <div class="tier2">
-    <h:panelGrid   summary="#{templateMessages.released_to_info_sec}">
-      <h:selectOneRadio disabled="true" layout="pagedirection" value="#{publishedSettings.firstTargetSelected}">
-        <f:selectItems value="#{assessmentSettings.publishingTargets}" />
-      </h:selectOneRadio>
-    </h:panelGrid>
+  <h:panelGroup>
+    <h:outputText value="#{assessmentSettingsMessages.released_to} " />
+    <h:selectOneMenu id="releaseTo" disabled="true" value="#{publishedSettings.firstTargetSelected}" >
+      <f:selectItems value="#{assessmentSettings.publishingTargets}" />
+    </h:selectOneMenu>
+  </h:panelGroup>
+
+  <f:verbatim><div id="groupDiv" class="groupTable"></f:verbatim>
+  <f:verbatim><table border="0" bgcolor="#CCCCCC"><tr><td></f:verbatim>  
+  <h:selectBooleanCheckbox id="checkUncheckAllReleaseGroups" disabled="true" />
       
-  <f:verbatim><div id="groupDiv" class="tier3"></f:verbatim>
-  <f:verbatim><table bgcolor="#CCCCCC"><tr><td></f:verbatim>  
-  
   <f:verbatim></td><td></f:verbatim>
   <h:outputText value="#{assessmentSettingsMessages.select_all_groups}" />
   <f:verbatim></td></tr></table></f:verbatim>
   
-  <h:selectManyCheckbox disabled="true" id="groupsForSite" layout="pagedirection" value="#{publishedSettings.groupsAuthorized}">
-     <f:selectItems value="#{publishedSettings.groupsForSite}" />
+  <h:selectManyCheckbox id="groupsForSite" disabled="true"  layout="pagedirection" value="#{publishedSettings.groupsAuthorized}">
+    <f:selectItems value="#{publishedSettings.groupsForSite}" />
   </h:selectManyCheckbox>
-  </div>
- </div>
+  <f:verbatim></div></f:verbatim>
 
     <!-- NUMBER OF SUBMISSIONS -->
-    <h:panelGroup rendered="#{publishedSettings.valueMap.submissionModel_isInstructorEditable==true}">
-      <h:outputLabel value="<h4 class=\"samigo-category-subhead\"> #{assessmentSettingsMessages.submissions} </h4>" />
-      <f:verbatim> <div class="tier3"></f:verbatim>
-	 <f:verbatim><table><tr><td></f:verbatim>
-        <h:selectOneRadio id="unlimitedSubmissions" value="#{publishedSettings.unlimitedSubmissions}" layout="pageDirection">
-          <f:selectItem itemValue="1" itemLabel="#{assessmentSettingsMessages.unlimited_submission}"/>
-          <f:selectItem itemValue="0" itemLabel="#{assessmentSettingsMessages.only}" />
-        </h:selectOneRadio>
-        
-        <f:verbatim></td><td valign="bottom"></f:verbatim>
-        <h:panelGroup>
-          <h:inputText size="5" id="submissions_Allowed" value="#{publishedSettings.submissionsAllowed}"/>
-          <h:outputLabel for="submissions_Allowed" value="#{assessmentSettingsMessages.limited_submission}" />
-        </h:panelGroup>
-      <f:verbatim></td></tr></table></div></f:verbatim>
-   </h:panelGroup>
+  <h:panelGrid columns="2" columnClasses="alignTop" border="0" rendered="#{publishedSettings.valueMap.submissionModel_isInstructorEditable==true}">
+    <h:outputText style="position: relative; top: 7px;" value="#{assessmentSettingsMessages.submissions_allowed}" />
+    <h:panelGrid columns="3" border="0" columnClasses="alignBottom">
+      <h:selectOneRadio id="unlimitedSubmissions" value="#{publishedSettings.unlimitedSubmissions}" layout="pageDirection">
+        <f:selectItem itemValue="1" itemLabel="#{assessmentSettingsMessages.unlimited_submission}"/>
+        <f:selectItem itemValue="0" itemLabel="#{assessmentSettingsMessages.only}" />
+      </h:selectOneRadio>
+
+	  <h:panelGroup>
+        <h:inputText size="5"  id="submissions_Allowed" value="#{publishedSettings.submissionsAllowed}" />
+        <h:outputLabel for="submissions_Allowed" value="#{assessmentSettingsMessages.limited_submission}" />
+      </h:panelGroup>
+    </h:panelGrid> 
+  </h:panelGrid>
     
   <!-- *** DELIVERY DATES *** -->
-  <h:outputLabel value="<h4 class=\"samigo-category-subhead\"> #{assessmentSettingsMessages.heading_assessment_delivery_dates} </h4>" />
-  <div class="tier2">
-    <h:panelGrid columns="2" columnClasses="samigoCell" summary="#{templateMessages.delivery_dates_sec}" border="0">
-      <h:outputLabel for="startDate" value="#{assessmentSettingsMessages.assessment_available_date}"/>
+  <h:panelGrid columns="1" columnClasses="samigoCell" border="0">
+    <h:panelGroup>
+      <h:outputLabel for="startDate" value="#{assessmentSettingsMessages.assessment_available}"/>
       <samigo:datePicker value="#{publishedSettings.startDateString}" size="25" id="startDate" />
-      <h:outputText value="" />
-      <h:outputText value="#{assessmentSettingsMessages.available_date_note}" />
-
-	<!-- For formatting -->
-	<h:outputText value="" />
-	<h:outputText value="" />
-	<h:outputText value="" />
-	<h:outputText value="" />
+	  <h:outputText value="" />
+	  <h:outputText value="" />
 	  
-      <h:outputLabel for="endDate" value="#{assessmentSettingsMessages.assessment_due_date}" />
+      <h:outputLabel for="endDate" value="#{assessmentSettingsMessages.assessment_due}" />
       <samigo:datePicker value="#{publishedSettings.dueDateString}" size="25" id="endDate"/>
-      <h:outputText value="" />
-	  <h:outputText value="#{assessmentSettingsMessages.assessment_due_date_note}" />
-
-	<!-- For formatting -->
-	<h:outputText value="" />
-	<h:outputText value="" />
-	<h:outputText value="" />
-	<h:outputText value="" />
-	  
-      <h:outputLabel for="retractDate" value="#{assessmentSettingsMessages.assessment_retract_date}"/>
-  	  <h:panelGroup>
-        <samigo:datePicker value="#{publishedSettings.retractDateString}" size="25" id="retractDate" />
-      <f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim>
-	  <h:outputText value="#{assessmentSettingsMessages.word_or}"/>
-	  <f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim>
-      <h:commandButton type="submit" value="#{assessmentSettingsMessages.button_retract_now}" action="confirmAssessmentRetract"  styleClass="active" />
-      </h:panelGroup>
-      <h:outputText value="" />
-      <h:outputText value="#{assessmentSettingsMessages.assessment_retract_date_note}" />
-
-    </h:panelGrid>
- </div>
-
+	  <h:outputText value="" />
+	  <h:outputText value="" />
+  
   <!-- *** TIMED *** -->
-  <h:panelGroup rendered="#{publishedSettings.valueMap.timedAssessment_isInstructorEditable==true}" >
-  <h:outputLabel value="<h4 class=\"samigo-category-subhead\"> #{assessmentSettingsMessages.heading_timed_assessment} </h4>" />
-    <f:verbatim><div class="tier2"></f:verbatim>
-    <h:panelGrid summary="#{templateMessages.timed_assmt_sec}">
-	  <h:panelGroup>
-        <h:selectBooleanCheckbox id="selTimeAssess" onclick="checkUncheckTimeBox();setBlockDivs();" value="#{publishedSettings.valueMap.hasTimeAssessment}">
-		</h:selectBooleanCheckbox>
-        <h:outputText value="#{assessmentSettingsMessages.timed_assessment} " />
-		<h:selectOneMenu id="timedHours" value="#{publishedSettings.timedHours}" disabled="#{!publishedSettings.valueMap.hasTimeAssessment}" >
-		  <f:selectItems value="#{publishedSettings.hours}" />
+      <h:panelGroup rendered="#{publishedSettings.valueMap.timedAssessment_isInstructorEditable==true}" >
+        <h:outputText value="#{assessmentSettingsMessages.has_time_limit} " />
+        <h:selectBooleanCheckbox id="selTimeAssess" onclick="checkUncheckTimeBox();setBlockDivs();" value="#{publishedSettings.valueMap.hasTimeAssessment}" />
+        <h:selectOneMenu id="timedHours" value="#{publishedSettings.timedHours}" >
+          <f:selectItems value="#{publishedSettings.hours}" />
         </h:selectOneMenu>
         <h:outputText value="#{assessmentSettingsMessages.timed_hours} " />
-        <h:selectOneMenu id="timedMinutes" value="#{publishedSettings.timedMinutes}" disabled="#{!publishedSettings.valueMap.hasTimeAssessment}">
+        <h:selectOneMenu id="timedMinutes" value="#{publishedSettings.timedMinutes}">
           <f:selectItems value="#{publishedSettings.mins}" />
         </h:selectOneMenu>
         <h:outputText value="#{assessmentSettingsMessages.timed_minutes} " />
-       <f:verbatim><br/></f:verbatim>
-        <h:outputText value="#{assessmentSettingsMessages.auto_submit_description}" />
+        <f:verbatim><br/></f:verbatim>
       </h:panelGroup>
+    </h:panelGroup>
+  </h:panelGrid>
+  
+  <!-- LATE HANDLING -->
+  <h:panelGrid columns="1" rendered="#{publishedSettings.valueMap.lateHandling_isInstructorEditable==true}" border="0">
+    <h:outputText value="#{assessmentSettingsMessages.late_accept}" />
+    <h:panelGrid columns="4" border="0" columnClasses="alignBottom">
+      <f:verbatim>&nbsp;&nbsp;</f:verbatim>
+      <h:selectOneRadio id="lateHandling" value="#{publishedSettings.lateHandling}"  layout="pageDirection">
+        <f:selectItem itemValue="2" itemLabel="#{assessmentSettingsMessages.no_late}"/>
+        <f:selectItem itemValue="1" itemLabel="#{assessmentSettingsMessages.yes_late}"/>
+      </h:selectOneRadio>
+
+	  <samigo:datePicker value="#{publishedSettings.retractDateString}" size="25" id="retractDate"/>
+	  
+	  <h:commandButton type="submit" value="#{assessmentSettingsMessages.button_stop_accepting_now}" action="confirmAssessmentRetract"  styleClass="active" />
     </h:panelGrid>
- <f:verbatim></div></f:verbatim>
-</h:panelGroup>
-
-  <!-- *** SUBMISSIONS *** -->
-<h:panelGroup rendered="#{publishedSettings.valueMap.submissionModel_isInstructorEditable==true or publishedSettings.valueMap.lateHandling_isInstructorEditable==true or publishedSettings.valueMap.autoSave_isInstructorEditable==true}" >
-	<!-- LATE HANDLING -->
-   <h:panelGroup rendered="#{publishedSettings.valueMap.lateHandling_isInstructorEditable==true}">
-      <h:outputLabel value="<h4 class=\"samigo-category-subhead\"> #{assessmentSettingsMessages.late_handling} </h4>" />
-   <f:verbatim><div class="tier3"></f:verbatim>
-      <h:panelGrid columns="2"  >
-        <h:selectOneRadio id="lateHandling" value="#{publishedSettings.lateHandling}"  layout="pageDirection">
-          <f:selectItem itemValue="2" itemLabel="#{assessmentSettingsMessages.not_accept_latesubmission}"/>
-          <f:selectItem itemValue="1" itemLabel="#{assessmentSettingsMessages.accept_latesubmission}"/>
-        </h:selectOneRadio>
-      </h:panelGrid>
-   <f:verbatim> </div> </f:verbatim>
-   </h:panelGroup>
-
-    <!-- AUTOMATIC SUBMISSION -->
-    <h:panelGroup rendered="#{publishedSettings.valueMap.automaticSubmission_isInstructorEditable==true}">
-      <f:verbatim> <h4 class="samigo-category-subhead"> </f:verbatim> 
-      <h:outputLabel value="#{assessmentSettingsMessages.automatic_submission}" />
-      <f:verbatim> </h4></f:verbatim>
-      <f:verbatim><div class="tier3"></f:verbatim>
-      <h:panelGrid columns="1" border="0">
-	    <h:panelGroup>
-	      <h:selectBooleanCheckbox id="automaticSubmission" value="#{publishedSettings.autoSubmit}"/>
-          <h:outputLabel value="#{assessmentSettingsMessages.auto_submit}"/>
-        </h:panelGroup>
-		<h:panelGroup>
-          <f:verbatim>&nbsp;</f:verbatim>
-          <h:outputText value="#{assessmentSettingsMessages.automatic_submission_note_1}"/>
-		</h:panelGroup>
-      </h:panelGrid>
-      <f:verbatim> </div> </f:verbatim>
-   </h:panelGroup>
-
-</h:panelGroup>
+  </h:panelGrid>
+  
+  <!-- AUTOMATIC SUBMISSION -->
+  <h:panelGroup rendered="#{publishedSettings.valueMap.automaticSubmission_isInstructorEditable==true}">
+    <h:selectBooleanCheckbox id="automaticSubmission" value="#{publishedSettings.autoSubmit}"/>
+    <h:outputLabel value="#{assessmentSettingsMessages.auto_submit}"/>
+  </h:panelGroup>
 
 <f:verbatim><div id="jqueryui-accordion-security"></f:verbatim><!-- This is sub-accordion for high security and submission message -->
 
@@ -352,143 +309,71 @@
 <samigo:hideDivision title="#{assessmentSettingsMessages.heading_grading}" >
 
   <!-- *** GRADING *** -->
-  <h:panelGroup rendered="#{publishedSettings.valueMap.testeeIdentity_isInstructorEditable==true or publishedSettings.valueMap.toGradebook_isInstructorEditable==true or publishedSettings.valueMap.recordedScore_isInstructorEditable==true}" >
-  <f:verbatim><div class="tier2"></f:verbatim>
-  <h:panelGroup rendered="#{publishedSettings.valueMap.testeeIdentity_isInstructorEditable==true}">
-    <h:outputLabel value="<h4 class=\"samigo-category-subhead\"> #{assessmentSettingsMessages.student_identity} </h4>" />
-  <f:verbatim><div class="tier3"> </f:verbatim>
-        <h:panelGrid columns="2" rendered="#{publishedSettings.firstTargetSelected != 'Anonymous Users'}">
-          <h:selectOneRadio id="anonymousGrading1" value="#{publishedSettings.anonymousGrading}"  layout="pageDirection" disabled="#{publishedSettings.editPubAnonyGradingRestricted}">
-            <f:selectItem itemValue="2" itemLabel="#{assessmentSettingsMessages.not_anonymous}"/>
-            <f:selectItem itemValue="1" itemLabel="#{assessmentSettingsMessages.anonymous}"/>
-          </h:selectOneRadio>
-        </h:panelGrid>
-        <h:panelGrid columns="2" rendered="#{publishedSettings.firstTargetSelected == 'Anonymous Users'}">
-          <h:selectOneRadio id="anonymousGrading2" value="1"  layout="pageDirection" disabled="true">
-            <f:selectItem itemValue="2" itemLabel="#{assessmentSettingsMessages.not_anonymous}"/>
-            <f:selectItem itemValue="1" itemLabel="#{assessmentSettingsMessages.anonymous}"/>
-          </h:selectOneRadio>
-        </h:panelGrid>
-
-<f:verbatim></div></f:verbatim>
-</h:panelGroup>
-    <!-- GRADEBOOK OPTIONS -->
-    <h:panelGroup rendered="#{publishedSettings.valueMap.toGradebook_isInstructorEditable==true && publishedSettings.gradebookExists==true}">
-     <h:outputLabel value="<h4 class=\"samigo-category-subhead\"> #{assessmentSettingsMessages.gradebook_options} </h4>" />
-	 <f:verbatim> <div class="tier3"> </f:verbatim>
-      <h:panelGrid columns="2" rendered="#{publishedSettings.firstTargetSelected != 'Anonymous Users'}">
-        <h:selectOneRadio id="toDefaultGradebook1" value="#{publishedSettings.toDefaultGradebook}"  layout="pageDirection">
-          <f:selectItem itemValue="2" itemLabel="#{assessmentSettingsMessages.to_no_gradebook}"/>
-          <f:selectItem itemValue="1" itemLabel="#{assessmentSettingsMessages.to_default_gradebook}"/>
-        </h:selectOneRadio>
-      </h:panelGrid>
-
-      <h:panelGrid columns="2" rendered="#{publishedSettings.firstTargetSelected == 'Anonymous Users'}">
-        <h:selectOneRadio id="toDefaultGradebook2" disabled="true" value="2"  layout="pageDirection">
-          <f:selectItem itemValue="2" itemLabel="#{assessmentSettingsMessages.to_no_gradebook}"/>
-          <f:selectItem itemValue="1" itemLabel="#{assessmentSettingsMessages.to_default_gradebook}"/>
-        </h:selectOneRadio>
-      </h:panelGrid>
-
-	<f:verbatim></div></f:verbatim>
-    </h:panelGroup>
-
-    <!-- RECORDED SCORE AND MULTIPLES -->
-    <h:panelGroup rendered="#{publishedSettings.valueMap.recordedScore_isInstructorEditable==true}">
-   <f:verbatim>  <h4 class="samigo-category-subhead">  </f:verbatim> <h:outputLabel for="scoringType1" value="#{assessmentSettingsMessages.recorded_score}" rendered="#{author.canRecordAverage}"/><h:outputLabel for="scoringType2" value="#{assessmentSettingsMessages.recorded_score}" rendered="#{!author.canRecordAverage}"/><f:verbatim></h4> <div class="tier3"> </f:verbatim>
+  <!-- RECORDED SCORE AND MULTIPLES -->
+  <h:panelGroup rendered="#{publishedSettings.valueMap.recordedScore_isInstructorEditable==true}">
+    <f:verbatim><h4 class="samigo-category-subhead"></f:verbatim>
+    <h:outputText value="#{commonMessages.grading} " />
+    <f:verbatim></h4></f:verbatim> 
       <h:panelGrid columns="2"  >
-        <h:selectOneRadio value="#{publishedSettings.scoringType}" id="scoringType1" layout="pageDirection" rendered="#{author.canRecordAverage}">
+       <h:outputText value="#{assessmentSettingsMessages.recorded_score} " />
+        <h:selectOneMenu value="#{publishedSettings.scoringType}" id="scoringType1" rendered="#{author.canRecordAverage}">
           <f:selectItem itemValue="1" itemLabel="#{assessmentSettingsMessages.highest_score}"/>
           <f:selectItem itemValue="2" itemLabel="#{assessmentSettingsMessages.last_score}"/>
           <f:selectItem itemValue="4" itemLabel="#{assessmentSettingsMessages.average_score}"/>
-        </h:selectOneRadio>
-        <h:selectOneRadio value="#{publishedSettings.scoringType}" id="scoringType2" layout="pageDirection" rendered="#{!author.canRecordAverage}">
+        </h:selectOneMenu>
+        <h:selectOneMenu value="#{publishedSettings.scoringType}" id="scoringType2" rendered="#{!author.canRecordAverage}">
           <f:selectItem itemValue="1" itemLabel="#{assessmentSettingsMessages.highest_score}"/>
           <f:selectItem itemValue="2" itemLabel="#{assessmentSettingsMessages.last_score}"/>
-        </h:selectOneRadio>
+        </h:selectOneMenu>
       </h:panelGrid>
-	  <f:verbatim></div></f:verbatim>
+    </h:panelGroup>
+  
+    <!--  ANONYMOUS GRADING OPTION -->  
+    <h:panelGroup rendered="#{publishedSettings.valueMap.testeeIdentity_isInstructorEditable==true}"> 
+      <h:selectBooleanCheckbox value="#{publishedSettings.anonymousGrading}" disabled="#{publishedSettings.firstTargetSelected == 'Anonymous Users' || publishedSettings.editPubAnonyGradingRestricted}"/>
+      <h:outputLabel value="#{assessmentSettingsMessages.student_identity}"/>
+    </h:panelGroup>
+    
+    <f:verbatim><br /></f:verbatim>
+    
+    <!-- GRADEBOOK OPTION -->
+    <h:panelGroup rendered="#{publishedSettings.valueMap.toGradebook_isInstructorEditable==true && publishedSettings.gradebookExists==true}">
+      <h:selectBooleanCheckbox value="#{publishedSettings.toDefaultGradebook}" disabled="#{publishedSettings.firstTargetSelected == 'Anonymous Users'}"/>
+      <h:outputLabel value="#{assessmentSettingsMessages.gradebook_options}"/>
     </h:panelGroup>
 
-  <f:verbatim></div></f:verbatim>
-</h:panelGroup>
+    <f:verbatim><br /></f:verbatim>
+    <f:verbatim><br /></f:verbatim>
 
-  <!-- *** FEEDBACK *** -->
+ <!-- *** FEEDBACK *** -->
   <h:panelGroup rendered="#{publishedSettings.valueMap.feedbackAuthoring_isInstructorEditable==true or publishedSettings.valueMap.feedbackType_isInstructorEditable==true or publishedSettings.valueMap.feedbackComponents_isInstructorEditable==true}" >
-  <f:verbatim><div class="tier2"></f:verbatim>
 
- <!-- FEEDBACK AUTHORING -->
-   <h:panelGroup rendered="#{publishedSettings.valueMap.feedbackAuthoring_isInstructorEditable==true}">
-   <h:outputLabel value="<h4 class=\"samigo-category-subhead\"> #{commonMessages.feedback_authoring} </h4>" />
-     <f:verbatim> <div class="tier3"> </f:verbatim>
-      <h:panelGrid border="0" columns="1">
-        <h:selectOneRadio id="feedbackAuthoring" value="#{publishedSettings.feedbackAuthoring}" layout="pageDirection">
-          <f:selectItem itemValue="1" itemLabel="#{commonMessages.question_level_feedback}"/>
-          <f:selectItem itemValue="2" itemLabel="#{assessmentSettingsMessages.sectionlevel_feedback}"/>
-          <f:selectItem itemValue="3" itemLabel="#{assessmentSettingsMessages.both_feedback}"/>
-        </h:selectOneRadio>
-      </h:panelGrid>
+  <!-- FEEDBACK AUTHORING -->
+  <h:panelGrid columns="2" border="0" rendered="#{publishedSettings.valueMap.feedbackAuthoring_isInstructorEditable==true}">
+   <h:outputLabel escape="false" value="<h4 class=\"samigo-category-subhead-2\"> #{commonMessages.feedback_authoring} </h4>" />
+         <h:selectOneMenu id="feedbackAuthoring" value="#{publishedSettings.feedbackAuthoring}" >
+           <f:selectItem itemValue="1" itemLabel="#{commonMessages.question_level_feedback}"/>
+           <f:selectItem itemValue="2" itemLabel="#{assessmentSettingsMessages.sectionlevel_feedback}"/>
+           <f:selectItem itemValue="3" itemLabel="#{assessmentSettingsMessages.both_feedback}"/>
+         </h:selectOneMenu>
+  </h:panelGrid>
 
-  <f:verbatim> </div> </f:verbatim>
-  </h:panelGroup>
-  
  <!-- FEEDBACK DELIVERY -->
-	<h:panelGroup rendered="#{publishedSettings.valueMap.feedbackType_isInstructorEditable==true}">
-    <h:outputLabel value="<h4 class=\"samigo-category-subhead\"> #{commonMessages.feedback_delivery} </h4>" />
-	<f:verbatim><div class="tier3"></f:verbatim>
-
-    <h:panelGroup>
-      <h:panelGrid columns="1" rendered="#{publishedSettings.valueMap.feedbackAuthoring_isInstructorEditable!=true}" >
-        <h:selectOneRadio id="feedbackDelivery1"  disabled="true" 
-             value="#{publishedSettings.feedbackDelivery}"
-           layout="pageDirection">
+ <h:panelGrid columns="3" border="0" rendered="#{publishedSettings.valueMap.feedbackType_isInstructorEditable==true}">
+ <h:outputLabel value="<h4 class=\"samigo-category-subhead-2\"> #{commonMessages.feedback_delivery} </h4>" escape="false"/>
+    
+        <h:selectOneMenu id="feedbackDelivery" value="#{publishedSettings.feedbackDelivery}" onclick="setBlockDivs();disableAllFeedbackCheck(this.value);">
           <f:selectItem itemValue="1" itemLabel="#{assessmentSettingsMessages.immediate_feedback}"/>
           <f:selectItem itemValue="4" itemLabel="#{commonMessages.feedback_on_submission}"/>
           <f:selectItem itemValue="3" itemLabel="#{assessmentSettingsMessages.no_feedback}"/>
           <f:selectItem itemValue="2" itemLabel="#{assessmentSettingsMessages.feedback_by_date}"/>
-        </h:selectOneRadio>
+        </h:selectOneMenu>
 
-        <h:panelGroup>
-        <f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim>
-		<h:inputText value="#{publishedSettings.feedbackDateString}" size="25" disabled="true"/>
-        </h:panelGroup>
-      </h:panelGrid>
-    </h:panelGroup>
-
-      <h:panelGrid border="0" columns="1">
-  		<h:selectOneRadio id="feedbackDelivery2" value="#{publishedSettings.feedbackDelivery}"
-           layout="pageDirection" onclick="setBlockDivs();disableAllFeedbackCheck(this.value);">
-          <f:selectItem itemValue="1" itemLabel="#{assessmentSettingsMessages.immediate_feedback}"/>
-		  <f:selectItem itemValue="4" itemLabel="#{commonMessages.feedback_on_submission}"/>
-          <f:selectItem itemValue="3" itemLabel="#{assessmentSettingsMessages.no_feedback}"/>
-          <f:selectItem itemValue="2" itemLabel="#{assessmentSettingsMessages.feedback_by_date}"/>
-        </h:selectOneRadio>
-
-	    <h:panelGrid columns="7" >
-		  <h:outputText value=" "/>
-		  <h:outputText value=" "/>
-		  <h:outputText value=" "/>
-		  <h:outputText value=" "/>
-		  <h:outputText value=" "/>
-		  <h:outputText value=" "/>
-          <samigo:datePicker value="#{publishedSettings.feedbackDateString}" size="25" id="feedbackDate" >
+	     <samigo:datePicker value="#{publishedSettings.feedbackDateString}" size="25" id="feedbackDate" >
             <f:convertDateTime pattern="#{generalMessages.output_date_picker}" />
           </samigo:datePicker>
-        </h:panelGrid>
-
-	    <h:panelGrid columns="7" >
-		  <h:outputText value=" "/>
-		  <h:outputText value=" "/>
-		  <h:outputText value=" "/>
-		  <h:outputText value=" "/>
-		  <h:outputText value=" "/>
-		  <h:outputText value=" "/>
-          <h:outputText value="#{assessmentSettingsMessages.gradebook_note_f}" />
-        </h:panelGrid>
-      </h:panelGrid>
-
-<f:verbatim></div></f:verbatim>
-    </h:panelGroup>
+       
+  </h:panelGrid>
 
     <!-- FEEDBACK COMPONENTS -->
        <h:panelGrid columns="2"  >
@@ -499,7 +384,7 @@
         </h:selectOneRadio>
       </h:panelGrid>
   
-   <f:verbatim> <div class="tier3"></f:verbatim>
+   <f:verbatim> <div class="tier3 respChoice"></f:verbatim>
     <h:panelGroup rendered="#{publishedSettings.valueMap.feedbackComponents_isInstructorEditable!=true}">
       <h:panelGrid columns="2">
        <h:panelGroup>
@@ -552,51 +437,41 @@
     <h:panelGroup rendered="#{publishedSettings.valueMap.feedbackComponents_isInstructorEditable==true}">
       <h:panelGrid columns="2"  >
        <h:panelGroup>
-          <h:selectBooleanCheckbox id="feedbackCheckbox21" disabled="#{publishedSettings.feedbackDelivery==3 || publishedSettings.feedbackComponentOption ==1}"
-              value="#{publishedSettings.showStudentResponse}"/>
+          <h:selectBooleanCheckbox id="feedbackCheckbox21" value="#{publishedSettings.showStudentResponse}"/>
           <h:outputText value="#{commonMessages.student_response}" />
         </h:panelGroup>
        <h:panelGroup>
-          <h:selectBooleanCheckbox id="feedbackCheckbox22" disabled="#{publishedSettings.feedbackDelivery==3 || publishedSettings.feedbackComponentOption ==1}"
-              value="#{publishedSettings.showQuestionLevelFeedback}"/>
+          <h:selectBooleanCheckbox id="feedbackCheckbox22" value="#{publishedSettings.showQuestionLevelFeedback}"/>
           <h:outputText value="#{commonMessages.question_level_feedback}" />
        </h:panelGroup>
         <h:panelGroup>
-          <h:selectBooleanCheckbox id="feedbackCheckbox23" disabled="#{publishedSettings.feedbackDelivery==3 || publishedSettings.feedbackComponentOption ==1}"
-              value="#{publishedSettings.showCorrectResponse}"/>
+          <h:selectBooleanCheckbox id="feedbackCheckbox23" value="#{publishedSettings.showCorrectResponse}"/>
           <h:outputText value="#{commonMessages.correct_response}" />
         </h:panelGroup>
        <h:panelGroup>
-          <h:selectBooleanCheckbox id="feedbackCheckbox24" disabled="#{publishedSettings.feedbackDelivery==3 || publishedSettings.feedbackComponentOption ==1}"
-             value="#{publishedSettings.showSelectionLevelFeedback}"/>
+          <h:selectBooleanCheckbox id="feedbackCheckbox24" value="#{publishedSettings.showSelectionLevelFeedback}"/>
           <h:outputText value="#{commonMessages.selection_level_feedback}" />
         </h:panelGroup>
         <h:panelGroup>
-          <h:selectBooleanCheckbox id="feedbackCheckbox25" disabled="#{publishedSettings.feedbackDelivery==3 || publishedSettings.feedbackComponentOption ==1}"
-              value="#{publishedSettings.showStudentScore}"/>
+          <h:selectBooleanCheckbox id="feedbackCheckbox25" value="#{publishedSettings.showStudentScore}"/>
           <h:outputText value="#{assessmentSettingsMessages.student_assessment_score}" />
         </h:panelGroup>
         <h:panelGroup>
-          <h:selectBooleanCheckbox id="feedbackCheckbox26" disabled="#{publishedSettings.feedbackDelivery==3 || publishedSettings.feedbackComponentOption ==1}"
-              value="#{publishedSettings.showGraderComments}"/>
+          <h:selectBooleanCheckbox id="feedbackCheckbox26" value="#{publishedSettings.showGraderComments}"/>
           <h:outputText value="#{assessmentSettingsMessages.grader_comments}" />
         </h:panelGroup>
-
         <h:panelGroup>
-          <h:selectBooleanCheckbox id="feedbackCheckbox27" disabled="#{publishedSettings.feedbackDelivery==3 || publishedSettings.feedbackComponentOption ==1}"
-              value="#{publishedSettings.showStudentQuestionScore}"/>
+          <h:selectBooleanCheckbox id="feedbackCheckbox27" value="#{publishedSettings.showStudentQuestionScore}"/>
           <h:outputText value="#{assessmentSettingsMessages.student_question_score}" />
         </h:panelGroup>
-       
         <h:panelGroup>
-          <h:selectBooleanCheckbox id="feedbackCheckbox28" disabled="#{publishedSettings.feedbackDelivery==3 || publishedSettings.feedbackComponentOption ==1}"
-              value="#{publishedSettings.showStatistics}"/>
+          <h:selectBooleanCheckbox id="feedbackCheckbox28" value="#{publishedSettings.showStatistics}"/>
           <h:outputText value="#{commonMessages.statistics_and_histogram}" />
         </h:panelGroup>
    
       </h:panelGrid>
     </h:panelGroup>
-	<f:verbatim></div></div></f:verbatim>
+	<f:verbatim></div></f:verbatim>
   </h:panelGroup>
 
   </samigo:hideDivision>
@@ -665,7 +540,7 @@
 
   <!-- *** COLORS AND GRAPHICS	*** -->
 <h:panelGroup rendered="#{publishedSettings.valueMap.bgColor_isInstructorEditable==true}" >
-  <h:outputLabel value="<h4 class=\"samigo-category-subhead\"> #{assessmentSettingsMessages.heading_background} </h4>" />
+  <h:outputLabel value="<h4 class=\"samigo-category-subhead\"> #{assessmentSettingsMessages.heading_background} </h4>" escape="false" />
 	<f:verbatim><div class="tier2"></f:verbatim>
 
         <h:selectOneRadio onclick="uncheckOther(this)" id="background_color" value="#{publishedSettings.bgColorSelect}">
