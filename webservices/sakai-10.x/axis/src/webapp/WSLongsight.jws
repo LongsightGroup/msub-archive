@@ -1501,15 +1501,6 @@ public String copySiteWithProviderId ( String sessionid, String siteidtocopy, St
 			throw new AxisFault("WS copySite(): Permission denied. Must be super user to copy a site in which you are not a maintainer.");
 		}
 		
-	    // check description
-	    if (description != null) {
-	        StringBuilder alertMsg = new StringBuilder();
-	        description = FormattedText.processFormattedText(description, alertMsg);
-	        if (description == null) {
-	        	throw new AxisFault("Site description markup rejected: " + alertMsg.toString());
-	        }
-	    }            
-	    
 		Site siteEdit = siteService.addSite(newsiteid, site);
 		siteEdit.setTitle(title);
 		siteEdit.setDescription(description);
