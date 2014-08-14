@@ -26,7 +26,6 @@ import org.sakaiproject.tool.assessment.samlite.api.SamLiteService;
 import org.sakaiproject.component.cover.ComponentManager;
 import org.sakaiproject.tool.assessment.qti.constants.QTIVersion;
 import org.sakaiproject.tool.assessment.facade.AssessmentFacade;
-import org.sakaiproject.tool.assessment.facade.AssessmentGradingFacade;
 import org.sakaiproject.tool.assessment.facade.AssessmentTemplateFacade;
 import org.sakaiproject.tool.assessment.facade.PublishedAssessmentFacade;
 import org.sakaiproject.tool.assessment.facade.PublishedAssessmentFacadeQueries;
@@ -213,49 +212,49 @@ public String getScoresForSite(String sessionid, String siteid) throws AxisFault
 		ArrayList scores = publishedAssessmentService.getBasicInfoOfLastOrHighestOrAverageSubmittedAssessmentsByScoringOption(userid, siteid, true);
 
 		for (int i = 0; i < scores.size(); i++) {
-			AssessmentGradingFacade agf = (AssessmentGradingFacade) scores.get(i);
+			AssessmentGradingData agd = (AssessmentGradingData) scores.get(i);
 
 			Node item = dom.createElement("item");
 
 			Node assessmentId = dom.createElement("assessmentId");
-			assessmentId.appendChild( dom.createTextNode(agf.getPublishedAssessmentId().toString()));
+			assessmentId.appendChild( dom.createTextNode(agd.getPublishedAssessmentId().toString()));
 			item.appendChild(assessmentId);
 
 			Node title = dom.createElement("title");
-			title.appendChild( dom.createTextNode(agf.getPublishedAssessmentTitle()));
+			title.appendChild( dom.createTextNode(agd.getPublishedAssessmentTitle()));
 			item.appendChild(title);
 
 			Node finalScore = dom.createElement("finalScore");
-			finalScore.appendChild( dom.createTextNode(agf.getFinalScore().toString()));
+			finalScore.appendChild( dom.createTextNode(agd.getFinalScore().toString()));
 			item.appendChild(finalScore);
 
 			Node autoScore = dom.createElement("autoScore");
-			autoScore.appendChild( dom.createTextNode(agf.getTotalAutoScore().toString()));
+			autoScore.appendChild( dom.createTextNode(agd.getTotalAutoScore().toString()));
 			item.appendChild(autoScore);
 
 			Node overrideScore = dom.createElement("overrideScore");
-			overrideScore.appendChild( dom.createTextNode(agf.getTotalOverrideScore().toString()));
+			overrideScore.appendChild( dom.createTextNode(agd.getTotalOverrideScore().toString()));
 			item.appendChild(overrideScore);
 
 			Node attemptDate = dom.createElement("attemptDate");
-			attemptDate.appendChild( dom.createTextNode(agf.getAttemptDate().toString()));
+			attemptDate.appendChild( dom.createTextNode(agd.getAttemptDate().toString()));
 			item.appendChild(attemptDate);
 			
             Node submitDate = dom.createElement("submitDate");
-            submitDate.appendChild( dom.createTextNode(agf.getSubmittedDate().toString()));
+            submitDate.appendChild( dom.createTextNode(agd.getSubmittedDate().toString()));
             item.appendChild(submitDate);
 
 			Node comments = dom.createElement("comments");
-			comments.appendChild( dom.createTextNode(agf.getComments()));
+			comments.appendChild( dom.createTextNode(agd.getComments()));
 			item.appendChild(comments);
 
 			Node sakaiUserId = dom.createElement("userId");
-			sakaiUserId.appendChild( dom.createTextNode(agf.getAgentId()));
+			sakaiUserId.appendChild( dom.createTextNode(agd.getAgentId()));
 			item.appendChild(sakaiUserId);
 
 			Node username = dom.createElement("username");
 			try {
-				User user = userDirectoryService.getUser(agf.getAgentId());
+				User user = userDirectoryService.getUser(agd.getAgentId());
 				String eid = user.getEid();
 				username.appendChild( dom.createTextNode(eid) );
 
@@ -307,49 +306,49 @@ public String getScoresForSiteForUser(String sessionid, String siteid, String us
                 System.out.println(userid+" "+scores.size());
 
 		for (int i = 0; i < scores.size(); i++) {
-			AssessmentGradingFacade agf = (AssessmentGradingFacade) scores.get(i);
+			AssessmentGradingData agd = (AssessmentGradingData) scores.get(i);
 
 			Node item = dom.createElement("item");
 
 			Node assessmentId = dom.createElement("assessmentId");
-			assessmentId.appendChild( dom.createTextNode(agf.getPublishedAssessmentId().toString()));
+			assessmentId.appendChild( dom.createTextNode(agd.getPublishedAssessmentId().toString()));
 			item.appendChild(assessmentId);
 
 			Node title = dom.createElement("title");
-			title.appendChild( dom.createTextNode(agf.getPublishedAssessmentTitle()));
+			title.appendChild( dom.createTextNode(agd.getPublishedAssessmentTitle()));
 			item.appendChild(title);
 
 			Node finalScore = dom.createElement("finalScore");
-			finalScore.appendChild( dom.createTextNode(agf.getFinalScore().toString()));
+			finalScore.appendChild( dom.createTextNode(agd.getFinalScore().toString()));
 			item.appendChild(finalScore);
 
 			Node autoScore = dom.createElement("autoScore");
-			autoScore.appendChild( dom.createTextNode(agf.getTotalAutoScore().toString()));
+			autoScore.appendChild( dom.createTextNode(agd.getTotalAutoScore().toString()));
 			item.appendChild(autoScore);
 
 			Node overrideScore = dom.createElement("overrideScore");
-			overrideScore.appendChild( dom.createTextNode(agf.getTotalOverrideScore().toString()));
+			overrideScore.appendChild( dom.createTextNode(agd.getTotalOverrideScore().toString()));
 			item.appendChild(overrideScore);
 
 			Node attemptDate = dom.createElement("attemptDate");
-			attemptDate.appendChild( dom.createTextNode(agf.getAttemptDate().toString()));
+			attemptDate.appendChild( dom.createTextNode(agd.getAttemptDate().toString()));
 			item.appendChild(attemptDate);
 			
             Node submitDate = dom.createElement("submitDate");
-            submitDate.appendChild( dom.createTextNode(agf.getSubmittedDate().toString()));
+            submitDate.appendChild( dom.createTextNode(agd.getSubmittedDate().toString()));
             item.appendChild(submitDate);
 
 			Node comments = dom.createElement("comments");
-			comments.appendChild( dom.createTextNode(agf.getComments()));
+			comments.appendChild( dom.createTextNode(agd.getComments()));
 			item.appendChild(comments);
 
 			Node sakaiUserId = dom.createElement("userId");
-			sakaiUserId.appendChild( dom.createTextNode(agf.getAgentId()));
+			sakaiUserId.appendChild( dom.createTextNode(agd.getAgentId()));
 			item.appendChild(sakaiUserId);
 
 			Node username = dom.createElement("username");
 			try {
-				User user = userDirectoryService.getUser(agf.getAgentId());
+				User user = userDirectoryService.getUser(agd.getAgentId());
 				String eid = user.getEid();
 				username.appendChild( dom.createTextNode(eid) );
 
