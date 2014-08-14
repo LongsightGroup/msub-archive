@@ -2447,7 +2447,6 @@ public class WSLongsight extends AbstractWebService {
 
 			Gradebook gb = (Gradebook) gradebookService.getGradebook(siteId);
 
-			if (gb.isCourseGradeDisplayed()) {
 				// get the calculated grades
 				Map<String, String> cCourseGrade = gradebookService.getCalculatedCourseGrade(siteId); 
 				Map<String, String> eCourseGrade = gradebookService.getEnteredCourseGrade(siteId);
@@ -2480,13 +2479,6 @@ public class WSLongsight extends AbstractWebService {
 				}
 
 				gradeResult = Xml.writeDocumentToString(dom);
-			} else {
-				Document dom = Xml.createDocument();
-				Node error = dom.createElement("error");
-				error.appendChild(dom.createTextNode("Grades for course "+siteId+" have not been released to students yet inside Sakai."));
-				dom.appendChild(error);
-				gradeResult = Xml.writeDocumentToString(dom);
-			}
 		} catch (Exception e) {
 			return e.getClass().getName() + " : " + e.getMessage();
 		}
@@ -2535,7 +2527,6 @@ public class WSLongsight extends AbstractWebService {
 						continue;
 					}
 
-					//if (gb.isCourseGradeDisplayed()) {
 					// get the calculated grades
 					Map<String, String> cCourseGrade = gradebookService.getCalculatedCourseGrade(siteId); 
 					Map<String, String> eCourseGrade = gradebookService.getEnteredCourseGrade(siteId);
@@ -2565,12 +2556,6 @@ public class WSLongsight extends AbstractWebService {
 
 						course_grade.appendChild(dom.createTextNode(entry.getValue()));
 					}
-
-					/* } else {
-              Node error = dom.createElement("error");
-              error.appendChild(dom.createTextNode("Grades for course "+siteId+" have not been released to students yet inside Sakai."));
-              dom.appendChild(error);
-            } */
 
 				}
 

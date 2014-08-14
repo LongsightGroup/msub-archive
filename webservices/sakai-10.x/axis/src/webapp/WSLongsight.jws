@@ -2235,7 +2235,6 @@ public String getCourseGrades(String sessionId, String siteId) throws AxisFault
       
       Gradebook gb = (Gradebook) aGradebookService.getGradebook(siteId);
 
-      if (gb.isCourseGradeDisplayed()) {
         // get the calculated grades
         Map<String, String> cCourseGrade = aGradebookService.getCalculatedCourseGrade(siteId); 
         Map<String, String> eCourseGrade = aGradebookService.getEnteredCourseGrade(siteId);
@@ -2268,13 +2267,6 @@ public String getCourseGrades(String sessionId, String siteId) throws AxisFault
         }
 
         gradeResult = Xml.writeDocumentToString(dom);
-      } else {
-        Document dom = Xml.createDocument();
-        Node error = dom.createElement("error");
-        error.appendChild(dom.createTextNode("Grades for course "+siteId+" have not been released to students yet inside Sakai."));
-        dom.appendChild(error);
-        gradeResult = Xml.writeDocumentToString(dom);
-      }
   } catch (Exception e) {
     return e.getClass().getName() + " : " + e.getMessage();
   }
@@ -2319,7 +2311,6 @@ public String getManyCourseGrades(String sessionId, String siteIds) throws AxisF
           continue;
         }
 
-        //if (gb.isCourseGradeDisplayed()) {
           // get the calculated grades
           Map<String, String> cCourseGrade = aGradebookService.getCalculatedCourseGrade(siteId); 
           Map<String, String> eCourseGrade = aGradebookService.getEnteredCourseGrade(siteId);
@@ -2349,12 +2340,6 @@ public String getManyCourseGrades(String sessionId, String siteIds) throws AxisF
 
             course_grade.appendChild(dom.createTextNode(entry.getValue()));
           }
-
-        /* } else {
-          Node error = dom.createElement("error");
-          error.appendChild(dom.createTextNode("Grades for course "+siteId+" have not been released to students yet inside Sakai."));
-          dom.appendChild(error);
-        } */
 
       }
      
