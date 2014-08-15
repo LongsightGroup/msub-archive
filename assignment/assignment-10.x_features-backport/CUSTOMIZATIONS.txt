@@ -1,2 +1,3 @@
 SAK-26318 Content Review Improvements
+SAK-27812 Content Review scores are stored in the Assignment Submission causing stale data
 
