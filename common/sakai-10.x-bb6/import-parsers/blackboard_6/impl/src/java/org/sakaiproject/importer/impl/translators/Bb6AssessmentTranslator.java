@@ -27,8 +27,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.sakaiproject.importer.api.IMSResourceTranslator;
 import org.sakaiproject.importer.api.Importable;
 import org.sakaiproject.importer.impl.Blackboard6FileParser;
@@ -52,7 +54,8 @@ public class Bb6AssessmentTranslator implements IMSResourceTranslator{
 		rv.setTitle(XPathHelper.getNodeValue("/questestinterop/assessment/@title", descriptor));
 		// from the descriptor, add all the questions to this QuestionPool object
 		List multiChoiceNodes = XPathHelper.selectNodes("//item/itemmetadata/bbmd_questiontype[. = 'Multiple Choice']/ancestor::item", descriptor);
-		List essayNodes = XPathHelper.selectNodes("//item/itemmetadata/bbmd_questiontype[. = 'Essay']/ancestor::item", descriptor);
+                List essayNodes = XPathHelper.selectNodes("//item/itemmetadata/bbmd_questiontype[. = 'Essay' or . = 'Short Response']/ancestor::item", descriptor);
+		List fillTheBlankPlusNodes = XPathHelper.selectNodes("//item/itemmetadata/bbmd_questiontype[. = 'Fill in the Blank Plus']/ancestor::item", descriptor);
 		List fillTheBlankNodes = XPathHelper.selectNodes("//item/itemmetadata/bbmd_questiontype[. = 'Fill in the Blank']/ancestor::item", descriptor);
 		List matchingNodes = XPathHelper.selectNodes("//item/itemmetadata/bbmd_questiontype[. = 'Matching']/ancestor::item", descriptor);
 		List multiAnswerNodes = XPathHelper.selectNodes("//item/itemmetadata/bbmd_questiontype[. = 'Multiple Answer']/ancestor::item", descriptor);
@@ -60,7 +63,7 @@ public class Bb6AssessmentTranslator implements IMSResourceTranslator{
 		List trueFalseNodes = XPathHelper.selectNodes("//item/itemmetadata/bbmd_questiontype[. = 'True/False']/ancestor::item", descriptor);
 		
 		int totalNumberOfQuestions = multiChoiceNodes.size() + essayNodes.size() + 
-		fillTheBlankNodes.size() + matchingNodes.size() + multiAnswerNodes.size() + orderingNodes.size() + trueFalseNodes.size();
+		fillTheBlankNodes.size() + fillTheBlankPlusNodes.size() + matchingNodes.size() + multiAnswerNodes.size() + orderingNodes.size() + trueFalseNodes.size();
 		
 		if (totalNumberOfQuestions < 1) return null;
 		
@@ -68,8 +71,13 @@ public class Bb6AssessmentTranslator implements IMSResourceTranslator{
 				getQuestionsFromNodes(multiChoiceNodes, AssessmentQuestion.MULTIPLE_CHOICE));
 		rv.setEssayQuestions(
 				getQuestionsFromNodes(essayNodes, AssessmentQuestion.ESSAY));
-		rv.setFillBlankQuestions(
-				getQuestionsFromNodes(fillTheBlankNodes, AssessmentQuestion.FILL_BLANK));
+
+		// LS-136 Fill in the Blank Plus questions
+		List<AssessmentQuestion> fb = getQuestionsFromNodes(fillTheBlankPlusNodes, AssessmentQuestion.FILL_BLANK_PLUS);
+		List<AssessmentQuestion> fbReg = getQuestionsFromNodes(fillTheBlankNodes, AssessmentQuestion.FILL_BLANK);
+		fb.addAll(fbReg);
+		rv.setFillBlankQuestions(fb);
+
 		rv.setMatchQuestions(
 				getQuestionsFromNodes(matchingNodes, AssessmentQuestion.MATCHING));
 		rv.setMultiAnswerQuestions(
@@ -108,6 +116,10 @@ public class Bb6AssessmentTranslator implements IMSResourceTranslator{
 			answers = new HashMap();
 			correctAnswerIDs = new HashSet();
 			questionNode = (Node)i.next();
+			
+			// LS-136
+			String tempQuestionText = XPathHelper.getNodeValue("./presentation//flow[@class='FORMATTED_TEXT_BLOCK']//mat_formattedtext[1]", questionNode);
+			
 			int questionPosition = XPathHelper.selectNodes("./preceding-sibling::item", questionNode).size() + 1;
 			q.setPosition(new Integer(questionPosition));
 			List answerNodes = null;
@@ -153,6 +165,36 @@ public class Bb6AssessmentTranslator implements IMSResourceTranslator{
 				a.setAnswerText(XPathHelper.getNodeValue("./itemfeedback[@ident='solution']//mat_formattedtext[1]", questionNode));
 				correctAnswerIDs.add(a.getAnswerId());
 				answers.put(a.getAnswerId(), a);
+			} else if (questionType == AssessmentQuestion.FILL_BLANK_PLUS) {
+				// LS-136
+				answerNodes = XPathHelper.selectNodes("./resprocessing/respcondition[@title='correct']/conditionvar/and/or/varequal", questionNode);
+				
+				HashMap<String, String> hashMap = new HashMap<String, String>();
+				for (Iterator j = answerNodes.iterator();j.hasNext();) {
+					answerNode = (Node)j.next();
+					
+					String respident = String.valueOf(XPathHelper.getNodeValue("./@respident", answerNode));
+					String tempText = XPathHelper.getNodeValue(".", answerNode);
+					
+					if (hashMap.containsKey(respident)) {
+						tempText = hashMap.get(respident) + "|" + tempText;
+					}
+					hashMap.put(respident, tempText);
+					
+					a = new AssessmentAnswer();
+					a.setAnswerId(respident);
+					a.setPosition(hashMap.size());
+					a.setAnswerText(tempText);
+					answers.put(a.getAnswerId(), a);
+					correctAnswerIDs.add(a.getAnswerId());
+				}
+				
+				// Sample question text: This procedure is called a [1] [2] and [3]. 
+                                // Or: "This procedure is called a [x] [y] and [z]."
+				for (Map.Entry<String, String> entry : hashMap.entrySet()) {
+					tempQuestionText = StringUtils.replace(tempQuestionText, "[" + entry.getKey() + "]", "____");
+				}
+				
 			} else if (questionType == AssessmentQuestion.FILL_BLANK) {
 				answerNodes = XPathHelper.selectNodes("./resprocessing/respcondition/conditionvar/varequal[@respident='response']/ancestor::respcondition", questionNode);
 				for (Iterator j = answerNodes.iterator();j.hasNext();) {
@@ -233,6 +275,16 @@ public class Bb6AssessmentTranslator implements IMSResourceTranslator{
 			String questionTextString = XPathHelper.getNodeValue("./presentation//flow[@class='FORMATTED_TEXT_BLOCK']//mat_formattedtext[1]", questionNode);
 			String questionImageText = getQuestionImageText(questionNode);
 			if (!("".equals(questionImageText))) questionTextString = new StringBuffer(questionTextString + "\n").append("<img src=\"" + questionImageText + "\"/>").toString();
+
+                        // LS-135 
+                        if (questionType == AssessmentQuestion.FILL_BLANK && questionTextString.indexOf("__") < 0) {
+                                questionTextString = questionTextString + " ____";
+                        }
+			// LS-136
+			else if ( questionType == AssessmentQuestion.FILL_BLANK_PLUS) {
+				questionTextString = tempQuestionText;
+			}
+
 			q.setQuestionText(questionTextString);
 			try {
 				float pointValue = Float.parseFloat(XPathHelper.getNodeValue("./itemmetadata/qmd_absolutescore_max", questionNode));
