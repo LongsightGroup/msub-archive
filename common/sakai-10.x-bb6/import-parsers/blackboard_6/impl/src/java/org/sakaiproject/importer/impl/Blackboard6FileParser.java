@@ -81,7 +81,7 @@ public class Blackboard6FileParser extends IMSFileParser {
 		return new Blackboard6FileParser();
 	}
 	
-	public boolean isValidArchive(byte[] fileData) {
+	public boolean isValidArchive(InputStream fileData) {
 		if (super.isValidArchive(fileData)) {
 			Document manifest = extractFileAsDOM("/imsmanifest.xml", fileData);
                         if (enclosingDocumentContainsNamespaceDeclaration(manifest, BB_NAMESPACE_URI)) { 
@@ -301,7 +301,8 @@ public class Blackboard6FileParser extends IMSFileParser {
 						branchOfImportables.add(introFile);
 					}
 				}
-				file.setFileBytes(fileHelper.getFileBytesForNode(node, contextPath));				
+                                InputStream is = fileHelper.getInputStreamForNode(node, contextPath);
+				file.setInputStream(is);
 
 				if (putThisFileIntoAFolder) {
 					file.setDestinationResourcePath(contextPath + folderName + "/" + fileName);

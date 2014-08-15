@@ -4,7 +4,7 @@
   <parent>
     <artifactId>common</artifactId>
     <groupId>org.sakaiproject.common</groupId>
-    <version>1.2-SNAPSHOT</version>
+    <version>10-SNAPSHOT</version>
     <relativePath>../../../pom.xml</relativePath>
   </parent>
   <name>Sakai Import Blackboard 6.x</name>
@@ -36,9 +36,19 @@
           <artifactId>sakai-kernel-util</artifactId>
       </dependency>
 
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-orm</artifactId>
+            <version>${sakai.spring.version}</version>
+        </dependency>
+
       <dependency>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring</artifactId>
+          <groupId>commons-codec</groupId>
+          <artifactId>commons-codec</artifactId>
       </dependency>
 
       <dependency>

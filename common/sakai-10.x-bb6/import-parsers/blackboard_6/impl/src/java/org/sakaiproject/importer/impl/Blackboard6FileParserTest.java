@@ -18,7 +18,6 @@ import junit.framework.TestCase;
 
 public class Blackboard6FileParserTest extends TestCase {
 	private static ImportFileParser parser;
-	private byte[] archiveData;
 	private InputStream archiveStream;
 	
 	private byte[] invalidArchiveData;
@@ -28,13 +27,10 @@ public class Blackboard6FileParserTest extends TestCase {
 		System.out.println("doing setUp()");
 		parser = new Blackboard6FileParser();
 		archiveStream = ClassLoader.getSystemResourceAsStream("valid-bb6-export.zip");
-		archiveData = new byte[archiveStream.available()];
-		archiveStream.read(archiveData,0,archiveStream.available());
-		archiveStream.close();
 	}
 	
 	public void testCanGetDataSource() {
-		ImportDataSource dataSource = (ImportDataSource) parser.parse(archiveData, System.getProperty("java.io.tmpdir"));
+		ImportDataSource dataSource = (ImportDataSource) parser.parse(archiveStream, System.getProperty("java.io.tmpdir"));
 		assertNotNull(dataSource);
 		List<ImportMetadata> categories = dataSource.getItemCategories();
 		List<ImportMetadata> selection = new ArrayList();
@@ -44,7 +40,7 @@ public class Blackboard6FileParserTest extends TestCase {
 		System.out.println("I've got " + dataItems.size() + " data items to feed to Sakai.");
 		for(Importable thing : dataItems) {
 			if (thing instanceof FileResource) {
-				System.out.println(((FileResource)thing).getDestinationResourcePath() + ((FileResource)thing).getTitle() + ":" + ((FileResource)thing).getFileBytes().length + " bytes");
+				System.out.println(((FileResource)thing).getDestinationResourcePath() + ((FileResource)thing).getTitle());
 			}
 			if (thing instanceof Folder) {
 				System.out.println(((Folder)thing).getPath() + ((Folder)thing).getTitle());
@@ -53,15 +49,12 @@ public class Blackboard6FileParserTest extends TestCase {
 	}
 	
 	public void testArchiveIsValid() {
-		assertTrue(parser.isValidArchive(archiveData));
+		assertTrue(parser.isValidArchive(archiveStream));
 	}
 	
 	public void testBb5FormatIsInvalid() throws IOException {
 		invalidArchiveStream = ClassLoader.getSystemResourceAsStream("bb5-export.zip");
-		invalidArchiveData = new byte[invalidArchiveStream.available()];
-		invalidArchiveStream.read(invalidArchiveData, 0, invalidArchiveStream.available());
-		invalidArchiveStream.close();
-		assertFalse(parser.isValidArchive(invalidArchiveData));
+		assertFalse(parser.isValidArchive(invalidArchiveStream));
 	}
 
 }

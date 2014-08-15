@@ -291,7 +291,7 @@ public class Bb6AssessmentTranslator implements IMSResourceTranslator{
 				if (pointValue < 0) {
 					pointValue = Float.parseFloat(XPathHelper.getNodeValue("./resprocessing/outcomes/decvar/@maxvalue", questionNode));
 				}
-				q.setPointValue(pointValue);
+				q.setPointValue(Double.valueOf(pointValue));
 			} catch (NumberFormatException e) {
 				// this just means we didn't get a number out when we tried to get a point value
 				// we can live with that.
