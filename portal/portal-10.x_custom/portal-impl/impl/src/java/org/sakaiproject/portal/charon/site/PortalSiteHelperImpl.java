@@ -836,9 +836,13 @@ public class PortalSiteHelperImpl implements PortalSiteHelper
                     categorizedMaps.remove("NONE");
                 }
                 //fill in the rest
-                for(String key : categorizedMaps.keySet()){
+                // do this in order!
+                for(int j=0; j < categorySize; j++){
+                    String key = ServerConfigurationService.getString("toolmenu.category["+j+"].title", "");
+                    if (key != null && !key.equals("") && categorizedMaps.containsKey(key)) {
                     l.addAll(categorizedMaps.get(key));
                 }
+		}
 
 		theMap.put("pageNavTools", l);
 		theMap.put("pageMaxIfSingle", ServerConfigurationService.getBoolean(
