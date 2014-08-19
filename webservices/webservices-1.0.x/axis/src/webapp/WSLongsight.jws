@@ -246,9 +246,16 @@ public String longsightGetIdFromTitle(String sessionid, String sitetitle) throws
       null, sitetitle, null, org.sakaiproject.site.api.SiteService.SortType.ID_DESC, null);
     if (sites.size() == 1) {
       return sites.get(0).getId();
+    } else if (sites.size() > 1) {
+     for (int i = 0; i < sites.size(); i++) {
+       if (sitetitle.equals(sites.get(i).getTitle())) {
+         return sites.get(i).getId();
+       }
+     }
     } else {
-      return "error: could not find the site, or I found too many with that name";
+      return "error: could not find the site";
     }
+    return "error: could not find the site";
 }
 
 
