@@ -1,0 +1,1 @@
+SAK-27817 Add property to make newly created syllabus items published
