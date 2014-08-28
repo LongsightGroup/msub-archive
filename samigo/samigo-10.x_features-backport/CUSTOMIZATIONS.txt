@@ -12,3 +12,4 @@ SAM-2188 Expand Collapse All for samigo settings
 SAM-2352 Don't run on assessment attempts with a null submittedDate ; Tests and Quizzes - Autosubmit issues (MND-488196)
 
 TODO: SAM-2056 Better usability in jquery ui
+Updated 08/28/2014 svn merge "^/sam/branches/sakai-10.x"svn merge "^/sam/branches/sakai-10.x"
