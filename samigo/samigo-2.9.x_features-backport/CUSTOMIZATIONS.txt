@@ -47,6 +47,7 @@ SAM-1660 Patch for samigo to participate in archive/merge
 SAM-2287 If instructor enters question-level metadata, display statistics on those Objectives and Keywords
 SAM-2044 RTE doesn't Show when "show/hide" is clicked for tests via URL
 SAM-2352 Don't run on assessment attempts with a null submittedDate ; Tests and Quizzes - Autosubmit issues (MND-488196)
+SAM-1992 missing merge of r312465 from 2.9.x branch (r118702 in trunk)
 ----------------------
 Removed from backport
 ----------------------
