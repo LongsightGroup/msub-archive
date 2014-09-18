@@ -73,7 +73,7 @@ public interface ContentReviewService {
 	 * @throws ReportException
 	 * * * @deprecated since Nov 2007, use {@link getReviewReportInstructor(String contentId)} or {@link getReviewReportInstructor(String contentId)}
 	 */
-	public String getReviewReport(String contentId, String assignmentRef)
+	public String getReviewReport(String contentId, String assignmentRef, String userId)
 	throws QueueException, ReportException;
 	
 	/**
@@ -84,7 +84,7 @@ public interface ContentReviewService {
 	 * @throws QueueException
 	 * @throws ReportException
 	 * */
-	public String getReviewReportStudent(String contentId, String assignmentRef)
+	public String getReviewReportStudent(String contentId, String assignmentRef, String userId)
 	throws QueueException, ReportException;
 	
 	/**
@@ -96,7 +96,7 @@ public interface ContentReviewService {
 	 * @throws QueueException
 	 * @throws ReportException
 	 */
-	public String getReviewReportInstructor(String contentId, String assignmentRef)
+	public String getReviewReportInstructor(String contentId, String assignmentRef, String userId)
 	throws QueueException, ReportException;
 	
 	
