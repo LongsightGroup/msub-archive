@@ -6,9 +6,10 @@
 ##
 <html lang="$!{locale}">
    <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta http-equiv="Content-Style-Type" content="text/css" />
     <meta http-equiv="Content-Language" content="$!{locale}" />
+    <link rel="stylesheet" type="text/css" href="//cloud.typography.com/6676232/637366/css/fonts.css" />
 
 ## SAK-16484 Allow Javascript to easily get at user details.
 ## SAK-13987, SAK-16162, SAK-19132 - Portal Logout Timer
