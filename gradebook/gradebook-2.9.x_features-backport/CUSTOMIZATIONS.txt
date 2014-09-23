@@ -3,3 +3,4 @@ TODO: GYD-245872 & LS-51
 SAK-22164 Override grades should be clearer in All Grades view
 SAK-23193 Gradebook: Create a property to set default number of students for the pager
 SAK-14519 Add Point Total column on the Gradebook Items Summary screen
+SAK-22205 Gradebook Item Export Format
