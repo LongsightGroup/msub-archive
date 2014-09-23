@@ -346,7 +346,16 @@ public class MeleteImportfromSiteServiceImpl extends MeleteImportBaseImpl implem
 			}
 			logger.debug("imgSrcpath in createHTML of import from site:" + imgSrcPath);
 			// if img src is in library or any other inside sakai path then don't process
-			if (imgSrcPath.indexOf("/access") != -1)
+                        // look to sakai.properties setting to see if non-melete sakai resources should be copied or not
+                        String replacePattern = "";
+                        if (Boolean.parseBoolean(ServerConfigurationService.getString("melete.translateLinks", "true"))) {
+                            // copy all local sakai resources into meleteDocs, the normal default
+                            replacePattern = "/access";
+                        } else {
+                            // only copy meleteDocs content into the destination course meleteDocs, leave other sakai links as they are
+                            replacePattern = "/access/meleteDocs";
+                        }
+                        if(imgSrcPath.indexOf(replacePattern) !=-1)
 			{
 				checkforimgs = checkforimgs.substring(endSrc);
 				String findResourcePath = imgSrcPath.trim();
