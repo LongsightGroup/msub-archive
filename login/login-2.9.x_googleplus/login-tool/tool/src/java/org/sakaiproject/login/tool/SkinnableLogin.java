@@ -22,6 +22,9 @@ package org.sakaiproject.login.tool;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Formatter;
 
 import javax.security.auth.login.LoginException;
 import javax.servlet.ServletConfig;
@@ -209,6 +212,28 @@ public class SkinnableLogin extends HttpServlet implements Login {
                 if ( portalUrl != null && portalUrl.indexOf("/site/") < 1 && portalUrl.startsWith(actualPortal) ) {
 			rcontext.put("doCancel", Boolean.TRUE);
 		}
+                
+        		
+		// Customization for GooglePlus Login
+		MessageDigest md = null;
+		try {
+				md = MessageDigest.getInstance("SHA-256");
+		} catch (NoSuchAlgorithmException e) {
+				e.printStackTrace();
+		}
+		byte[] digest = md.digest(session.getId().getBytes("UTF-8"));    
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("https://accounts.google.com/o/oauth2/auth?scope=");
+		sb.append("profile%20email");
+		sb.append("&state=");
+		sb.append(byteArray2Hex(digest));
+		sb.append("&redirect_uri=");
+		sb.append(serverConfigurationService.getPortalUrl().replace("/portal", "/sakai-login-tool/googleplus/login"));
+		sb.append("&response_type=code&client_id=");
+		sb.append(serverConfigurationService.getString("google.plus.client.id", "xxxxx"));
+		sb.append("&access_type=offline");
+		rcontext.put("googlePlusLoginUrl", sb.toString());
 		
 		sendResponse(rcontext, res, "xlogin", null);
 	}
@@ -448,4 +473,13 @@ public class SkinnableLogin extends HttpServlet implements Login {
 			log.warn("Login attempt failed. ID=" + credentials.getIdentifier() + ", IP Address=" + credentials.getRemoteAddr());
 		}
 	}
+	
+    private static String byteArray2Hex(byte[] hash) {
+        Formatter formatter = new Formatter();
+        for (byte b : hash) {
+            formatter.format("%02x", b);
+        }
+        return formatter.toString();
+    }
+
 }
