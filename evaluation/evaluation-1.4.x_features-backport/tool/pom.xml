@@ -421,6 +421,16 @@
             <version>4.5</version>
             <scope>test</scope>
         </dependency>
+    	<dependency>
+            <groupId>${sakai.ehcache.groupId}</groupId>
+            <artifactId>${sakai.ehcache.artifactId}</artifactId>
+            <version>${sakai.ehcache.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>1.8.4</version>
+        </dependency>
     </dependencies>
 
     <repositories>

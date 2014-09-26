@@ -2,12 +2,16 @@ package org.sakaiproject.evaluation.tool.renderers;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Arrays;
+
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.Element;
 
 import org.sakaiproject.evaluation.logic.EvalCommonLogic;
 import org.sakaiproject.evaluation.logic.externals.ExternalHierarchyLogic;
@@ -59,7 +63,7 @@ public class HierarchyTreeNodeSelectRenderer {
     List<String> evalGroupValues;
     List<String> hierNodeLabels; 
     List<String> hierNodeValues;
-    
+    Cache evalGroupCache;
     
    /**
     * This is the main entry point for rendering the hierarchy with selectable
@@ -183,14 +187,42 @@ public class HierarchyTreeNodeSelectRenderer {
 		  selectedNodes.remove(""+node.id);
           if(expanded){
     		   Set<String> groupIDs = hierarchyLogic.getEvalGroupsForNode(node.id);
-        	   for (String groupID: groupIDs) {
-        		   EvalGroup evalGroupObj = commonLogic.makeEvalGroupObject(groupID);
+    		   List<EvalGroup> evalGroupsArr = new ArrayList<EvalGroup>();
+    		   for (String groupID: groupIDs) {
+    			   Element evalGroupElem = evalGroupCache.get(groupID);
+    			   EvalGroup evalGroupObj = null;
+    			   if(evalGroupElem == null){
+    				   evalGroupObj = commonLogic.makeEvalGroupObject(groupID);
+    				   evalGroupCache.put(new Element(groupID, evalGroupObj));
+    			   }else{
+    				   evalGroupObj = (EvalGroup) evalGroupElem.getObjectValue();
+    			   }
+    			   evalGroupsArr.add(evalGroupObj);
+    		   }
+    		   //sort eval groups:
+    			   Collections.sort(evalGroupsArr, new Comparator<EvalGroup>() {
+    				   @Override
+    				   public int compare(EvalGroup o1, EvalGroup o2) {
+    					   return o1.title.compareTo(o2.title);
+    				   }
+    			   });
+    			for(EvalGroup g : evalGroupsArr){
         		   Set<String> currentNodeParents = node.parentNodeIds;
         		   currentNodeParents.add(node.id);
-        		   selectedGroups.remove(groupID);
-        		   renderRow(tofill, "hierarchy-level-row:", level+1, evalGroupObj, evalViewParams, accessNodeIds, currentNodeParents, false);
+        		   selectedGroups.remove(g.evalGroupId);
+        		   renderRow(tofill, "hierarchy-level-row:", level+1, g, evalViewParams, accessNodeIds, currentNodeParents, false);
         	   }
-    		   for (EvalHierarchyNode childHierNode: hierarchyLogic.getChildNodes(node.id, true)) {
+    			Set<EvalHierarchyNode> childrenNodes = hierarchyLogic.getChildNodes(node.id, true);
+    			//sort the list by title
+    			List<EvalHierarchyNode> childrenNodesArr = new ArrayList<EvalHierarchyNode>(childrenNodes);
+    			Collections.sort(childrenNodesArr, new Comparator<EvalHierarchyNode>() {
+    				@Override
+    				public int compare(EvalHierarchyNode arg0,
+    						EvalHierarchyNode arg1) {
+    					return arg0.description.compareTo(arg1.description);
+    				}
+    			});
+    		   for (EvalHierarchyNode childHierNode: childrenNodesArr) {
     			   renderSelectHierarchyNode(tofill, childHierNode, level+1, evalViewParams, accessNodeIds, parentNodeIds, selectedNodes, selectedGroups);
     		   }
           }
@@ -302,4 +334,13 @@ public class HierarchyTreeNodeSelectRenderer {
         
         return expanded;
     }
+   
+   public Cache getEvalGroupCache() {
+       return evalGroupCache;
+   }
+
+
+   public void setEvalGroupCache(Cache evalGroupCache) {
+	   this.evalGroupCache = evalGroupCache;
+   }
 }
