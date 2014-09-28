@@ -88,3 +88,6 @@ sakai-mock https://source.sakaiproject.org/svn/msub/longsight.com/sakai-mock/sak
 samigo https://source.sakaiproject.org/svn/msub/longsight.com/custom_builds/60/samigo/samigo-10.x_features-backport
 site-manage https://source.sakaiproject.org/svn/msub/longsight.com/site-manage/site-manage-10.x_custom
 
+
+# Additional tools
+dashboard https://source.sakaiproject.org/svn/dashboard/branches/sakai-10.x
