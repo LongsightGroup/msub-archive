@@ -1,0 +1,1 @@
+SAK-27937 - Add a course grade option to disable course points on the student view

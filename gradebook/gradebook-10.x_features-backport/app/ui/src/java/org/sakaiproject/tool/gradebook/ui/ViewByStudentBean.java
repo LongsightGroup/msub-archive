@@ -47,7 +47,6 @@ import org.sakaiproject.tool.gradebook.GradingEvent;
 import org.sakaiproject.tool.gradebook.GradingEvents;
 import org.sakaiproject.tool.gradebook.jsf.FacesUtil;
 import org.sakaiproject.tool.gradebook.ui.AssignmentGradeRow;
-import org.sakaiproject.component.cover.ServerConfigurationService;
 
 /**
  * Provides data for the student view of the gradebook. Is used by both the
@@ -60,6 +59,7 @@ public class ViewByStudentBean extends EnrollmentTableBean implements Serializab
     // View maintenance fields - serializable.
     private String userDisplayName;
     private boolean courseGradeReleased;
+    private boolean coursePointsReleased;
     private CourseGradeRecord courseGrade;
     private String courseGradeLetter;
     private boolean assignmentsReleased;
@@ -68,7 +68,6 @@ public class ViewByStudentBean extends EnrollmentTableBean implements Serializab
     private boolean isAllItemsViewOnly = true;
     private double totalPoints;
     private double pointsEarned;
-    private boolean showCoursePoints;
 
     private boolean sortAscending;
     private String sortColumn;
@@ -221,6 +220,7 @@ public class ViewByStudentBean extends EnrollmentTableBean implements Serializab
     	}
     	
     	courseGradeReleased = gradebook.isCourseGradeDisplayed();
+    	coursePointsReleased = getShowCoursePoints() && gradebook.isCoursePointsDisplayed();
     	assignmentsReleased = gradebook.isAssignmentsDisplayed();
 
     	// Reset the row styles
@@ -284,6 +284,9 @@ public class ViewByStudentBean extends EnrollmentTableBean implements Serializab
      */
     public boolean isCourseGradeReleased() {
         return courseGradeReleased;
+    }
+    public boolean isCoursePointsReleased() {
+    	return coursePointsReleased;
     }
 
     public boolean isAssignmentsReleased() {
@@ -371,12 +374,6 @@ public class ViewByStudentBean extends EnrollmentTableBean implements Serializab
     public double getPointsEarned() {
         return pointsEarned;
     }
-    
-    public boolean getShowCoursePoints() {
-        String showCoursePoints = ServerConfigurationService.getString("gradebook.showCoursePoints", "false");
-        return Boolean.parseBoolean(showCoursePoints);
-    }
-    
     
     /**
      * Instructor view will include some features that aren't appropriate
