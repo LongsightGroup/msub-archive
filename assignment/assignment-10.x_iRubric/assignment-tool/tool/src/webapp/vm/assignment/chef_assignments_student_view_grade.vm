@@ -115,6 +115,12 @@
 									#end
 									#if ($gradeTypeTable.get($assignment.getContent().getTypeOfGrade()) == $!tlang.getString("points"))
 										($tlang.getString("grade.max") $assignment.getContent().getMaxGradePointDisplay())
+										
+										<!--for grading via an external scoring service, if enabled for an associated gradebook item -->
+										#if($scoringComponentEnabled)
+											#parse ("/vm/assignment/chef_assignments_scoring_agent.vm")	
+								        #end
+								        
 									#end
 								</strong>
 							</td>
@@ -128,6 +134,12 @@
 								$gradeScale
 								#if ($gradeTypeTable.get($assignment.getContent().getTypeOfGrade()) == $!tlang.getString("points"))
 									($tlang.getString("grade.max") $assignment.getContent().getMaxGradePointDisplay())
+									
+									<!--for grading via an external scoring service, if enabled for an associated gradebook item -->
+									#if($scoringComponentEnabled)
+										#parse ("/vm/assignment/chef_assignments_scoring_agent.vm")	
+								    #end
+							        
 								#end
 							</td>
 						</tr>
