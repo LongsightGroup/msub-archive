@@ -487,6 +487,23 @@ public class ExternalContentReviewLogicImpl implements ExternalContentReviewLogi
                 }
             }
         }
+        //make sure any missing checkbox is set to false (ie. 0) if properties has removed the option for the user:
+        if(!opts.containsKey("journal_check") || !serverConfigurationService.getBoolean(AssignmentConstants.TII_OPTION_CHECK_JOURNAL, true)){
+        	opts.remove("journal_check");
+        	opts.put("journal_check", "0");
+        }
+        if(!opts.containsKey("internet_check") || !serverConfigurationService.getBoolean(AssignmentConstants.TII_OPTION_CHECK_INTERNET, true)){
+        	opts.remove("internet_check");
+        	opts.put("internet_check", "0");
+        }
+        if(!opts.containsKey("s_paper_check") || !serverConfigurationService.getBoolean(AssignmentConstants.TII_OPTION_CHECK_TII, true)){
+        	opts.remove("s_paper_check");
+        	opts.put("s_paper_check", "0");
+        }
+        if(!opts.containsKey("institution_check") || !serverConfigurationService.getBoolean(AssignmentConstants.TII_OPTION_CHECK_INSTITUTION, true)){
+        	opts.remove("institution_check");
+        	opts.put("institution_check", "0");
+        }
         
         // ONC-2486
         opts.put("late_accept_flag", "1");

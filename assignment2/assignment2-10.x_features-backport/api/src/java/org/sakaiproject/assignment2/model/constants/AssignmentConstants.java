@@ -263,6 +263,61 @@ public class AssignmentConstants {
      */
     public static final String TII_PROP_SUBMIT_TO_REPO = "turnitin.repository.setting";
     
+    public static final String TII_GEN_SPEED_IMMEDIATE = "0";
+    public static final String TII_GEN_SPEED_DUE = "2";
+    
+    /**
+     * This property is specific to Turnitin implementation of ContentReview.
+     * if you want to restrict how your reports are generated, 
+     * include this property in sakai.properties.  If this property is
+     * not included, will default to all options. Set using the list approach in sakai.properties:
+     * ie, to include the "no repo" and "standard repo" options only, use: 
+     * turnitin.report_gen_speed.setting.count=2
+     * turnitin.report_gen_speed.setting.1 = 0
+     * turnitin.report_gen_speed.setting.2 = 2
+     * 
+     */
+    public static final String TII_PROP_REPORT_GEN_SPEED = "turnitin.report_gen_speed.setting";
+    
+    /**
+     * Enables option to check against TurnItIn
+     */
+    public static final String TII_OPTION_CHECK_TII = "turnitin.option.s_paper_check";
+    /**
+     * Enables option to check against Internet
+     */
+    public static final String TII_OPTION_CHECK_INTERNET = "turnitin.option.internet_check";
+    /**
+     * Enables option to check against Journals, publications, ect
+     */
+    public static final String TII_OPTION_CHECK_JOURNAL = "turnitin.option.journal_check";
+    /**
+     * Enables option to check against Institution
+     */
+    public static final String TII_OPTION_CHECK_INSTITUTION = "turnitin.option.institution_check";
+    
+    /**
+     * Default value for option to check against TurnItIn
+     */
+    public static final String TII_OPTION_CHECK_TII_DEFAULT = "turnitin.option.s_paper_check.default";
+    /**
+     * Default value for option to check against Internet
+     */
+    public static final String TII_OPTION_CHECK_INTERNET_DEFAULT = "turnitin.option.internet_check.default";
+    /**
+     * Default value for option to check against Journals, publications, ect
+     */
+    public static final String TII_OPTION_CHECK_JOURNAL_DEFAULT = "turnitin.option.journal_check.default";
+    /**
+     * Default value for option to check against Institution
+     */
+    public static final String TII_OPTION_CHECK_INSTITUTION_DEFAULT = "turnitin.option.institution_check.default";
+    
+    /**
+     * Default value for option for Report Generation Speed (either 0:Immediately, 2:On Due Date)
+     */
+    public static final String TII_PROP_DEFAULT_REPORT_GEN_SPEED = "turnitin.report_gen_speed.setting.value";
+    
     /**
      * The default value for the {@link #TII_PROP_SUBMIT_TO_REPO}. Possible values are:
      * {@link #TII_VALUE_INSTITUTION_REPO}, {@link #TII_VALUE_NO_REPO}, {@link #TII_VALUE_STANDARD_REPO}
@@ -286,6 +341,8 @@ public class AssignmentConstants {
      * use this option if you want submissions saved only to your institutional repository.
      */
     public static final String TII_VALUE_INSTITUTION_REPO = "2";
+    
+    public static final String TII_PROP_DEFAULT_ALLOW_STUDENT_VIEW = "turnitin.allowStudentView.default";
     
     /**
      * This property is specific to Turnitin implementation of ContentReview.

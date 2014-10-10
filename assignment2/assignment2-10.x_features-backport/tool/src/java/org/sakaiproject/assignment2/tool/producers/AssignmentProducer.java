@@ -817,21 +817,33 @@ public class AssignmentProducer implements ViewComponentProducer, ViewParamsRepo
         // although the service allows for a value of "1" --> Generate report immediately but overwrite until due date,
         // this doesn't make sense for assignment2. We limit the UI to 0 - Immediately
         // or 2 - On Due Date
-        String[] reportGenSpeedValues = new String[] {
-                "0", "2"
-        };
+        List<String> reportGenSpeedOptions = localTurnitinLogic.getReportGenerationSpeedOptions();
+//        String[] reportGenSpeedValues = new String[] {
+//                "0", "2"
+//        };
+        String[] reportGenSpeedValues = reportGenSpeedOptions.toArray(new String[reportGenSpeedOptions.size()]);
         
-        String[] reportGenSpeedLabels = new String[] {
+        String[] reportGenSpeedLabelOptions = new String[] {
                 "assignment2.turnitin.asnnedit.generate_originality_reports.immediate",
                 "assignment2.turnitin.asnnedit.generate_originality_reports.on_due_date"
         };
+        String[] reportGenSpeedLabels = new String[reportGenSpeedOptions.size()];
+        int i = 0;
+        for(String genOption : reportGenSpeedOptions){
+        	if(genOption.equals(AssignmentConstants.TII_GEN_SPEED_IMMEDIATE)){
+        		reportGenSpeedLabels[i] = reportGenSpeedLabelOptions[0];
+        	}else if(genOption.equals(AssignmentConstants.TII_GEN_SPEED_DUE)){
+        		reportGenSpeedLabels[i] = reportGenSpeedLabelOptions[1];
+        	}
+        	i++;
+        }
         
        // if this property hasn't been set yet, set the first one in the list as selected
         String selectedValue;
         if (assignment.getProperties().containsKey("report_gen_speed")) {
             selectedValue = (String)assignment.getProperties().get("report_gen_speed");
         } else {
-            selectedValue = reportGenSpeedValues[0];
+        	selectedValue = localTurnitinLogic.getDefaultReportGenerationSpeed();
         }
         
         UISelect gen_reports_select = UISelect.make(form, "generate_report_radios", reportGenSpeedValues,
@@ -839,36 +851,43 @@ public class AssignmentProducer implements ViewComponentProducer, ViewParamsRepo
         
         String gen_reports_select_id = gen_reports_select.getFullID();
         
-        UISelectChoice.make(form, "gen_report_immediately", gen_reports_select_id, 0);
-        UISelectLabel.make(form, "gen_report_immediately_label", gen_reports_select_id, 0);
-
-        UISelectChoice.make(form, "gen_report_on_due_date", gen_reports_select_id, 1);
-        UISelectLabel.make(form, "gen_report_on_due_date_label", gen_reports_select_id, 1);
-        
+        i = 0;
+        if(reportGenSpeedOptions.contains(AssignmentConstants.TII_GEN_SPEED_IMMEDIATE)){
+        	UISelectChoice.make(form, "gen_report_immediately", gen_reports_select_id, i);
+        	UISelectLabel.make(form, "gen_report_immediately_label", gen_reports_select_id, i);
+        	i++;
+        }
+        if(reportGenSpeedOptions.contains(AssignmentConstants.TII_GEN_SPEED_DUE)){
+        	UISelectChoice.make(form, "gen_report_on_due_date", gen_reports_select_id, i);
+        	UISelectLabel.make(form, "gen_report_on_due_date_label", gen_reports_select_id, i);
+        }
+        boolean allowStudentView = assignment.getProperties().containsKey("s_view_report") ? 
+                (Boolean)assignment.getProperties().get("s_view_report") : localTurnitinLogic.getDefaultAllowStudentView();
         UIBoundBoolean.make(form, "allow_students_to_see_originality_checkbox", 
-                assignment2OTP + ".properties.s_view_report");
+                assignment2OTP + ".properties.s_view_report", allowStudentView);
         
         
         // set the checkboxes to default to true
         boolean checkPaperRepo = assignment.getProperties().containsKey("s_paper_check") ? 
-                (Boolean)assignment.getProperties().get("s_paper_check") : true;
+                (Boolean)assignment.getProperties().get("s_paper_check") : localTurnitinLogic.getOptionCheckTurnItInDefault();
         boolean checkInternetRepo = assignment.getProperties().containsKey("internet_check") ? 
-                (Boolean)assignment.getProperties().get("internet_check") : true;
+                (Boolean)assignment.getProperties().get("internet_check") : localTurnitinLogic.getOptionCheckInternetDefault();
         boolean checkJournalRepo = assignment.getProperties().containsKey("journal_check") ? 
-                (Boolean)assignment.getProperties().get("journal_check") : true;
+                (Boolean)assignment.getProperties().get("journal_check") : localTurnitinLogic.getOptionCheckJournalDefault();
         boolean checkInstRepo = assignment.getProperties().containsKey("institution_check") ? 
-                (Boolean)assignment.getProperties().get("institution_check") : true;
+                (Boolean)assignment.getProperties().get("institution_check") : localTurnitinLogic.getOptionCheckInstitutionDefault();
         
-        UIBoundBoolean.make(form, "check_against_student_repo_checkbox",
+        if(localTurnitinLogic.getOptionCheckTurnItIn())
+        	UIBoundBoolean.make(form, "check_against_student_repo_checkbox",
                 assignment2OTP + ".properties.s_paper_check", checkPaperRepo);
-        
-        UIBoundBoolean.make(form, "check_against_internet_repo_checkbox",
+        if(localTurnitinLogic.getOptionCheckInternet())
+        	UIBoundBoolean.make(form, "check_against_internet_repo_checkbox",
                 assignment2OTP + ".properties.internet_check", checkInternetRepo);
-        
-        UIBoundBoolean.make(form, "check_against_journal_repo_checkbox", 
+        if(localTurnitinLogic.getOptionCheckJournal())
+        	UIBoundBoolean.make(form, "check_against_journal_repo_checkbox", 
                 assignment2OTP + ".properties.journal_check", checkJournalRepo);
-        
-        UIBoundBoolean.make(form, "check_against_institution_repo_checkbox",
+        if(localTurnitinLogic.getOptionCheckInstitution())
+        	UIBoundBoolean.make(form, "check_against_institution_repo_checkbox",
                 assignment2OTP + ".properties.institution_check", checkInstRepo);
         
         String instRepoText;

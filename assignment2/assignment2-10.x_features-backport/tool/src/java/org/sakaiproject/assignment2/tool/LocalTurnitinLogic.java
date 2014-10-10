@@ -73,6 +73,85 @@ public class LocalTurnitinLogic {
     
     /**
      * 
+     * @return the submission repository options available. possible values
+     * are {@link AssignmentConstants#TII_VALUE_NO_REPO}, {@link AssignmentConstants#TII_VALUE_INSTITUTION_REPO}, {@link AssignmentConstants#TII_VALUE_STANDARD_REPO}.
+     * Returns all three options if no preference was set in sakai.properties
+     */
+    public List<String> getReportGenerationSpeedOptions() {
+        List<String> reportGenerationSpeedSettings = new ArrayList<String>();
+        String[] propertyValues = serverConfigurationService.getStrings(AssignmentConstants.TII_PROP_REPORT_GEN_SPEED);
+        if (propertyValues != null && propertyValues.length > 0) {
+            for (int i=0; i < propertyValues.length; i++) {
+                String propertyVal = propertyValues[i];
+                if (propertyVal.equals(AssignmentConstants.TII_GEN_SPEED_DUE) || 
+                        propertyVal.equals(AssignmentConstants.TII_GEN_SPEED_IMMEDIATE)) {
+                	reportGenerationSpeedSettings.add(propertyVal);
+                }
+            }
+        }
+
+        // if there are still no valid settings in the list at this point, use the default
+        if (reportGenerationSpeedSettings.isEmpty()) {
+            // add all three
+        	reportGenerationSpeedSettings.add(AssignmentConstants.TII_GEN_SPEED_IMMEDIATE);
+        	reportGenerationSpeedSettings.add(AssignmentConstants.TII_GEN_SPEED_DUE);
+        }
+
+        return reportGenerationSpeedSettings;
+    }
+    
+    public boolean getOptionCheckTurnItIn(){
+    	boolean optionCheckTII = serverConfigurationService.getBoolean(AssignmentConstants.TII_OPTION_CHECK_TII, true);
+    	return optionCheckTII;
+    }
+    
+    public boolean getOptionCheckTurnItInDefault(){
+    	boolean optionCheckTII = serverConfigurationService.getBoolean(AssignmentConstants.TII_OPTION_CHECK_TII_DEFAULT, getOptionCheckTurnItIn());
+    	return optionCheckTII;
+    }
+    
+    public boolean getOptionCheckInstitution(){
+    	boolean optionCheck = serverConfigurationService.getBoolean(AssignmentConstants.TII_OPTION_CHECK_INSTITUTION, true);
+    	return optionCheck;
+    }
+    
+    public boolean getOptionCheckInstitutionDefault(){
+    	boolean optionCheck = serverConfigurationService.getBoolean(AssignmentConstants.TII_OPTION_CHECK_INSTITUTION_DEFAULT, getOptionCheckInstitution());
+    	return optionCheck;
+    }
+    
+    public boolean getOptionCheckInternet(){
+    	boolean optionCheck = serverConfigurationService.getBoolean(AssignmentConstants.TII_OPTION_CHECK_INTERNET, true);
+    	return optionCheck;
+    }
+    
+    public boolean getOptionCheckInternetDefault(){
+    	boolean optionCheck = serverConfigurationService.getBoolean(AssignmentConstants.TII_OPTION_CHECK_INTERNET_DEFAULT, getOptionCheckInternet());
+    	return optionCheck;
+    }
+    
+    public boolean getOptionCheckJournal(){
+    	boolean optionCheck = serverConfigurationService.getBoolean(AssignmentConstants.TII_OPTION_CHECK_JOURNAL, true);
+    	return optionCheck;
+    }
+    
+    public boolean getOptionCheckJournalDefault(){
+    	boolean optionCheck = serverConfigurationService.getBoolean(AssignmentConstants.TII_OPTION_CHECK_JOURNAL_DEFAULT, getOptionCheckJournal());
+    	return optionCheck;
+    }
+    
+    public String getDefaultReportGenerationSpeed(){
+    	String defaultRepGen = serverConfigurationService.getString(AssignmentConstants.TII_PROP_DEFAULT_REPORT_GEN_SPEED, AssignmentConstants.TII_GEN_SPEED_IMMEDIATE);
+    	return defaultRepGen;
+    }
+    
+    public boolean getDefaultAllowStudentView(){
+    	boolean defaultAllowStudentView = serverConfigurationService.getBoolean(AssignmentConstants.TII_PROP_DEFAULT_ALLOW_STUDENT_VIEW, false);
+    	return defaultAllowStudentView;
+    }
+    
+    /**
+     * 
      * @return the default repository setting from sakai.properties. Returns {@link AssignmentConstants#TII_VALUE_NO_REPO} if no property is set
      */
     public String getDefaultSubmissionRepository() {
