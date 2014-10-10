@@ -36,8 +36,7 @@ asnn2.setupStdntListTableParsers = function (){
 	    	4: { 
                 // disable it by setting the property sorter to false 
                 sorter: false 
-                },
-                5: { sorter: false }
+            }
 	        }
 	    });
 	    
@@ -51,31 +50,3 @@ asnn2.setupStdntListTableParsers = function (){
 		});	
    
 	};
-
-//asnn2.initIRubricTable = function(gradebookIds,gradebookUid,siteId,studentId) {
-asnn2.initIRubricTable = function(gradebookIds,gradebookUid,siteId,studentId,gradebookPlacementId) {
-    var launchIRubric = function(gradebookId) {
-        return function(event) {
-            //var urlPage = asnn2.makeIRubricUrlPrefix()+
-            var urlPage = asnn2.makeIRubricUrlPrefix(gradebookPlacementId)+
-                "/iRubricLink.jsp?p=v&tool=asnn2&gradebookUid="+gradebookUid+"&siteId="+siteId+"&rosterStudentId="+studentId+"&gradebookItemId="+gradebookId;
-            window.open(urlPage,'_blank',
-                        'width=800,height=600,top=20,left=100,menubar=yes,status=yes,location=no,toolbar=yes,scrollbars=yes,resizable=yes');
-        };
-    };
-    //jQuery.getJSON(asnn2.makeIRubricUrlPrefix()+"/iRubricLink.jsp?p=ra&tool=asnn2&gradebookUid="+gradebookUid+"&siteId="+siteId+"&gradebookItemId="+gradebookIds.toString(),function(data){
-    jQuery.getJSON(asnn2.makeIRubricUrlPrefix(gradebookPlacementId)+"/iRubricLink.jsp?p=ra&tool=asnn2&gradebookUid="+gradebookUid+"&siteId="+siteId+"&gradebookItemId="+gradebookIds.toString(),function(data){
-        var showIRubricCol = false;
-
-        for (var i in data) {
-            if (data[i] === true) {
-                if (showIRubricCol === false) {
-                    jQuery(".irubric-col").show();
-                    showIRubricCol = true;
-                }
-                jQuery(".gradebook-"+i+" a.irubric-link").click(launchIRubric(i)).show();
-            }
-        }
-    });
-
-};

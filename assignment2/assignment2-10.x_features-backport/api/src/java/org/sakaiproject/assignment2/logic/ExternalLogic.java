@@ -299,13 +299,4 @@ public interface ExternalLogic {
      * @param df
      */
     public void setLocalTimeZone(DateFormat df);
-
-    /**
-    *
-    * @param contextId
-    * @param toolId
-    * @return the placement for the given tool
-    */
-    public String getToolPlacement(String contextId, String toolId);
- 
 }

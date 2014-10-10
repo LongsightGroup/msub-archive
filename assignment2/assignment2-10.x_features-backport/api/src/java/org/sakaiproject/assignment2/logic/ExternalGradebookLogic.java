@@ -520,5 +520,4 @@ public interface ExternalGradebookLogic {
      */
     public PointsPossibleValidation isPointsPossibleValid(String gradebookUid, GradebookItem gradebookItem);
     
-    public boolean isShowiRubricLink();
 }

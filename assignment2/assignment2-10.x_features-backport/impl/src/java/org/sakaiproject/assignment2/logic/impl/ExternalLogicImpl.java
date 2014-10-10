@@ -484,15 +484,4 @@ public class ExternalLogicImpl implements ExternalLogic {
             df.setTimeZone(timeService.getLocalTimeZone());
         }
     }
-
-    public String getToolPlacement(String contextId, String toolId) {
-        String placement = null;
-        Site site = getSite(contextId);
-        ToolConfiguration tool = site.getToolForCommonId(toolId);
-        if (tool != null) {
-            placement = tool.getId();
-        }
-
-        return placement;
-    }
 }

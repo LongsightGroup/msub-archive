@@ -390,8 +390,4 @@ public class ExternalLogicStub implements ExternalLogic {
         
     }
 
-    public String getToolPlacement(String contextId, String toolId) {
-        // TODO Auto-generated method stub
-        return null;
-    }
 }

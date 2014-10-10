@@ -54,8 +54,7 @@ import org.sakaiproject.service.gradebook.shared.GradebookService;
 import org.sakaiproject.service.gradebook.shared.InvalidGradeException;
 import org.sakaiproject.service.gradebook.shared.GradebookService.PointsPossibleValidation;
 import org.sakaiproject.site.api.Group;
-//DN 2013-04-22: add lib service
-import com.reazon.tool.irubric.IRubricManager;
+
 /**
  * This is the implementation for logic to interact with the Sakai
  * Gradebook tool
@@ -88,12 +87,6 @@ public class ExternalGradebookLogicImpl implements ExternalGradebookLogic {
     private ExternalEventLogic eventLogic;
     public void setEventLogic(ExternalEventLogic eventLogic) {
         this.eventLogic = eventLogic;
-    }
-
-    //DN 2013-04-22: init 
-    private IRubricManager rubricManager;
-    public void setRubricManager(IRubricManager rubricManager){
-        this.rubricManager = rubricManager;
     }
 
     public void createGradebookDataIfNecessary(String contextId) {
@@ -951,8 +944,4 @@ public class ExternalGradebookLogicImpl implements ExternalGradebookLogic {
         return gradebookService.isPointsPossibleValid(gradebookUid, assignment, gradebookItem.getPointsPossible());
     }
     
-    //DN 2013-04-22: check show iRubric link
-    public boolean isShowiRubricLink(){
-        return rubricManager.isShowiRubricLink();
-    }
 }
