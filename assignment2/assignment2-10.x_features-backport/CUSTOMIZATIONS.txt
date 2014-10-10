@@ -1,2 +1,3 @@
 ASNN-746 Sync TurnItIn Sakai.Property Options with Assignments1
+irubric patch
 
