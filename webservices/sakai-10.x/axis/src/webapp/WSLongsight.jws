@@ -2709,6 +2709,41 @@ public Boolean removeMemberFromGroup( String sessionId, String siteId, String gr
 		}
 	}
 
+	public Object findPublishedTest(String sessionId, String siteId) throws AxisFault{
+		try{
+
+			Session session = establishSession(sessionId);
+                        if (securityService.isSuperUser()) {
+				
+				String DELETED_TEST_SQL = "SELECT puba.ID, puba.TITLE, puba.DESCRIPTION, puba.CREATEDBY, puba.CREATEDDATE, puba.LASTMODIFIEDBY, puba.LASTMODIFIEDDATE "
+					+ "FROM SAM_PUBLISHEDASSESSMENT_T puba "
+					+ "Inner Join SAM_AUTHZDATA_T authz ON puba.ID = authz.QUALIFIERID "
+					+ "Inner Join SAKAI_SITE s ON authz.AGENTID = s.SITE_ID "
+					+ "Inner Join SAM_PUBLISHEDACCESSCONTROL_T acc ON puba.ID = acc.ASSESSMENTID "
+					+ "WHERE authz.FUNCTIONID = 'GRADE_PUBLISHED_ASSESSMENT' "
+					+ "and s.SITE_ID=? AND authz.FUNCTIONID = 'GRADE_PUBLISHED_ASSESSMENT'";
+				String SUBMISSIONS_SQL = "select count(*) as SUB_COUNT " +
+                                                                "from (select ASSESSMENTGRADINGID from SAM_ASSESSMENTGRADING_T " +
+                                                                "where PUBLISHEDASSESSMENTID = ? " +
+                                                                "and SUBMITTEDDATE is not null group by AGENTID) counttable";
+
+				List<Map<String, String>> returnList = dbRead(DELETED_TEST_SQL, new String[]{siteId}, new String[]{"ID", "TITLE", "DESCRIPTION", "CREATEDBY", "CREATEDDATE", "LASTMODIFIEDBY", "LASTMODIFIEDDATE"});
+
+				for(Map<String, String> map : returnList){
+					List<Map<String, String>> returnList2 = dbRead(SUBMISSIONS_SQL, new String[]{map.get("ID")}, new String[]{"SUB_COUNT"});
+					if(returnList2 != null && returnList2.size() == 1){
+						map.put("SUBMISSIONS", returnList2.get(0).get("SUB_COUNT"));
+					}
+				}
+				return returnList;
+			}else{
+                                throw new AxisFault("Access to findDeletedTest is restricted to super admins");
+                        }
+                }catch(Exception e){
+			throw new AxisFault(e.toString());
+                }
+	}
+
 
 	public Object findDeletedTest(String sessionId, String siteId) throws AxisFault{
 		try{
