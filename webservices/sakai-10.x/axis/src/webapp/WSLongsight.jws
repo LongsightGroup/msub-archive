@@ -2836,6 +2836,10 @@ public Boolean removeMemberFromGroup( String sessionId, String siteId, String gr
 		}
 	}
 
+        public boolean clearUserIdEidCache() {
+                return clearCache(ID_EID_CACHE);
+        }
+
         private boolean clearCache(String cacheName) {
                 if (cacheManager != null && cacheManager.cacheExists(cacheName)) {
                         net.sf.ehcache.Cache cache = cacheManager.getCache(cacheName);

@@ -3771,6 +3771,13 @@ public class WSLongsight extends AbstractWebService {
 
 	} 
 
+	@WebMethod
+	@Path("/clearUserIdEidCache")
+	@Produces("text/plain")
+	@GET
+	public boolean clearCache() {
+		return clearCache(ID_EID_CACHE);
+	}
 
 	@WebMethod(exclude = true)
 	private boolean clearCache(String cacheName) {
