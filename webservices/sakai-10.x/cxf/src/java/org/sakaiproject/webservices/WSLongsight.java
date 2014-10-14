@@ -3710,6 +3710,7 @@ public class WSLongsight extends AbstractWebService {
 					if (submitterId != null && submitterId.equals(userId)) {
 						Element uElement = dom.createElement("Submission");
 						uElement.setAttribute("Status", thisSub.getStatus());
+						uElement.setAttribute("Date", thisSub.getTimeSubmittedString());
 						uElement.setAttribute("Grade", thisSub.getGrade());
 						uElement.setAttribute("FeedBackComment", thisSub.getFeedbackComment());
 						uElement.setAttribute("FeedBackText", thisSub.getFeedbackText());

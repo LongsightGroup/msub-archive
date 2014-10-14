@@ -3493,6 +3493,7 @@ public String getSubmissionsForAssignmentForUser(String sessionId,String assignm
 				String submitterId = (String)submitters.get(q);
 				if (submitterId != null && submitterId.equals(userId)) {
 					Element uElement = dom.createElement("Submission");
+					uElement.setAttribute("Date", thisSub.getTimeSubmittedString());
 					uElement.setAttribute("Status", thisSub.getStatus());
 					uElement.setAttribute("Grade", thisSub.getGrade());
 					uElement.setAttribute("FeedBackComment", thisSub.getFeedbackComment());
