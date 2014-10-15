@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="api/src/java"/>
+	<classpathentry kind="src" path="impl/src/java"/>
+	<classpathentry kind="var" path="M2_REPO/javax/servlet/servlet-api/2.4/servlet-api-2.4.jar"/>
+	<classpathentry kind="var" path="M2_REPO/commons-logging/commons-logging/1.0.4/commons-logging-1.0.4.jar"/>
+	<classpathentry kind="var" path="M2_REPO/jsf/jsf-api/1.1.01/jsf-api-1.1.01.jar"/>
+	<classpathentry kind="var" path="M2_REPO/jsf/jsf-impl/1.1.01/jsf-impl-1.1.01.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/apache/myfaces/tomahawk/tomahawk/1.1.9/tomahawk-1.1.9.jar"/>
+	<classpathentry kind="var" path="M2_REPO/commons-lang/commons-lang/2.5/commons-lang-2.5.jar"/>
+	<classpathentry kind="var" path="M2_REPO/quartz/quartz/1.5.2/quartz-1.5.2.jar"/>
+	<classpathentry kind="src" path="tool/src/java"/>
+	<classpathentry kind="var" path="M2_REPO/org/hibernate/hibernate/3.2.5.ga/hibernate-3.2.5.ga.jar"/>
+	<classpathentry kind="src" path="/sakai-calendar-api"/>
+	<classpathentry kind="src" path="/sakai-jsf-app"/>
+	<classpathentry kind="src" path="/sakai-jsf-tool"/>
+	<classpathentry kind="src" path="/entitybroker-api"/>
+	<classpathentry kind="src" path="/entitybroker-utils"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="var" path="M2_REPO/org/springframework/spring/2.5.6.SEC02/spring-2.5.6.SEC02.jar"/>
+	<classpathentry kind="var" path="M2_REPO/net/sf/opencsv/opencsv/2.3/opencsv-2.3.jar"/>
+	<classpathentry kind="var" path="M2_REPO/commons-collections/commons-collections/3.2.1/commons-collections-3.2.1.jar"/>
+	<classpathentry kind="src" path="/kernel-trunk"/>
+	<classpathentry kind="var" path="M2_REPO/org/mnode/ical4j/ical4j/1.0.3/ical4j-1.0.3.jar"/>
+	<classpathentry kind="var" path="M2_REPO/commons-validator/commons-validator/1.4.0/commons-validator-1.4.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/calendaring/external-calendaring-service-api/1.0.4-SNAPSHOT/external-calendaring-service-api-1.0.4-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/generic-dao/0.9.18/generic-dao-0.9.18.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/projectlombok/lombok/0.10.8/lombok-0.10.8.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-calendar-api/2.8.0/sakai-calendar-api-2.8.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-api/1.4.0-SNAPSHOT/sakai-kernel-api-1.4.0-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="M2_REPO/commons-io/commons-io/2.3/commons-io-2.3.jar"/>
+	<classpathentry kind="src" path="/external-calendaring-service"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-component-manager/1.2.8/sakai-component-manager-1.2.8.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-util/1.2.8/sakai-kernel-util-1.2.8.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
