@@ -1,3 +1,4 @@
 SAK-26318 Content Review Improvements
 SAK-27812 Content Review scores are stored in the Assignment Submission causing stale data
+SAK-27748 Inline Files are named too long
 
