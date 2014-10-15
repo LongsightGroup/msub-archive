@@ -1,1 +1,1 @@
-
+SAK-27982 Add property to set default value for Expand all recurring meetings
