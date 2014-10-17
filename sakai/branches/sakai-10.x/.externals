@@ -91,3 +91,4 @@ site-manage https://source.sakaiproject.org/svn/msub/longsight.com/site-manage/s
 
 # Additional tools
 dashboard https://source.sakaiproject.org/svn/dashboard/branches/sakai-10.x
+evaluation https://source.sakaiproject.org/contrib/evaluation/branches/sakai-10.x 
