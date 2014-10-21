@@ -628,8 +628,19 @@ public class LessonBuilderEntityProducer extends AbstractEntityProvider
     */
    public String getEntityUrl(Reference ref)
    {
-       // not needed
-       return null;
+	   //Just return a URL to the top of the page based on the item's pageId and toolId
+	   long id = idFromRef(ref.getReference());
+	   SimplePageItem item = simplePageToolDao.findItem(id);
+	   String URL = "";
+	   if (item != null) {
+		   URL = item.getURL();
+		   if (URL == null || "".equals(URL) ) {
+			   //Return a default as portal tool page for now
+			   SimplePage currentPage = simplePageToolDao.getPage(item.getPageId());
+			   URL = ServerConfigurationService.getPortalUrl()+"/site/"+currentPage.getSiteId()+"/page/"+currentPage.getToolId();
+   }
+	   }
+	   return URL;
    }
 
    /**
@@ -1995,5 +2006,19 @@ public class LessonBuilderEntityProducer extends AbstractEntityProvider
 	}
 	return ret && path.delete();
     }
+
+	private long idFromRef (String reference, int length) {
+		long id=-1;
+		String[] refParts = reference.split(Entity.SEPARATOR);
+		if (refParts.length == length) {
+			id = Integer.parseInt(refParts[length-1]);
+}
+		return id;	
+	}
+	
+	//Seems like there should be a method for this, but is what most of the code does, lessons length is 4
+	private long idFromRef (String reference) {
+		return idFromRef(reference,4);
+	}
 
 }

@@ -4,6 +4,8 @@
 
 <beans>
 
+
+
    <!-- Use the Sakai session factory, pre-configured, instead of one local to TaskList
         we are adding our HBM files to the Sakai session factory instead of creating
         our own copy of it -->

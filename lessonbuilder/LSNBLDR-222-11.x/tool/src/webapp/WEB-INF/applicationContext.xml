@@ -230,7 +230,7 @@ simplePageBean.peerEvalAllowSelfGrade
   </bean>
 
   <bean parent="org.sakaiproject.entitybroker.entityprovider.AbstractEntityProvider"
-	id="org.sakaiproject.lessonbuildertool.service.LessonBuilderEntityProducer"
+	id="org.sakaiproject.lessonbuildertool.service.LessonBuilder"
         class="org.sakaiproject.lessonbuildertool.service.LessonBuilderEntityProducer"
         init-method="init"
         destroy-method="destroy"
@@ -365,7 +365,6 @@ simplePageBean.peerEvalAllowSelfGrade
 	<bean
 		parent="org.sakaiproject.entitybroker.entityprovider.AbstractEntityProvider"
 		class="org.sakaiproject.lessonbuildertool.tool.entityproviders.LessonsEntityProvider">
-		
 		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
 		<property name="securityService" ref="org.sakaiproject.authz.api.SecurityService"/>
 		<property name="sessionManager" ref="org.sakaiproject.tool.api.SessionManager"/>
@@ -373,6 +372,17 @@ simplePageBean.peerEvalAllowSelfGrade
 		<property name="simplePageToolDao" ref="org.sakaiproject.lessonbuildertool.model.SimplePageToolDao" />
 		<property name="lessonsAccess" ref="org.sakaiproject.lessonbuildertool.service.LessonsAccess" />
 		<property name="developerHelperService" ref="org.sakaiproject.entitybroker.DeveloperHelperService" />
+	</bean>
+	<bean id="lessonsSearchAdapter" 
+	    class="org.sakaiproject.lessonbuildertool.service.LessonsEntityContentProducer"
+	    singleton="true"
+	    init-method="init" >
+	    <property name="simplePageToolDao" ref="org.sakaiproject.lessonbuildertool.model.SimplePageToolDao" />
+	    <property name="lessonBuilderAccessAPI" ref="org.sakaiproject.lessonbuildertool.LessonBuilderAccessAPI" />
+	    <property name="securityService"><ref bean="org.sakaiproject.authz.api.SecurityService"/></property>
+	    <property name="siteService" ref="org.sakaiproject.site.api.SiteService" />
+	    <property name="sessionManager"><ref bean="org.sakaiproject.tool.api.SessionManager"/></property>
+	    <property name="toolManager" ref="org.sakaiproject.tool.api.ActiveToolManager" />
 	</bean>
 
 	<bean id="org.sakaiproject.lessonbuildertool.service.LessonsAccess"
@@ -405,5 +415,4 @@ simplePageBean.peerEvalAllowSelfGrade
       <property name="messageSource"><ref bean="messageSource"/></property>
       <property name="siteService" ref="org.sakaiproject.site.api.SiteService" />
     </bean>
-
  </beans>
