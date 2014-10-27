@@ -78,6 +78,10 @@ velocity https://source.sakaiproject.org/svn/velocity/branches/sakai-10.x
 warehouse https://source.sakaiproject.org/svn/warehouse/branches/sakai-10.x
 web https://source.sakaiproject.org/svn/web/branches/sakai-10.x
 
+# Customizations
+
+blogwow https://source.sakaiproject.org/contrib/programmerscafe/blogwow/branches/sakai-10.x
+
 # Backports
 
 archive https://source.sakaiproject.org/svn/msub/longsight.com/archive/archive-10.x_backport
