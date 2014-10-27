@@ -78,9 +78,6 @@ velocity https://source.sakaiproject.org/svn/velocity/branches/sakai-10.x
 warehouse https://source.sakaiproject.org/svn/warehouse/branches/sakai-10.x
 web https://source.sakaiproject.org/svn/web/branches/sakai-10.x
 
-# Customizations
-
-blogwow https://source.sakaiproject.org/contrib/programmerscafe/blogwow/branches/sakai-10.x
 
 # Backports
 
@@ -94,5 +91,7 @@ site-manage https://source.sakaiproject.org/svn/msub/longsight.com/site-manage/s
 
 
 # Additional tools
+
+blogwow https://source.sakaiproject.org/contrib/programmerscafe/blogwow/branches/sakai-10.x
 dashboard https://source.sakaiproject.org/svn/dashboard/branches/sakai-10.x
 evaluation https://source.sakaiproject.org/contrib/evaluation/branches/sakai-10.x 
