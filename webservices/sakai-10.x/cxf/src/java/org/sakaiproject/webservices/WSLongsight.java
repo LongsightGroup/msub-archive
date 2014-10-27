@@ -3771,6 +3771,102 @@ public class WSLongsight extends AbstractWebService {
 
 	} 
 
+        @WebMethod
+        @Path("/getScoresForSiteForUser")
+        @Produces("text/plain")
+        @GET
+        public String getScoresForSiteForUser(
+            @WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+            @WebParam(name = "siteid", partName = "siteid") @QueryParam("siteid") String siteid,
+            @WebParam(name = "userid", partName = "userid") @QueryParam("userid") String userid) {
+            Session session = establishSession(sessionid); 
+
+            // establish the xml document
+            Document dom = Xml.createDocument();
+            Node list = dom.createElement("list");
+            dom.appendChild(list);
+
+            PublishedAssessmentService publishedAssessmentService = new PublishedAssessmentService();
+
+            try {
+
+                    Site site = siteService.getSite(siteid);
+                    //Set users = site.getUsersHasRole("Student");
+                    userid = userDirectoryService.getUserByEid(userid).getId();
+
+
+                    ArrayList scores = publishedAssessmentService.getBasicInfoOfLastOrHighestOrAverageSubmittedAssessmentsByScoringOption(userid, siteid, true);
+                    System.out.println(userid+" "+scores.size());
+
+                    for (int i = 0; i < scores.size(); i++) {
+                            AssessmentGradingData agd = (AssessmentGradingData) scores.get(i);
+
+                            Node item = dom.createElement("item");
+
+                            Node assessmentId = dom.createElement("assessmentId");
+                            assessmentId.appendChild( dom.createTextNode(agd.getPublishedAssessmentId().toString()));
+                            item.appendChild(assessmentId);
+
+                            Node title = dom.createElement("title");
+                            title.appendChild( dom.createTextNode(agd.getPublishedAssessmentTitle()));
+                            item.appendChild(title);
+
+                            Node finalScore = dom.createElement("finalScore");
+                            finalScore.appendChild( dom.createTextNode(agd.getFinalScore().toString()));
+                            item.appendChild(finalScore);
+
+                            Node autoScore = dom.createElement("autoScore");
+                            autoScore.appendChild( dom.createTextNode(agd.getTotalAutoScore().toString()));
+                            item.appendChild(autoScore);
+
+                            Node overrideScore = dom.createElement("overrideScore");
+                            overrideScore.appendChild( dom.createTextNode(agd.getTotalOverrideScore().toString()));
+                            item.appendChild(overrideScore);
+
+                            Node attemptDate = dom.createElement("attemptDate");
+                            attemptDate.appendChild( dom.createTextNode(agd.getAttemptDate().toString()));
+                            item.appendChild(attemptDate);
+
+                            Node submitDate = dom.createElement("submitDate");
+                            submitDate.appendChild( dom.createTextNode(agd.getSubmittedDate().toString()));
+                            item.appendChild(submitDate);
+
+                            Node comments = dom.createElement("comments");
+                            comments.appendChild( dom.createTextNode(agd.getComments()));
+                            item.appendChild(comments);
+
+                            Node sakaiUserId = dom.createElement("userId");
+                            sakaiUserId.appendChild( dom.createTextNode(agd.getAgentId()));
+                            item.appendChild(sakaiUserId);
+
+                            Node username = dom.createElement("username");
+                            try {
+                                    User user = userDirectoryService.getUser(agd.getAgentId());
+                                    String eid = user.getEid();
+                                    username.appendChild( dom.createTextNode(eid) );
+
+                                    Node firstName = dom.createElement("firstName");
+                                    firstName.appendChild( dom.createTextNode(user.getFirstName()));
+                                    item.appendChild(firstName);
+
+                                    Node lastName = dom.createElement("lastName");
+                                    lastName.appendChild( dom.createTextNode(user.getLastName()));
+                                    item.appendChild(lastName);
+                            }
+                            catch (Exception ee) {
+                                    username.appendChild( dom.createTextNode("nouser") );
+                            }
+                            item.appendChild(username);
+                            list.appendChild(item);
+                    }
+            }
+            catch (Exception e) {
+                    e.printStackTrace();
+            }
+
+            return Xml.writeDocumentToString(dom);
+    }
+
 	@WebMethod
 	@Path("/clearUserIdEidCache")
 	@Produces("text/plain")
