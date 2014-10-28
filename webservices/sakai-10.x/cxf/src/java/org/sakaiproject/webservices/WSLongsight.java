@@ -80,6 +80,8 @@ import org.sakaiproject.time.api.TimeRange;
 import org.sakaiproject.tool.api.Session;
 import org.sakaiproject.tool.api.Tool;
 import org.sakaiproject.tool.assessment.data.dao.grading.AssessmentGradingData;
+import org.sakaiproject.tool.assessment.facade.PublishedAssessmentFacade;
+import org.sakaiproject.tool.assessment.facade.PublishedAssessmentFacadeQueries;
 import org.sakaiproject.tool.assessment.services.assessment.PublishedAssessmentService;
 import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.user.api.Preferences;
@@ -3866,6 +3868,42 @@ public class WSLongsight extends AbstractWebService {
 
             return Xml.writeDocumentToString(dom);
     }
+
+        @WebMethod
+        @Path("/getPublishedAssessmentsForSite")
+        @Produces("text/plain")
+        @GET
+        public String getPublishedAssessmentsForSite(
+            @WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+            @WebParam(name = "siteid", partName = "siteid") @QueryParam("siteid") String siteid) {
+
+                Session session = establishSession(sessionid); 
+
+                PublishedAssessmentService publishedAssessmentService = new PublishedAssessmentService();
+
+                ArrayList publishedAssessmentList = publishedAssessmentService.getBasicInfoOfAllPublishedAssessments2(PublishedAssessmentFacadeQueries.TITLE, true, siteid);
+
+                Document dom = Xml.createDocument();
+                Node list = dom.createElement("list");
+                dom.appendChild(list);
+
+                for (int i = 0; i < publishedAssessmentList.size(); i++) {
+                        PublishedAssessmentFacade f = (PublishedAssessmentFacade)publishedAssessmentList.get(i);
+                        Node item = dom.createElement("item");
+
+                        Node id = dom.createElement("id");
+                        id.appendChild( dom.createTextNode(f.getPublishedAssessmentId().toString()));
+                        item.appendChild(id);
+
+                        Node title = dom.createElement("title");
+                        title.appendChild( dom.createTextNode(f.getTitle()));
+                        item.appendChild(title);
+
+                        list.appendChild(item);
+                }
+
+                return Xml.writeDocumentToString(dom);
+        }
 
 	@WebMethod
 	@Path("/clearUserIdEidCache")
