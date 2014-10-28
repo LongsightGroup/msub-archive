@@ -86,7 +86,8 @@ common https://source.sakaiproject.org/svn/msub/longsight.com/common/common-10.x
 gradebook-export https://source.sakaiproject.org/svn/msub/longsight.com/gradebook-export/gradebook-export-1.5-src
 kernel https://source.sakaiproject.org/svn/msub/longsight.com/kernel/kernel-10.x_backport
 sakai-mock https://source.sakaiproject.org/svn/msub/longsight.com/sakai-mock/sakai-mock-10.x_backport
-samigo https://source.sakaiproject.org/svn/msub/longsight.com/custom_builds/60/samigo/samigo-10.x_features-backport
+#samigo https://source.sakaiproject.org/svn/msub/longsight.com/custom_builds/60/samigo/samigo-10.x_features-backport
+samigo https://source.sakaiproject.org/svn/msub/longsight.com/custom_builds/6/samigo/samigo-10.x_features-backport
 site-manage https://source.sakaiproject.org/svn/msub/longsight.com/site-manage/site-manage-10.x_custom
 
 
