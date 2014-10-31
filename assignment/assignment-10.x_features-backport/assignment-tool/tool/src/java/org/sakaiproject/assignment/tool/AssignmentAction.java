@@ -2726,7 +2726,7 @@ public class AssignmentAction extends PagedResourceActionII
 					gradebookAssignmentsExceptSamigo.add(gAssignment);
 				
 					// gradebook item has been associated or not
-					String gaId = gAssignment.isExternallyMaintained() ? Validator.escapeHtml(gAssignment.getExternalId()) : Validator.escapeHtml(gAssignment.getName());
+					String gaId = gAssignment.isExternallyMaintained() ? gAssignment.getExternalId() : gAssignment.getName();
 					String status = "";
 					if (gAssignmentIdTitles.containsKey(gaId))
 					{
@@ -2748,7 +2748,7 @@ public class AssignmentAction extends PagedResourceActionII
 						}
 					}
 					
-					gradebookAssignmentsSelectedDisabled.put(gaId, status);
+					gradebookAssignmentsSelectedDisabled.put(Validator.escapeHtml(gaId), status);
 					
 					
 					// gradebook assignment label
@@ -2757,7 +2757,7 @@ public class AssignmentAction extends PagedResourceActionII
 					{
 						label += " ( " + rb.getFormattedMessage("usedGradebookAssignment", new Object[]{gAssignmentIdTitles.get(gaId)}) + " )";
 					}
-					gradebookAssignmentsLabel.put(gaId, label);
+					gradebookAssignmentsLabel.put(Validator.escapeHtml(gaId), label);
 				}
 			}
 		}
@@ -9752,7 +9752,7 @@ public class AssignmentAction extends PagedResourceActionII
 			while (submissions.hasNext())
 			{
 				AssignmentSubmission s = (AssignmentSubmission) submissions.next();
-				if (s.getGraded())
+				if (s.getGraded() || (s.getGrade()!=null && !"".equals(s.getGrade())))
 				{
 					String sRef = s.getReference();
 					AssignmentSubmissionEdit sEdit = editSubmission(sRef, "doRelease_grades", state);
@@ -9768,6 +9768,10 @@ public class AssignmentAction extends PagedResourceActionII
 							if (grade != null && !"".equals(grade))
 							{
 								sEdit.setGradeReleased(true);
+								if(!s.getGraded())
+								{
+									sEdit.setGraded(true);
+								}
 							}
 						}
 						else

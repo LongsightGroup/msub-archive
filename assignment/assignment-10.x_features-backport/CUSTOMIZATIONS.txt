@@ -1,4 +1,5 @@
 Updated branch 10/6/2014 - Merging r311441 through r314028 into '.':
+Updated branch 10/31/2014 - Merging r314029 through r315075 into '.':
 
 SAK-26318 Content Review Improvements
 SAK-27812 Content Review scores are stored in the Assignment Submission causing stale data
