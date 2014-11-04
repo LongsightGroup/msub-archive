@@ -459,6 +459,13 @@ public class ArchiveAction
 		Map<String, String> propertyCriteria = new HashMap<String,String>();
 		propertyCriteria.put("term_eid", selectedTerm);
 		List<Site> sites = siteService.getSites(SelectionType.ANY, null, null, propertyCriteria, SortType.TITLE_ASC, null);		
+
+                if (sites.isEmpty()) {
+                        // look up term title based on term_eid?
+                        Map<String, String> propertyCriteria2 = new HashMap<String,String>();
+                        propertyCriteria2.put("term", selectedTerm);
+                        sites = siteService.getSites(SelectionType.ANY, null, null, propertyCriteria2, SortType.TITLE_ASC, null);
+                }
 				
 		if(sites.isEmpty()) {
 			addAlert(state, rb.getFormattedMessage("archive.batch.term.text.nosites", new Object[]{selectedTerm}));
