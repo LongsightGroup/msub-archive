@@ -1,1 +1,2 @@
 SAK-25867 Improvements to Site Archive tool
+* NND-892146: Up job time from 30 minutes to 10 hours
