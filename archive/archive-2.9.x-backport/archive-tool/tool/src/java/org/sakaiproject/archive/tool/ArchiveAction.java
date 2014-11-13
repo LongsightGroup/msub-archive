@@ -103,7 +103,7 @@ public class ArchiveAction
 	// for batch archive
     private long batchArchiveStarted = 0;
     private static int PAUSE_TIME_MS = 1000*10; // 5 seconds
-    private static long MAX_JOB_TIME = 1000*60*600; // 10 hours
+    private static long MAX_JOB_TIME = 1000*60*60*60; // 60 hours
     private static int NUM_SITES_PER_BATCH = 10;
     private static final String STATUS_COMPLETE = "COMPLETE";
     private String batchArchiveStatus = null;
