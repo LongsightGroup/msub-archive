@@ -85,11 +85,11 @@ public class ImportQuestionsToAuthoring implements ActionListener
       SectionService sectiondelegate = new SectionService();
       AssessmentBean assessmentBean = (AssessmentBean) ContextUtil.lookupBean("assessmentBean");
       ItemAuthorBean itemauthor = (ItemAuthorBean) ContextUtil.lookupBean("itemauthor");
-        int itempos = 0;
+      int itempos= 0;
       SectionFacade section = null;
       ItemFacade itemfacade = null;
       boolean newSectionCreated = false;
-
+      
         // SAM-2395 - sort based on question text
         TreeSet<ItemFacade> sortedQuestions = new TreeSet<ItemFacade>( new Comparator<ItemFacade>() {
           @Override
