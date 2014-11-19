@@ -24,7 +24,6 @@
 			<th colspan="2">${loginRequired}</th>
 		</tr>
 		<tr>
-			<td class="logo"></td>
 			<td class="form">
 				<form method="post" action="${action}" enctype="application/x-www-form-urlencoded">
 				#if (${notify})
@@ -59,6 +58,9 @@
 					#end
 					</table>
 				</form>
+			</td>
+			<td class="googleplus">
+				<a href="${googlePlusLoginUrl}" id="signInButton">Sign in with Google</a>
 			</td>
 		</tr>
 		</table>

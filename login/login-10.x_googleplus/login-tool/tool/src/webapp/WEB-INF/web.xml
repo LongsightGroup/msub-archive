@@ -50,9 +50,17 @@
 
     <filter-mapping>
         <filter-name>sakai.request.container</filter-name>
+        <servlet-name>sakai.login.googleplus</servlet-name>
         <servlet-name>sakai.login.container</servlet-name>
         <dispatcher>REQUEST</dispatcher>
     </filter-mapping>
+
+    <filter-mapping>
+        <filter-name>sakai.request.container</filter-name>
+        <servlet-name>sakai.logout.googleplus</servlet-name>
+        <dispatcher>REQUEST</dispatcher>
+    </filter-mapping>
+    
 
     <servlet>
         <servlet-name>sakai.login</servlet-name>
@@ -61,7 +69,22 @@
             <param-name>container</param-name>
             <param-value>/sakai-login-tool/container</param-value>
         </init-param>
+        <init-param>
+        	<param-name>googleplus-logout</param-name>
+        	<param-value>/sakai-login-tool/googleplus/logout</param-value>
+        </init-param>
         <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>sakai.login.googleplus</servlet-name>
+        <servlet-class>org.sakaiproject.login.tool.GooglePlusLogin</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>sakai.logout.googleplus</servlet-name>
+        <servlet-class>org.sakaiproject.login.tool.GooglePlusLogout</servlet-class>
     </servlet>
 
     <servlet>
@@ -69,6 +92,17 @@
         <servlet-class>org.sakaiproject.login.tool.ContainerLogin</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
+
+	<!-- map the Google Plus login, and then cause it to trigger authentication -->
+    <servlet-mapping>
+        <servlet-name>sakai.login.googleplus</servlet-name>
+        <url-pattern>/googleplus/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>sakai.logout.googleplus</servlet-name>
+        <url-pattern>/googleplus/logout</url-pattern>
+    </servlet-mapping>
 
 	<!-- map the container login, and then cause it to trigger container authentication -->
     <servlet-mapping>

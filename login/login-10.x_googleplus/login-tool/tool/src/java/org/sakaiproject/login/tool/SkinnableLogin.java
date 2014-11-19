@@ -556,4 +556,13 @@ public class SkinnableLogin extends HttpServlet implements Login {
 			log.warn("Login attempt failed. ID=" + StringUtils.abbreviate(credentials.getIdentifier().replaceAll("(\\r|\\n)", ""),255) + ", IP Address=" + credentials.getRemoteAddr());
 		}
 	}
+	
+    private static String byteArray2Hex(byte[] hash) {
+        Formatter formatter = new Formatter();
+        for (byte b : hash) {
+            formatter.format("%02x", b);
+        }
+        return formatter.toString();
+    }
+
 }
