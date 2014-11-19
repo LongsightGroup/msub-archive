@@ -20,9 +20,11 @@
  **********************************************************************************/
 package org.sakaiproject.login.tool;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Formatter;
@@ -55,6 +57,13 @@ import org.sakaiproject.tool.api.Tool;
 import org.sakaiproject.tool.cover.SessionManager;
 import org.sakaiproject.util.ResourceLoader;
 import org.sakaiproject.util.Web;
+
+import com.lastpass.saml.IdPConfig;
+import com.lastpass.saml.SAMLClient;
+import com.lastpass.saml.SAMLException;
+import com.lastpass.saml.SAMLInit;
+import com.lastpass.saml.SAMLUtils;
+import com.lastpass.saml.SPConfig;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -95,6 +104,8 @@ public class SkinnableLogin extends HttpServlet implements Login {
 
 
 	private String loginContext;
+	
+	private SAMLClient client;
 
 	public void init(ServletConfig config) throws ServletException
 	{
@@ -113,6 +124,17 @@ public class SkinnableLogin extends HttpServlet implements Login {
 		siteService = (SiteService) ComponentManager.get(SiteService.class);
 
 		portalSkinPrefix = serverConfigurationService.getString(PORTAL_SKIN_NEOPREFIX_PROPERTY, PORTAL_SKIN_NEOPREFIX_DEFAULT);
+		
+		// at application startup, init library and create the client
+		try {
+			SAMLInit.initialize();
+			IdPConfig idpConfig = new IdPConfig(new File("idp-metadata.xml"));
+			SPConfig spConfig = new SPConfig(new File("sp-metadata.xml"));
+			client = new SAMLClient(spConfig, idpConfig);
+		} catch (SAMLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		log.info("init()");
 	}
@@ -271,6 +293,19 @@ public class SkinnableLogin extends HttpServlet implements Login {
        sb.append(serverConfigurationService.getString("google.plus.client.id", "xxxxx"));
        sb.append("&access_type=offline");
        rcontext.put("googlePlusLoginUrl", sb.toString());
+       
+	   // Customization for SAML Login
+	   
+	try {
+		String requestId = SAMLUtils.generateRequestId();
+		String authrequest = client.generateAuthnRequest(requestId);
+		String samlUrl = client.getIdPConfig().getLoginUrl() + "?SAMLRequest=" + URLEncoder.encode(authrequest, "UTF-8");
+		rcontext.put("samlLoginUrl", samlUrl);
+	} catch (SAMLException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	   
 
 		sendResponse(rcontext, res, "xlogin", null);
 	}
