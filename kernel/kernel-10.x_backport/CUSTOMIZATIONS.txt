@@ -1,3 +1,6 @@
+2014-11-19 - svn merge "^/kernel/branches/sakai-10.x" 
+  --- Merging r313756 through r315589 into '.':
+
 KNL-1210 SAK-25867 Improvements to Site Archive tool
 KNL-1252 "Hard" Delete
 SAK-23555 Create new events that differentiate the site.upd event

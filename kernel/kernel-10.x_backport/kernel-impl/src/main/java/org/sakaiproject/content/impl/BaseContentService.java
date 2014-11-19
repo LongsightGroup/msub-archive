@@ -5545,7 +5545,8 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 
 		boolean still_trying = true;
 		int attempt = 0;
-
+		boolean destIsDropBox=false; 
+		
 		while (still_trying && attempt < MAXIMUM_ATTEMPTS_FOR_UNIQUENESS)
 		{
 			// copy the resource to the new location
@@ -5556,6 +5557,12 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 				// this duplicates a lot of the code from BaseResourceEdit.set()
 				edit.setContentType(resource.getContentType());
 
+				if (isInDropbox(edit.getId()))
+				{
+					M_log.debug("We are copying to a dropbox folder :"+ edit.getId());
+					destIsDropBox = true;
+				}
+				
 				if (referenceCopy && edit instanceof BaseResourceEdit) {
 				    // do a reference copy so the actual content is not duplicated
 				    ((BaseResourceEdit)edit).setReferenceCopy(resource.getId());
@@ -5583,7 +5590,7 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 				//				}
 				edit.setAvailability(resource.isHidden(), resource.getReleaseDate(), resource.getRetractDate());
 
-				commitResource(edit,NotificationService.NOTI_OPTIONAL);
+				commitResource(edit,destIsDropBox ? NotificationService.NOTI_OPTIONAL: NotificationService.NOTI_NONE);
 				// close the edit object
 				((BaseResourceEdit) edit).closeEdit();
 
@@ -5820,6 +5827,20 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 
 	} // deepcopyCollection
 
+	private boolean hasContentType(String resourceId) {
+
+		String contentType = null;
+		
+		try {
+			contentType = getResource(resourceId).getContentType();
+		} catch (PermissionException e) {
+		} catch (IdUnusedException e) {
+		} catch (TypeException e) {
+		}
+		
+		return contentType != null && !contentType.isEmpty();
+    }
+	
 	/**
 	 * Commit the changes made, and release the lock. The Object is disabled, and not to be used after this call.
 	 * 
@@ -5861,11 +5882,13 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 			return;
 		}
 		
+        boolean hasContentTypeAlready = hasContentType(edit.getId());
+        
         //use magic to fix mimetype
         //Don't process for special TYPE_URL type
         String currentContentType = edit.getContentType();
         m_useMimeMagic = m_serverConfigurationService.getBoolean("content.useMimeMagic", m_useMimeMagic);
-        if (m_useMimeMagic && DETECTOR != null && !ResourceProperties.TYPE_URL.equals(currentContentType)) {
+        if (m_useMimeMagic && DETECTOR != null && !ResourceProperties.TYPE_URL.equals(currentContentType) && !hasContentTypeAlready) {
             try{
                 //we have to make the stream resetable so tika can read some of it and reset for saving.
                 //Also have to give the tika stream to the edit object since tika can invalidate the original 
