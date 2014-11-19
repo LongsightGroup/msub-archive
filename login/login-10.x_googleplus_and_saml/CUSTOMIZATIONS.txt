@@ -1,0 +1,7 @@
+LS-183: GooglePlus login option
+
+login.googleplus.user.type=google
+login.googleplus.user.create=false 
+login.googleplus.logout.url
+google.plus.client.secret=xxxxxxxxxxxxx
+google.plus.client.id=1111111111111
