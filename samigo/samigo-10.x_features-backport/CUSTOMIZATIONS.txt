@@ -14,3 +14,5 @@ SAM-2352 Don't run on assessment attempts with a null submittedDate ; Tests and 
 TODO: SAM-2056 Better usability in jquery ui
 Updated 08/28/2014 svn merge "^/sam/branches/sakai-10.x"
 Updated 10/20/2014 svn merge "^/sam/branches/sakai-10.x"
+Updated 11/17/2014 svn merge "^/sam/branches/sakai-10.x"
+Updated 11/24/2014 svn merge "^/sam/branches/sakai-10.x"
