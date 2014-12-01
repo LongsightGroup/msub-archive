@@ -1,18 +1,10 @@
 package org.sakaiproject.login.tool;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Formatter;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,7 +20,12 @@ import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserNotDefinedException;
 import org.sakaiproject.user.cover.UserDirectoryService;
 
-import com.lastpass.saml.*;
+import com.lastpass.saml.AttributeSet;
+import com.lastpass.saml.IdPConfig;
+import com.lastpass.saml.SAMLClient;
+import com.lastpass.saml.SAMLException;
+import com.lastpass.saml.SAMLInit;
+import com.lastpass.saml.SPConfig;
 
 
 public class SAMLLogin extends HttpServlet
@@ -71,8 +68,7 @@ public class SAMLLogin extends HttpServlet
 			SPConfig spConfig = new SPConfig(new File("sp-metadata.xml"));
 			client = new SAMLClient(spConfig, idpConfig);
 		} catch (SAMLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			M_log.warn("Error during SAMLLogin init", e);
 		}
 	}
 
@@ -102,47 +98,35 @@ public class SAMLLogin extends HttpServlet
 		Session session = SessionManager.getCurrentSession();
 
 		String authresponse = req.getParameter("SAMLResponse");
-		String username = "test";
+		String username = "";
 		AttributeSet aset;
-			try {
-			    aset = client.validateResponse(authresponse);
-			    username = aset.getNameId();
-			    
-			    
-			    M_log.info("SAML username=" + username);
-			    M_log.info(java.util.Arrays.toString(aset.getAttributes().get("Name").toArray()));
-			    M_log.info(java.util.Arrays.toString(aset.getAttributes().entrySet().toArray()));
-			    // do something with now-authenticated user...
-			} catch (SAMLException e) {
-			    // response invalid, return to login page...
-				e.printStackTrace();
-			}
+		User u = null;
 
-            User u = null;
-            try {
-            	u = UserDirectoryService.getUserByEid(username);
-            }
-            catch (UserNotDefinedException ue) {
-						//UserDirectoryService.addUser(googleId, email, firstName, lastName, email, hiddenPW, userType, null);
-						//u = UserDirectoryService.getUserByEid(username);
-            	ue.printStackTrace();
-			}
-
+		try {
+		    aset = client.validateResponse(authresponse);
+		    username = aset.getNameId();
+		    if (M_log.isDebugEnabled()) M_log.debug("Attempting SAML login of username=" + username);
+		    u = UserDirectoryService.getUserByEid(username);
+		} catch (SAMLException e) {
+			M_log.warn("Error attempting to SAMLLogin: " + authresponse, e);
+		} catch (UserNotDefinedException e) {
+			M_log.warn("SAMLLogin user not defined: " + username);
+		}
             
-			// login the user
-			if (u != null && UsageSessionService.login(u.getId(), u.getEid(), req.getRemoteAddr(), req.getHeader("user-agent"), UsageSessionService.EVENT_LOGIN_CONTAINER))
-			{
-				// get the return URL
-				String url = getUrl(session, Tool.HELPER_DONE_URL);
+		// login the user
+		if (u != null && UsageSessionService.login(u.getId(), u.getEid(), req.getRemoteAddr(), req.getHeader("user-agent"), UsageSessionService.EVENT_LOGIN_CONTAINER))
+		{
+			// get the return URL
+			String url = getUrl(session, Tool.HELPER_DONE_URL);
 
-				// cleanup session
-				session.removeAttribute(Tool.HELPER_MESSAGE);
-				session.removeAttribute(Tool.HELPER_DONE_URL);
-				
-				// redirect to the done URL
-				res.sendRedirect(res.encodeRedirectURL(url));
-				return;
-			}
+			// cleanup session
+			session.removeAttribute(Tool.HELPER_MESSAGE);
+			session.removeAttribute(Tool.HELPER_DONE_URL);
+			
+			// redirect to the done URL
+			res.sendRedirect(res.encodeRedirectURL(url));
+			return;
+		}
 		
 		session.setAttribute(SkinnableLogin.ATTR_CONTAINER_CHECKED, SkinnableLogin.ATTR_CONTAINER_CHECKED);
 		res.sendRedirect(res.encodeRedirectURL(getUrl(session, SkinnableLogin.ATTR_RETURN_URL)));
