@@ -50,6 +50,7 @@
 
     <filter-mapping>
         <filter-name>sakai.request.container</filter-name>
+        <servlet-name>sakai.login.saml</servlet-name>
         <servlet-name>sakai.login.container</servlet-name>
         <dispatcher>REQUEST</dispatcher>
     </filter-mapping>
@@ -65,10 +66,22 @@
     </servlet>
 
     <servlet>
+        <servlet-name>sakai.login.saml</servlet-name>
+        <servlet-class>org.sakaiproject.login.tool.SAMLLogin</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet>
         <servlet-name>sakai.login.container</servlet-name>
         <servlet-class>org.sakaiproject.login.tool.ContainerLogin</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
+
+    <servlet-mapping>
+        <servlet-name>sakai.login.saml</servlet-name>
+        <url-pattern>/saml/*</url-pattern>
+    </servlet-mapping>
+
 
 	<!-- map the container login, and then cause it to trigger container authentication -->
     <servlet-mapping>
