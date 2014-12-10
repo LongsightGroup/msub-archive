@@ -56,6 +56,8 @@ import java.io.StringReader;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -168,7 +170,8 @@ public class SAMLClient
     {
         // signature must match our SP's signature.
         Signature sig = response.getSignature();
-        sigValidator.validate(sig);
+        // ADFS doesn't sign the entire response
+        if (sig != null) sigValidator.validate(sig);
 
         // response must be successful
         if (response.getStatus() == null ||
@@ -216,7 +219,10 @@ public class SAMLClient
                     "Assertion should contain an AuthnStatement");
             }
             for (AuthnStatement as: assertion.getAuthnStatements()) {
-                DateTime exp = as.getSessionNotOnOrAfter().plusSeconds(slack);
+            	// ADFS does not appear to set on an AuthN statement
+                DateTime exp = as.getSessionNotOnOrAfter();
+                if (exp != null) exp.plusSeconds(slack);
+
                 if (exp != null &&
                     (now.isEqual(exp) || now.isAfter(exp)))
                     throw new ValidationException(
@@ -306,8 +312,22 @@ public class SAMLClient
             // at least one of the audiences must match our SP
             boolean foundSP = false;
             for (Audience a: ar.getAudiences()) {
-                if (spConfig.getEntityId().equals(a.getAudienceURI()))
+                if (spConfig.getEntityId().equals(a.getAudienceURI())) {
                     foundSP = true;
+                }
+                else {
+                	// ADFS giving us a different audience URL
+                	try {
+						URL spURL = new URL(spConfig.getEntityId());
+						URL audienceURL = new URL(a.getAudienceURI());
+						if (spURL.getHost().equals(audienceURL.getHost())) {
+							foundSP = true;
+						}
+					} catch (MalformedURLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+                }
             }
             if (!foundSP)
                 throw new ValidationException(
@@ -439,15 +459,10 @@ public class SAMLClient
         Assertion assertion = response.getAssertions().get(0);
 
         Subject subject = assertion.getSubject();
-        if (subject == null) {
-            throw new SAMLException(
-                "No subject contained in the assertion.");
+        String nameId = null;
+        if (subject != null && subject.getNameID() != null) {
+        	nameId = subject.getNameID().getValue();
         }
-        if (subject.getNameID() == null) {
-            throw new SAMLException("No NameID found in the subject.");
-        }
-
-        String nameId = subject.getNameID().getValue();
 
         HashMap<String, List<String>> attributes =
             new HashMap<String, List<String>>();
@@ -458,6 +473,9 @@ public class SAMLClient
                 List<String> values = new ArrayList<String>();
                 for (XMLObject obj : atb.getAttributeValues()) {
                     values.add(obj.getDOM().getTextContent());
+                    
+                    // ADFS doesn't give the username in the Subject
+                    if (nameId == null) nameId = obj.getDOM().getTextContent();
                 }
                 attributes.put(name, values);
             }

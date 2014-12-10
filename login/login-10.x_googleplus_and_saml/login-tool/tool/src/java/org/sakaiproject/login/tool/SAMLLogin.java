@@ -76,8 +76,7 @@ public class SAMLLogin extends HttpServlet
 		sessionManager = (SessionManager) ComponentManager.get(SessionManager.class);
 		usageSessionService = (UsageSessionService) ComponentManager.get(UsageSessionService.class);
 
-		// Where should the user go if the SAML login fails
-		defaultReturnUrl = serverConfigurationService.getPortalUrl() + "/xlogin";
+		defaultReturnUrl = serverConfigurationService.getPortalUrl();
 
 		// Initialize SAML library and create the SAML client
 		String samlConfigLocation = System.getProperty("sakai.home");
