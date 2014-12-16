@@ -4581,9 +4581,69 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 		IdInvalidException,	InconsistentException, OverQuotaException, ServerOverloadException, 
 		TypeException, InUseException
 	{
-		ContentResourceEdit deleResource;
+		ContentResourceEdit deleResource = null;
 		try {
 			deleResource = editDeletedResource(id);
+
+			ContentResourceEdit newResource;
+			try {
+				newResource = addResource(id);
+			} catch (IdUsedException iue) {
+				M_log.error("restoreResource: cannot restore resource " + id, iue);
+				throw iue;
+			}
+			newResource.setContentType(deleResource.getContentType());
+			newResource.setContentLength(deleResource.getContentLength());
+			newResource.setResourceType(deleResource.getResourceType());
+			newResource.setAvailability(deleResource.isHidden(), deleResource.getReleaseDate(),deleResource.getRetractDate());
+			newResource.setContent(m_storage.streamDeletedResourceBody(deleResource));
+			try {
+				addProperties(newResource.getPropertiesEdit(), deleResource.getProperties());
+				commitResource(newResource, NotificationService.NOTI_NONE);
+
+			} catch (ServerOverloadException e) {
+				M_log.debug("ServerOverloadException " + e);
+				try
+				{
+					removeResource(newResource.getId());
+				}
+				catch(Exception e1)
+				{
+					// ignore -- no need to remove the resource if it doesn't exist
+					M_log.debug("Unable to remove partially completed resource: " + newResource.getId() + "\n" + e1);
+				}
+				throw e;
+			} catch (OverQuotaException e) {
+				M_log.debug("OverQuotaException " + e);
+				try
+				{
+					removeResource(newResource.getId());
+				}
+				catch(Exception e1)
+				{
+					// ignore -- no need to remove the resource if it doesn't exist
+					M_log.debug("Unable to remove partially completed resource: " + newResource.getId() + "\n" + e1);
+				}
+				throw e;
+			}
+			try {
+				// If you're storing the file in DB this breaks as it removes the restored file.
+				removeDeletedResource(deleResource);
+				// close the edit object
+				((BaseResourceEdit) deleResource).closeEdit();
+			} catch (PermissionException pe) {
+				M_log.error("restoreResource: access to resource not permitted" + id, pe);
+				try
+				{
+					removeResource(newResource.getId());
+				}
+				catch(Exception e1)
+				{
+					// ignore -- no need to remove the resource if it doesn't exist
+					M_log.debug("Unable to remove partially completed resource: " + deleResource.getId() + "\n" + e1);
+				}
+				throw pe;
+			}
 		} catch (IdUnusedException iue) {
 			M_log.error("restoreResource: cannot locate deleted resource " + id, iue);
 			throw iue;
@@ -4595,67 +4655,13 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 			throw ie;
 		} catch (PermissionException pe) {
 			M_log.error("restoreResource: access to resource not permitted" + id, pe);
-			throw pe;			
+			throw pe;
+		} finally {
+			// Unlock if something went wrong.
+			if (deleResource != null && deleResource.isActiveEdit()) {
+				m_storage.cancelDeletedResource(deleResource);
+			}
 		}
-		ContentResourceEdit newResource;
-		try {
-			newResource = addResource(id);
-		} catch (IdUsedException iue) {
-			M_log.error("restoreResource: cannot restore resource " + id, iue);
-			throw iue;
-		}
-		newResource.setContentType(deleResource.getContentType());
-		newResource.setContentLength(deleResource.getContentLength());
-		newResource.setResourceType(deleResource.getResourceType());
-		newResource.setAvailability(deleResource.isHidden(), deleResource.getReleaseDate(),deleResource.getRetractDate());
-		newResource.setContent(m_storage.streamDeletedResourceBody(deleResource));
-		try {
-			addProperties(newResource.getPropertiesEdit(), deleResource.getProperties());
-			commitResource(newResource, NotificationService.NOTI_NONE);
-			
-		} catch (ServerOverloadException e) {
-			M_log.debug("ServerOverloadException " + e);
-			try
-			{
-				removeResource(newResource.getId());
-			}
-			catch(Exception e1)
-			{
-				// ignore -- no need to remove the resource if it doesn't exist
-				M_log.debug("Unable to remove partially completed resource: " + newResource.getId() + "\n" + e1); 
-			}
-			throw e;
-		} catch (OverQuotaException e) {
-			M_log.debug("OverQuotaException " + e);
-			try
-			{
-				removeResource(newResource.getId());
-			}
-			catch(Exception e1)
-			{
-				// ignore -- no need to remove the resource if it doesn't exist
-				M_log.debug("Unable to remove partially completed resource: " + newResource.getId() + "\n" + e1); 
-			}
-			throw e;
-		} 
-		try {
-			// If you're storing the file in DB this breaks as it removes the restored file.
-			removeDeletedResource(deleResource);
-			// close the edit object
-			((BaseResourceEdit) deleResource).closeEdit();
-		} catch (PermissionException pe) {
-			M_log.error("restoreResource: access to resource not permitted" + id, pe);
-			try
-			{
-				removeResource(newResource.getId());
-			}
-			catch(Exception e1)
-			{
-				// ignore -- no need to remove the resource if it doesn't exist
-				M_log.debug("Unable to remove partially completed resource: " + deleResource.getId() + "\n" + e1); 
-			}
-			throw pe;			
-		} 
 	}
 	
 	/**
@@ -4718,6 +4724,15 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 		// check security-unlock to add record
 		unlock(AUTH_RESOURCE_ADD, id);
 
+		// In the future we may wish to allow multiple copies of the file in the recycle bin.
+		// Remove Deleted Resource prevents id collision as #restoreResource(String) doesn't allow you to
+		// specify which version of a file you want to restore.
+		try {
+			removeDeletedResource(id);
+		} catch (Exception ex) {
+			// There is no collision
+		}
+		
 		// reserve the resource in storage - it will fail if the id is in use
 		BaseResourceEdit edit = (BaseResourceEdit) m_storage.putDeleteResource(id, uuid, userId);
 		// added for NPE static code review -AZ
@@ -6913,7 +6928,9 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 					contentType = contentType + "; charset=" + encoding;
 				}
 
-		        ArrayList<Range> ranges = parseRange(req, res, len);
+				ArrayList<Range> ranges = parseRange(req, res, len);
+				res.addHeader("Accept-Ranges", "bytes");
+				res.addHeader("Cache-Control", "max-age=0, no-cache, no-store");
 
 		        if (req.getHeader("Range") == null || (ranges == null) || (ranges.isEmpty())) {
 		        	
@@ -6931,7 +6948,6 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 	
 						res.setContentType(contentType);
 						res.addHeader("Content-Disposition", disposition);
-						res.addHeader("Accept-Ranges", "bytes");
 						// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4187336
  						if (len <= Integer.MAX_VALUE){
  							res.setContentLength((int)len);
@@ -13349,7 +13365,8 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 		public List getDeletedResources(ContentCollection collection);      
 		public ContentResourceEdit editDeletedResource(String resourceId);      
 		public void removeDeletedResource(ContentResourceEdit edit); 
-
+		public void cancelDeletedResource(ContentResourceEdit edit);
+		
 		/**
 		 * Retrieve a collection of ContentResource objects pf a particular resource-type.  The collection will 
 		 * contain no more than the number of items specified as the pageSize, where pageSize is a non-negative 
