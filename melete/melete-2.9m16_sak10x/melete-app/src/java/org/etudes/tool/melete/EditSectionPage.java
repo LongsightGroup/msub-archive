@@ -290,40 +290,6 @@ public class EditSectionPage extends SectionPage implements Serializable
 		AuthorPreferencePage preferencePage = (AuthorPreferencePage) binding.getValue(context);
 		
 		boolean contentEmpty = false;
-		//If editor is sferyx, grab content empty flag value and set section to notype
-		if (section.getContentType().equals("typeEditor") && preferencePage.isShouldRenderSferyx())
-		{
-			binding = Util.getBinding("#{addResourcesPage}");
-			AddResourcesPage resourcesPage = (AddResourcesPage) binding.getValue(context);
-			HashMap<String, ArrayList<String>> save_err = resourcesPage.getHm_msgs();
-			logger.debug("hashmap in editsectionpage is " + save_err);
-			String errKey = "content_empty";
-			if (save_err != null && !save_err.isEmpty() && save_err.containsKey(errKey))
-			{
-				ArrayList<String> errs = save_err.get(errKey);
-				for (String err : errs)
-				{
-					//String errMsg = resourcesPage.getMessageText(err);
-					if (err.equals("true")) 
-					{
-						section.setContentType("notype");
-						contentEmpty = true;
-					}
-				}
-				resourcesPage.removeFromHm_Msgs(errKey);
-			}
-			
-		}
-		
-		//If editor is FCK, check contentEditor and set section to notype if blank
-		if (section.getContentType().equals("typeEditor") && preferencePage.isShouldRenderFCK())
-		{
-			if ((contentEditor == null) || (contentEditor.trim().length() == 0))
-			{
-				section.setContentType("notype");
-				contentEmpty = true;
-			}
-		}	
 		
 		Boolean modifyContentResource = false;
 		binding =  Util.getBinding("#{licensePage}");
@@ -378,6 +344,7 @@ public class EditSectionPage extends SectionPage implements Serializable
 						if (section.getSectionResource() != null && section.getSectionResource().getResource() != null)
 						{
 							String delResourceId = section.getSectionResource().getResource().getResourceId();
+System.out.println("zz: deleting resource: " + delResourceId);
 							sectionService.deleteResourceInUse(delResourceId);
 							meleteCHService.removeResource(delResourceId);
 						}
