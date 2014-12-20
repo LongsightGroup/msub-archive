@@ -8,3 +8,4 @@ KNL-1210 SAK-25867 Improvements to Site Archive tool
 KNL-1252 "Hard" Delete
 SAK-23555 Create new events that differentiate the site.upd event
 
+LS-188 crazy corruption of some private meleteDoc assets so re-read using IOUtils
