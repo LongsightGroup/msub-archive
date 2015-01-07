@@ -3545,6 +3545,21 @@ public String updateMembershipWithProvider (String sessionId, String siteid) thr
     return "error";
   } 
   
+}
+
+public String addProviderIdToSite(String sessionid, String siteid, String providerid) throws AxisFault {
+
+        Session session = establishSession(sessionid);
+
+            try {
+                 Site siteEdit = SiteService.getSite(siteid);
+                 siteEdit.setProviderGroupId(providerid);
+                 SiteService.save(siteEdit);
+            }
+            catch (Exception e) {
+                 return e.getClass().getName() + " : " + e.getMessage();
+            }
+            return "success";
 } 
 
 }

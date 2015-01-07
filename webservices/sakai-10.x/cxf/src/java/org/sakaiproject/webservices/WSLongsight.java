@@ -3935,6 +3935,28 @@ public class WSLongsight extends AbstractWebService {
         }
 
 	@WebMethod
+	@Path("/addProviderIdToSite")
+	@Produces("text/plain")
+	@GET
+        public String addProviderIdToSite(
+            @WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+            @WebParam(name = "siteid", partName = "siteid") @QueryParam("siteid") String siteid,
+            @WebParam(name = "providerid", partName = "providerid") @QueryParam("providerid") String providerid) {
+
+                Session session = establishSession(sessionid);
+
+                try {
+                    Site siteEdit = siteService.getSite(siteid);
+                    siteEdit.setProviderGroupId(providerid);
+                    siteService.save(siteEdit);
+                }
+                catch (Exception e) {
+                    return "failure: " + e.getClass().getName() + " : " + e.getMessage();
+                }
+                return "success";
+	}
+
+	@WebMethod
 	@Path("/clearUserIdEidCache")
 	@Produces("text/plain")
 	@GET
