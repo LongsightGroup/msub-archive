@@ -95,3 +95,4 @@ site-manage https://source.sakaiproject.org/svn/msub/longsight.com/site-manage/s
 blogwow https://source.sakaiproject.org/contrib/programmerscafe/blogwow/branches/sakai-10.x
 dashboard https://source.sakaiproject.org/svn/dashboard/branches/sakai-10.x
 evaluation https://source.sakaiproject.org/contrib/evaluation/branches/sakai-10.x 
+kaltura -r 313603 https://source.sakaiproject.org/svn/msub/unicon.net/kaltura/trunk
