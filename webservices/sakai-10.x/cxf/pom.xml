@@ -170,6 +170,7 @@
     <dependency>
       <groupId>org.sakaiproject.edu-services.gradebook</groupId>
       <artifactId>gradebook-service-hibernate</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.sakaiproject.edu-services.gradebook</groupId>
