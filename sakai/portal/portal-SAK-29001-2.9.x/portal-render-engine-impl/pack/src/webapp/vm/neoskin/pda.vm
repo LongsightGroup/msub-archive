@@ -48,6 +48,9 @@ ${responseHead}
      <script type="text/javascript" language="JavaScript" src="${pageScriptPath}headscripts.js"></script>
 #end
 
+## If there's some extra header code defined, included it here
+${includeExtraHead}
+
 </head>
 <body class="portalBodyPDA">
 #if ( $pageTop )
