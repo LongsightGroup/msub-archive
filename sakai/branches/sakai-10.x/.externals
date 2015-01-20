@@ -50,7 +50,7 @@ osp https://source.sakaiproject.org/svn/osp/branches/sakai-10.x
 pack https://source.sakaiproject.org/svn/pack/branches/sakai-10.x
 podcasts https://source.sakaiproject.org/svn/podcasts/branches/sakai-10.x
 polls https://source.sakaiproject.org/svn/polls/branches/sakai-10.x
-portal https://source.sakaiproject.org/svn/portal/branches/sakai-10.x
+#portal https://source.sakaiproject.org/svn/portal/branches/sakai-10.x
 postem https://source.sakaiproject.org/svn/postem/branches/sakai-10.x
 presence https://source.sakaiproject.org/svn/presence/branches/sakai-10.x
 profile2 https://source.sakaiproject.org/svn/profile2/branches/sakai-10.x
@@ -85,6 +85,7 @@ archive https://source.sakaiproject.org/svn/msub/longsight.com/archive/archive-1
 common https://source.sakaiproject.org/svn/msub/longsight.com/common/common-10.x_backport
 gradebook-export https://source.sakaiproject.org/svn/msub/longsight.com/gradebook-export/gradebook-export-1.5-src
 kernel https://source.sakaiproject.org/svn/msub/longsight.com/kernel/kernel-10.x_backport
+portal https://source.sakaiproject.org/svn/msub/longsight.com/sakai/portal/portal-SAK-29001
 sakai-mock https://source.sakaiproject.org/svn/msub/longsight.com/sakai-mock/sakai-mock-10.x_backport
 samigo https://source.sakaiproject.org/svn/msub/longsight.com/custom_builds/60/samigo/samigo-10.x_features-backport
 site-manage https://source.sakaiproject.org/svn/msub/longsight.com/site-manage/site-manage-10.x_custom
