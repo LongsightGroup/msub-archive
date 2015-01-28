@@ -216,7 +216,7 @@ public class ArchiveAction
 		}
 		
 		//get list of terms
-		List<AcademicSession> terms = courseManagementService.getCurrentAcademicSessions();
+		List<AcademicSession> terms = courseManagementService.getAcademicSessions();
 		context.put("terms", terms);
 		
 		return "-batch";
