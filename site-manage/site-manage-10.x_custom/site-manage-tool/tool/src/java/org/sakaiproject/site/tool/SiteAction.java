@@ -29,6 +29,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -102,6 +103,7 @@ import org.sakaiproject.entity.api.ResourceProperties;
 import org.sakaiproject.entity.api.ResourcePropertiesEdit;
 import org.sakaiproject.entity.cover.EntityManager;
 import org.sakaiproject.event.api.SessionState;
+import org.sakaiproject.event.api.NotificationService;
 import org.sakaiproject.event.cover.EventTrackingService;
 import org.sakaiproject.exception.IdInvalidException;
 import org.sakaiproject.exception.IdUnusedException;
@@ -757,6 +759,8 @@ public class SiteAction extends PagedResourceActionII {
 	private List prefLocales = new ArrayList();
 	
 	private static final String VM_ALLOWED_ROLES_DROP_DOWN 	= "allowedRoles";
+	
+	private static final String SAK_PROP_IMPORT_NOTIFICATION = "site.setup.import.notification";
 	
 	// state variable for whether any multiple instance tool has been selected
 	private String STATE_MULTIPLE_TOOL_INSTANCE_SELECTED = "state_multiple_tool_instance_selected";
@@ -1547,6 +1551,8 @@ public class SiteAction extends PagedResourceActionII {
 			// each site)
 			context.put("service", SiteService.getInstance());
 			context.put("sortby_title", SortType.TITLE_ASC.toString());
+			context.put("sortby_id", SortType.ID_ASC.toString());
+			context.put("show_id_column", ServerConfigurationService.getBoolean("site.setup.showSiteIdColumn", false));
 			context.put("sortby_type", SortType.TYPE_ASC.toString());
 			context.put("sortby_createdby", SortType.CREATED_BY_ASC.toString());
 			context.put("sortby_publish", SortType.PUBLISHED_ASC.toString());
@@ -2070,7 +2076,7 @@ public class SiteAction extends PagedResourceActionII {
 				if(state.getAttribute(IMPORT_QUEUED) != null){
 					context.put("importQueued", true);
 					state.removeAttribute(IMPORT_QUEUED);
-					if(UserDirectoryService.getCurrentUser().getEmail() == null || "".equals(UserDirectoryService.getCurrentUser().getEmail())){
+					if(StringUtils.isBlank(UserDirectoryService.getCurrentUser().getEmail()) || !ServerConfigurationService.getBoolean(SAK_PROP_IMPORT_NOTIFICATION, true)){
 						context.put("importQueuedNoEmail", true);
 					}
 				}
@@ -2169,8 +2175,8 @@ public class SiteAction extends PagedResourceActionII {
 				if (groups != null)
 				{
 					// filter out only those groups that are manageable by site-info
-					Collection<Group> filteredGroups = new ArrayList<Group>();
-					Collection<Group> filteredSections = new ArrayList<Group>();
+					List<Group> filteredGroups = new ArrayList<Group>();
+					List<Group> filteredSections = new ArrayList<Group>();
 					Collection<String> viewMembershipGroups = new ArrayList<String>();
 					Collection<String> unjoinableGroups = new ArrayList<String>();
 					for (Group g : groups)
@@ -2196,14 +2202,24 @@ public class SiteAction extends PagedResourceActionII {
 							unjoinableGroups.add(g.getId());
 						}
 					}
+					Collections.sort(filteredGroups, new Comparator<Group>(){
+						public int compare(Group o1, Group o2) {
+							return o1.getTitle().compareToIgnoreCase(o2.getTitle());
+						}
+					});
 					context.put("groups", filteredGroups);
+					Collections.sort(filteredSections, new Comparator<Group>(){
+						public int compare(Group o1, Group o2) {
+							return o1.getTitle().compareToIgnoreCase(o2.getTitle());
+						}
+					});
 					context.put("sections", filteredSections);
 					context.put("viewMembershipGroups", viewMembershipGroups);
 					context.put("unjoinableGroups", unjoinableGroups);
 				}
 				
 				//joinable groups:
-				Collection<JoinableGroup> joinableGroups = new ArrayList<JoinableGroup>();
+				List<JoinableGroup> joinableGroups = new ArrayList<JoinableGroup>();
 				if(site.getGroups() != null){
 					//find a list of joinable-sets this user is already a member of
 					//in order to not display those groups as options
@@ -2277,6 +2293,11 @@ public class SiteAction extends PagedResourceActionII {
 						}
 					}
 					if(joinableGroups.size() > 0){
+						Collections.sort(joinableGroups, new Comparator<JoinableGroup>(){
+							public int compare(JoinableGroup g1, JoinableGroup g2){
+								return g1.getTitle().compareToIgnoreCase(g2.getTitle());
+							}
+						});
 						context.put("joinableGroups", joinableGroups);
 					}
 				}
@@ -4493,6 +4514,9 @@ public class SiteAction extends PagedResourceActionII {
 			} else if (sortBy.equals(SortType.PUBLISHED_ASC.toString())) {
 				sortType = sortAsc ? SortType.PUBLISHED_ASC
 						: SortType.PUBLISHED_DESC;
+			} else if (sortBy.equals(SortType.ID_ASC.toString())){
+				sortType = sortAsc ? SortType.ID_ASC
+						: SortType.ID_DESC;
 			}
 			
 			String term = (String) state.getAttribute(STATE_TERM_VIEW_SELECTED);
@@ -4781,6 +4805,9 @@ public class SiteAction extends PagedResourceActionII {
         } // doSite_restore
 
 	public void doSite_delete_confirmed(RunData data) {
+		if (!"POST".equals(data.getRequest().getMethod())) {
+			return;
+		}
 		SessionState state = ((JetspeedRunData) data)
 				.getPortletSessionState(((JetspeedRunData) data).getJs_peid());
 		ParameterParser params = data.getParameters();
@@ -5020,12 +5047,12 @@ public class SiteAction extends PagedResourceActionII {
 		} else {
 			state.setAttribute(STATE_TYPE_SELECTED, type);
 			setNewSiteType(state, type);
-			if (SiteTypeUtil.isCourseSite(type)) {
+			if (SiteTypeUtil.isCourseSite(type)) { // UMICH-1035
 				// redirect
 				redirectCourseCreation(params, state, "selectTerm");
-			} else if (SiteTypeUtil.isProjectSite(type)) {
+			} else if (SiteTypeUtil.isProjectSite(type)) { // UMICH-1035
 				state.setAttribute(STATE_TEMPLATE_INDEX, "13");
-			} else if (pSiteTypes != null && pSiteTypes.contains(type)) {
+			} else if (pSiteTypes != null && pSiteTypes.contains(SiteTypeUtil.getTargetSiteType(type))) {  // UMICH-1035
 				// if of customized type site use pre-defined site info and exclude
 				// from public listing
 				SiteInfo siteInfo = new SiteInfo();
@@ -5505,7 +5532,7 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 		toolGroup.put(defaultGroupName, getOrderedToolList(state, defaultGroupName, type, checkhome));		
 	} else {	
 		// get all the groups that are available for this site type
-		List groups = ServerConfigurationService.getCategoryGroups(type);
+		List groups = ServerConfigurationService.getCategoryGroups(SiteTypeUtil.getTargetSiteType(type));
 		for(Iterator<String> itr = groups.iterator(); itr.hasNext();) {
 			String groupId = itr.next();
 			String groupName = getGroupName(groupId);
@@ -5517,7 +5544,7 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
       
 		// add ungroups tools to end of toolGroup list
 		String ungroupedName = getGroupName(UNGROUPED_TOOL_TITLE);
-		List ungroupedList = getUngroupedTools(ungroupedName,	 toolGroup, state, type, moreInfoDir, site);
+		List ungroupedList = getUngroupedTools(ungroupedName,	 toolGroup, state, moreInfoDir, site);
 		if (ungroupedList.size() > 0) {
 			toolGroup.put(ungroupedName, ungroupedList );
 		}	 
@@ -5546,6 +5573,14 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 			}
 		}
 	}
+	
+	List toolRegistrationSelectedList = (List) state.getAttribute(STATE_TOOL_REGISTRATION_SELECTED_LIST);
+	
+	//If this is the first time through add these selected tools as the default otherwise don't touch this
+	if (toolRegistrationSelectedList==null) {
+		state.setAttribute(STATE_TOOL_REGISTRATION_SELECTED_LIST, selectedTools);
+	}
+
 	return toolGroup;
 }
 
@@ -5563,7 +5598,10 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 		List toolList = (List)state.getAttribute(STATE_TOOL_REGISTRATION_LIST);
 
 		// mark the required tools
-		List requiredTools = ServerConfigurationService.getToolsRequired(type);
+		List requiredTools = ServerConfigurationService.getToolsRequired(SiteTypeUtil.getTargetSiteType(type));
+		
+		// mark the default tools
+		List defaultTools = ServerConfigurationService.getDefaultTools(SiteTypeUtil.getTargetSiteType(type));
 		
 		// add Home tool only once
 		boolean hasHomeTool = false;
@@ -5578,11 +5616,19 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 			if (tr != null) {
 				newTool = new MyTool();
 				newTool.title = tr.getTitle();
-				newTool.id = tr.getId();
+				newTool.id = toolId;
 				newTool.description = tr.getDescription();
 				newTool.group = groupName;
-				if (requiredTools != null && requiredTools.contains(toolId))
+				// does tool allow multiples and if so are they already defined?
+				newTool.multiple = isMultipleInstancesAllowed(toolId); // SAK-16600 - this flag will allow action for template#3 to massage list into new format
+				
+				if (requiredTools != null && requiredTools.contains(toolId)) {
 					newTool.required = true;
+				}
+
+				if (defaultTools != null && defaultTools.contains(toolId)) {
+					newTool.selected = true;
+				}
 				toolsInOrderedList.add(newTool);
 			}
 		}
@@ -5623,7 +5669,7 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 						if (tr != null) 
 						{
 								String toolId = tr.getId();
-								if (isSiteTypeInToolCategory(type, tr) && notStealthOrHiddenTool(toolId) ) // SAK 23808
+								if (isSiteTypeInToolCategory(SiteTypeUtil.getTargetSiteType(type), tr) && notStealthOrHiddenTool(toolId) ) // SAK 23808
 								{
 									newTool = new MyTool();
 									newTool.title = tr.getTitle();
@@ -5681,8 +5727,16 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 		try {
 			Collection<File> files = FileUtils.listFiles(infoDir, new WildcardFileFilter(toolId+"*"), null);
 			if (files.isEmpty()==false) {
-				File mFile = files.iterator().next();
-				moreInfoUrl = libraryPath + mFile.getName(); // toolId;
+					for (File mFile : files) {
+						String name = mFile.getName();
+						int lastIndexOf = name.lastIndexOf('.');
+						String fNameWithOutExtension = name.substring(0,lastIndexOf);
+						if (fNameWithOutExtension.equals(toolId)) {
+							moreInfoUrl = libraryPath + mFile.getName();
+							break;
+						}
+						
+					}
 			}
 		} catch (Exception e) {
 			M_log.info("unable to read moreinfo" + e.getMessage());
@@ -5774,13 +5828,14 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 		}
 	}
 
+
 	/* SAK 16600  if toolGroup mode is active; and toolGroups don't use all available tools, put remaining tools into 
 	 * 'ungrouped' group having name 'GroupName'
 	 * @param	moreInfoDir		file pointer to directory of MoreInfo content
 	 * @param	site				current site
 	 * @return	list of MyTool items 
 	 */
-	private List getUngroupedTools(String ungroupedName, Map<String,List> toolsByGroup, SessionState state, String type, File moreInforDir, Site site) {
+	private List getUngroupedTools(String ungroupedName, Map<String,List> toolsByGroup, SessionState state, File moreInforDir, Site site) {
 		// Get all tools for site
 		List ungroupedToolsOld = (List) state.getAttribute(STATE_TOOL_REGISTRATION_LIST);
 		
@@ -5789,7 +5844,7 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 		if ( ungroupedToolsOld != null )
 			ungroupedTools.addAll(ungroupedToolsOld);
 		
-		// get all the groups that are available for this site type
+		// get all the tool groups that are available for this site  
 		for (Iterator<String> toolgroupitr = toolsByGroup.keySet().iterator(); toolgroupitr.hasNext();) {
 			String groupName = toolgroupitr.next();
 			List toolList = toolsByGroup.get(groupName);
@@ -5891,6 +5946,7 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 		// get registered tools list
 		Set categories = new HashSet();
 		categories.add(type);
+		categories.add(SiteTypeUtil.getTargetSiteType(type)); // UMICH-1035  
 		Set toolRegistrations = ToolManager.findTools(categories, null);
 		if ((toolRegistrations == null || toolRegistrations.size() == 0)
 			&& state.getAttribute(STATE_DEFAULT_SITE_TYPE) != null)
@@ -5898,7 +5954,7 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 			// use default site type and try getting tools again
 			type = (String) state.getAttribute(STATE_DEFAULT_SITE_TYPE);
 			categories.clear();
-			categories.add(type);
+			categories.add(SiteTypeUtil.getTargetSiteType(type)); //UMICH-1035
 			toolRegistrations = ToolManager.findTools(categories, null);
 		}
 
@@ -6830,7 +6886,9 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 		// get the request email from configuration
 		String requestEmail = getSetupRequestEmailAddress();
 		User currentUser = UserDirectoryService.getCurrentUser();
-		if (requestEmail != null && currentUser != null) {
+		// read from configuration whether to send out site notification emails, which defaults to be true
+		boolean sendSiteNotificationChoice = ServerConfigurationService.getBoolean("site.setup.creation.notification", true);
+		if (requestEmail != null && currentUser != null && sendSiteNotificationChoice) {
 			userNotificationProvider.notifySiteCreation(site, notifySites, courseSite, term_name, requestEmail);
 		} // if
 
@@ -7536,7 +7594,7 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 		String site_type = (String) state.getAttribute(STATE_SITE_TYPE);
 		SiteInfo siteInfo = (SiteInfo) state.getAttribute(STATE_SITE_INFO);
 
-		if (siteTitleEditable(state, site_type)) 
+		if (siteTitleEditable(state, SiteTypeUtil.getTargetSiteType(site_type))) 
 		{
 			Site.setTitle(siteInfo.title);
 		}
@@ -8664,12 +8722,13 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 									EventTrackingService.post(EventTrackingService.newEvent(SiteService.EVENT_SITE_IMPORT_START, existingSite.getReference(), false));
 									SessionManager.setCurrentSession(session);
 									SessionManager.setCurrentToolSession(toolSession);
-									importToolIntoSite(selectedTools, importTools,
-											existingSite);
+									importToolIntoSite(selectedTools, importTools, existingSite);
 									existingSite = getStateSite(state); // refresh site for
 									// WC and News
 									commitSite(existingSite);
-									userNotificationProvider.notifySiteImportCompleted(userEmail, existingSite.getId(), existingSite.getTitle());
+									if (ServerConfigurationService.getBoolean(SAK_PROP_IMPORT_NOTIFICATION, true)) {
+										userNotificationProvider.notifySiteImportCompleted(userEmail, existingSite.getId(), existingSite.getTitle());
+									}
 									EventTrackingService.post(EventTrackingService.newEvent(SiteService.EVENT_SITE_IMPORT_END, existingSite.getReference(), false));
 								}
 							};
@@ -8731,9 +8790,10 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 									SessionManager.setCurrentSession(session);
 									SessionManager.setCurrentToolSession(toolSession);
 									// Remove all old contents before importing contents from new site
-									importToolIntoSiteMigrate(selectedTools, importTools,
-											existingSite);
-									userNotificationProvider.notifySiteImportCompleted(userEmail, existingSite.getId(), existingSite.getTitle());
+									importToolIntoSiteMigrate(selectedTools, importTools, existingSite);
+									if (ServerConfigurationService.getBoolean(SAK_PROP_IMPORT_NOTIFICATION, true)) {
+										userNotificationProvider.notifySiteImportCompleted(userEmail, existingSite.getId(), existingSite.getTitle());
+									}
 									EventTrackingService.post(EventTrackingService.newEvent(SiteService.EVENT_SITE_IMPORT_END, existingSite.getReference(), false));
 								}
 							};
@@ -9294,11 +9354,22 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 	
 	/**
 	 * copy tool content from old site
-	 * @param oSiteId
-	 * @param site
+	 * @param oSiteId source (old) site id
+	 * @param site destination site
+	 * @param bypassSecurity use SecurityAdvisor if true
 	 */
 	private void importToolContent(String oSiteId, Site site, boolean bypassSecurity) {
 		String nSiteId = site.getId();
+		String sourceSiteRef = null;
+		
+		try {
+			Site sourceSite = SiteService.getSite(oSiteId);
+			sourceSiteRef = sourceSite.getReference();
+		} catch (IdUnusedException e) {
+			M_log.warn(this + ".importToolContent invalid source siteId: "+oSiteId);
+		}
+		
+		EventTrackingService.post(EventTrackingService.newEvent(SiteService.EVENT_SITE_DUPLICATE_START, sourceSiteRef, site.getId(), false, NotificationService.NOTI_OPTIONAL));
 		
 		// import tool content
 		if (bypassSecurity)
@@ -9386,6 +9457,8 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 		{
 			SecurityService.popAdvisor();
 		}
+      
+      EventTrackingService.post(EventTrackingService.newEvent(SiteService.EVENT_SITE_DUPLICATE_END, sourceSiteRef, site.getId(), false, NotificationService.NOTI_OPTIONAL));
 	}
 	/**
 	 * get user answers to setup questions
@@ -9917,7 +9990,7 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 		if (email != null) {
 			if (!email.isEmpty() && !EmailValidator.getInstance().isValid(email)) {
 				// invalid email
-				addAlert(state, rb.getFormattedMessage("java.invalid.email", new Object[]{email}));
+				addAlert(state, rb.getFormattedMessage("java.invalid.email", new Object[]{FormattedText.escapeHtml(email,false)}));
 			}
 			siteInfo.site_contact_email = email;
 		}
@@ -10344,7 +10417,9 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 		boolean inWSetupPageList;
 
 		Set categories = new HashSet();
-		categories.add((String) state.getAttribute(STATE_SITE_TYPE));
+		// UMICH 1035
+		categories.add(siteType);
+		categories.add(SiteTypeUtil.getTargetSiteType(siteType));
 		Set toolRegistrationSet = ToolManager.findTools(categories, null);
 
 		// first looking for any tool for removal
@@ -11628,9 +11703,8 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 		{
 			type = (String) state.getAttribute(STATE_DEFAULT_SITE_TYPE);
 		}
-		
 		if (type != null && toolIdList != null) {
-			List<String> orderedToolIds = ServerConfigurationService.getToolOrder(type);
+			List<String> orderedToolIds = ServerConfigurationService.getToolOrder(SiteTypeUtil.getTargetSiteType(type)); // UMICH-1035  
 			for (String tool_id : orderedToolIds) {
 				for (String toolId : toolIdList) {
 					String rToolId = originalToolId(toolId, tool_id);
