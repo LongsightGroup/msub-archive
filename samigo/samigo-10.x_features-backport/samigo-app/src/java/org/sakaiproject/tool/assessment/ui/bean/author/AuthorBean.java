@@ -24,6 +24,7 @@
 package org.sakaiproject.tool.assessment.ui.bean.author;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 import javax.faces.context.ExternalContext;
@@ -32,12 +33,12 @@ import javax.faces.model.SelectItem;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.sakaiproject.component.cover.ServerConfigurationService;
 import org.sakaiproject.tool.assessment.facade.AssessmentFacade;
 import org.sakaiproject.tool.assessment.facade.AssessmentTemplateFacade;
 import org.sakaiproject.tool.assessment.ui.bean.authz.AuthorizationBean;
 import org.sakaiproject.tool.assessment.ui.listener.util.ContextUtil;
 import org.sakaiproject.util.ResourceLoader;
-import org.sakaiproject.component.cover.ServerConfigurationService;
 
 /**
  * General authoring information.
@@ -85,6 +86,7 @@ public class AuthorBean implements Serializable
   private String firstFromPage;
   private boolean isRetractedForEdit = false;
   private boolean editPubAssessmentRestricted;
+  private Boolean editPubAssessmentRestrictedAfterStarted;
   private boolean isRepublishAndRegrade = false;
   private boolean isErrorInSettings = false;
   
@@ -100,6 +102,9 @@ public class AuthorBean implements Serializable
   private ArrayList<SelectItem> pendingActionList1;
   private ArrayList<SelectItem> pendingActionList2;
   private ArrayList<SelectItem> publishedActionList;
+  private Boolean canRemovePublishedAssessments;
+  private Boolean canRemovePublishedAssessmentsAfterStarted;
+  
   private boolean isGradeable;
   private boolean isEditable;
   
@@ -594,6 +599,20 @@ public class AuthorBean implements Serializable
 	  this.editPubAssessmentRestricted = editPubAssessmentRestricted;
   }
   
+  public Boolean isEditPubAssessmentRestrictedAfterStarted(){
+	  return getEditPubAssessmentRestrictedAfterStarted();
+  }
+  
+  public Boolean getEditPubAssessmentRestrictedAfterStarted()
+  {
+	  return editPubAssessmentRestrictedAfterStarted;
+  }
+
+  public void setEditPubAssessmentRestrictedAfterStarted(Boolean editPubAssessmentRestrictedAfterStarted)
+  {
+	  this.editPubAssessmentRestrictedAfterStarted = editPubAssessmentRestrictedAfterStarted;
+  }
+  
   public boolean getIsRepublishAndRegrade()
   {
 	  return isRepublishAndRegrade;
@@ -736,6 +755,32 @@ public class AuthorBean implements Serializable
 	  return pendingActionList2;
   }
 
+  public Boolean getCanRemovePublishedAssessments(){
+	  if(canRemovePublishedAssessments == null){
+		  AuthorizationBean authorizationBean = (AuthorizationBean) ContextUtil.lookupBean("authorization");
+
+		  boolean isDeleteAnyAssessment = authorizationBean.getDeleteAnyAssessment();
+		  boolean isDeleteOwnAssessment = authorizationBean.getDeleteOwnAssessment();
+		  if (isDeleteAnyAssessment || isDeleteOwnAssessment) {
+			  canRemovePublishedAssessments = Boolean.TRUE;
+		  }else{
+			  canRemovePublishedAssessments = Boolean.FALSE;
+		  }
+	  }
+	  
+	  return canRemovePublishedAssessments;
+  }
+  
+  public void setCanRemovePublishedAssessmentsAfterStarted(Boolean canRemovePublishedAssessmentsAfterStarted){
+	  this.canRemovePublishedAssessmentsAfterStarted = canRemovePublishedAssessmentsAfterStarted;
+  }
+  public Boolean isCanRemovePublishedAssessmentsAfterStarted(){
+	  return getCanRemovePublishedAssessmentsAfterStarted();
+  }
+  public Boolean getCanRemovePublishedAssessmentsAfterStarted(){
+	  return canRemovePublishedAssessmentsAfterStarted;
+  }
+  
   public ArrayList<SelectItem> getPublishedSelectActionList()
   {
 	  if (publishedActionList != null) {
@@ -748,8 +793,6 @@ public class AuthorBean implements Serializable
 	  publishedActionList = new ArrayList<SelectItem>();
 	  boolean isEditAnyAssessment = authorizationBean.getEditAnyAssessment();
 	  boolean isEditOwnAssessment = authorizationBean.getEditOwnAssessment();
-	  boolean isDeleteAnyAssessment = authorizationBean.getDeleteAnyAssessment();
-	  boolean isDeleteOwnAssessment = authorizationBean.getDeleteOwnAssessment();
 
 
 	  if (isEditAnyAssessment || isEditOwnAssessment) {
@@ -758,9 +801,6 @@ public class AuthorBean implements Serializable
 			  publishedActionList.add(new SelectItem("print_published", com.getString("action_print")));
 		  }
 		  publishedActionList.add(new SelectItem("settings_published", com.getString("settings_action")));
-	  }
-	  if (isDeleteAnyAssessment || isDeleteOwnAssessment) {
-		  publishedActionList.add(new SelectItem("remove_published", com.getString("remove_action")));
 	  }
 
 	  return publishedActionList;
@@ -837,6 +877,10 @@ public class AuthorBean implements Serializable
   
   public void setProtocol(String protocol){
 	  this.protocol = protocol;
+  }
+
+  public Date getCurrentTime() {
+	  return Calendar.getInstance().getTime();
   }
 
 }
