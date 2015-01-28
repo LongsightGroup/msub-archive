@@ -100,6 +100,7 @@ import org.sakaiproject.entity.api.ResourceProperties;
 import org.sakaiproject.entity.api.ResourcePropertiesEdit;
 import org.sakaiproject.entity.cover.EntityManager;
 import org.sakaiproject.event.api.SessionState;
+import org.sakaiproject.event.api.NotificationService;
 import org.sakaiproject.event.cover.EventTrackingService;
 import org.sakaiproject.exception.IdInvalidException;
 import org.sakaiproject.exception.IdUnusedException;
@@ -750,6 +751,8 @@ public class SiteAction extends PagedResourceActionII {
 	private List prefLocales = new ArrayList();
 	
 	private static final String VM_ALLOWED_ROLES_DROP_DOWN 	= "allowedRoles";
+	
+	private static final String SAK_PROP_IMPORT_NOTIFICATION = "site.setup.import.notification";
 	
 	// state variable for whether any multiple instance tool has been selected
 	private String STATE_MULTIPLE_TOOL_INSTANCE_SELECTED = "state_multiple_tool_instance_selected";
@@ -2049,7 +2052,7 @@ public class SiteAction extends PagedResourceActionII {
 				if(state.getAttribute(IMPORT_QUEUED) != null){
 					context.put("importQueued", true);
 					state.removeAttribute(IMPORT_QUEUED);
-					if(UserDirectoryService.getCurrentUser().getEmail() == null || "".equals(UserDirectoryService.getCurrentUser().getEmail())){
+					if(StringUtils.isBlank(UserDirectoryService.getCurrentUser().getEmail()) || !ServerConfigurationService.getBoolean(SAK_PROP_IMPORT_NOTIFICATION, true)){
 						context.put("importQueuedNoEmail", true);
 					}
 				}
@@ -8607,12 +8610,13 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 									EventTrackingService.post(EventTrackingService.newEvent(SiteService.EVENT_SITE_IMPORT_START, existingSite.getReference(), false));
 									SessionManager.setCurrentSession(session);
 									SessionManager.setCurrentToolSession(toolSession);
-									importToolIntoSite(selectedTools, importTools,
-											existingSite);
+									importToolIntoSite(selectedTools, importTools, existingSite);
 									existingSite = getStateSite(state); // refresh site for
 									// WC and News
 									commitSite(existingSite);
-									userNotificationProvider.notifySiteImportCompleted(userEmail, existingSite.getId(), existingSite.getTitle());
+									if (ServerConfigurationService.getBoolean(SAK_PROP_IMPORT_NOTIFICATION, true)) {
+										userNotificationProvider.notifySiteImportCompleted(userEmail, existingSite.getId(), existingSite.getTitle());
+									}
 									EventTrackingService.post(EventTrackingService.newEvent(SiteService.EVENT_SITE_IMPORT_END, existingSite.getReference(), false));
 								}
 							};
@@ -8674,9 +8678,10 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 									SessionManager.setCurrentSession(session);
 									SessionManager.setCurrentToolSession(toolSession);
 									// Remove all old contents before importing contents from new site
-									importToolIntoSiteMigrate(selectedTools, importTools,
-											existingSite);
-									userNotificationProvider.notifySiteImportCompleted(userEmail, existingSite.getId(), existingSite.getTitle());
+									importToolIntoSiteMigrate(selectedTools, importTools, existingSite);
+									if (ServerConfigurationService.getBoolean(SAK_PROP_IMPORT_NOTIFICATION, true)) {
+										userNotificationProvider.notifySiteImportCompleted(userEmail, existingSite.getId(), existingSite.getTitle());
+									}
 									EventTrackingService.post(EventTrackingService.newEvent(SiteService.EVENT_SITE_IMPORT_END, existingSite.getReference(), false));
 								}
 							};
@@ -9217,11 +9222,22 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 	
 	/**
 	 * copy tool content from old site
-	 * @param oSiteId
-	 * @param site
+	 * @param oSiteId source (old) site id
+	 * @param site destination site
+	 * @param bypassSecurity use SecurityAdvisor if true
 	 */
 	private void importToolContent(String oSiteId, Site site, boolean bypassSecurity) {
 		String nSiteId = site.getId();
+		String sourceSiteRef = null;
+		
+		try {
+			Site sourceSite = SiteService.getSite(oSiteId);
+			sourceSiteRef = sourceSite.getReference();
+		} catch (IdUnusedException e) {
+			M_log.warn(this + ".importToolContent invalid source siteId: "+oSiteId);
+		}
+		
+		EventTrackingService.post(EventTrackingService.newEvent(SiteService.EVENT_SITE_DUPLICATE_START, sourceSiteRef, site.getId(), false, NotificationService.NOTI_OPTIONAL));
 		
 		// import tool content
 		if (bypassSecurity)
@@ -9309,6 +9325,8 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 		{
 			SecurityService.popAdvisor();
 		}
+      
+      EventTrackingService.post(EventTrackingService.newEvent(SiteService.EVENT_SITE_DUPLICATE_END, sourceSiteRef, site.getId(), false, NotificationService.NOTI_OPTIONAL));
 	}
 	/**
 	 * get user answers to setup questions
