@@ -122,7 +122,7 @@ public class SimpleLdapAttributeMapper implements LdapAttributeMapper {
 		
 		String emailAttr = 
 			attributeMappings.get(AttributeMappingConstants.EMAIL_ATTR_MAPPING_KEY);
-		return emailAttr + "=" + escapeSearchFilterTerm(emailAddr);
+		return "(&(objectClass=user)(" + emailAttr + "=" + escapeSearchFilterTerm(emailAddr) + ")(!(objectClass=computer))(!(userAccountControl:1.2.840.113556.1.4.803:=2)))";
 		
 	}
 
@@ -133,7 +133,7 @@ public class SimpleLdapAttributeMapper implements LdapAttributeMapper {
 		
 		String eidAttr = 
 			attributeMappings.get(AttributeMappingConstants.LOGIN_ATTR_MAPPING_KEY);
-		return eidAttr + "=" + escapeSearchFilterTerm(eid);
+		return "(&(objectClass=user)(" + eidAttr + "=" + escapeSearchFilterTerm(eid) + ")(!(objectClass=computer))(!(userAccountControl:1.2.840.113556.1.4.803:=2)))";
 		
 	}
 
