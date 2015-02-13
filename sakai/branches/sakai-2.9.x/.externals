@@ -23,7 +23,7 @@ postem https://source.sakaiproject.org/svn/postem/branches/sakai-2.9.x
 providers https://source.sakaiproject.org/svn/providers/branches/sakai-2.9.x
 reference https://source.sakaiproject.org/svn/reference/branches/sakai-2.9.x
 rights https://source.sakaiproject.org/svn/rights/branches/sakai-2.9.x
-roster https://source.sakaiproject.org/svn/roster/branches/sakai-2.9.x
+#roster https://source.sakaiproject.org/svn/roster/branches/sakai-2.9.x
 roster2 -r 312692 https://source.sakaiproject.org/contrib/roster2/trunk
 rwiki https://source.sakaiproject.org/svn/rwiki/branches/sakai-2.9.x
 sections https://source.sakaiproject.org/svn/sections/branches/sakai-2.9.x
