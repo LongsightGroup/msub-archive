@@ -24,7 +24,7 @@ providers https://source.sakaiproject.org/svn/providers/branches/sakai-2.9.x
 reference https://source.sakaiproject.org/svn/reference/branches/sakai-2.9.x
 rights https://source.sakaiproject.org/svn/rights/branches/sakai-2.9.x
 #roster https://source.sakaiproject.org/svn/roster/branches/sakai-2.9.x
-roster2 -r 312692 https://source.sakaiproject.org/contrib/roster2/trunk
+roster2 https://source.sakaiproject.org/svn/roster2/branches/sakai-10.x/
 rwiki https://source.sakaiproject.org/svn/rwiki/branches/sakai-2.9.x
 sections https://source.sakaiproject.org/svn/sections/branches/sakai-2.9.x
 site-manage https://source.sakaiproject.org/svn/site-manage/branches/sakai-2.9.x
@@ -113,6 +113,10 @@ kaltura -r 313603 https://source.sakaiproject.org/svn/msub/unicon.net/kaltura/tr
 #shell_command sed -i 's/10.0-SNAPSHOT/2.9-SNAPSHOT/g' formbuilder/tool/pom.xml
 #shell_command sed -i 's/2.10-SNAPSHOT/2.9-SNAPSHOT/g' dashboard/pom.xml
 #shell_command sed -i 's/10.0-SNAPSHOT/2.9-SNAPSHOT/g' dashboard/pom.xml
+#shell_command sed -i 's/10-SNAPSHOT/2.9-SNAPSHOT/g' roster2/pom.xml
+##shell_command sed -i 's/10-SNAPSHOT/2.9-SNAPSHOT/g' roster2/roster-app/pom.xml
+##shell_command sed -i 's/10-SNAPSHOT/2.9-SNAPSHOT/g' roster2/roster-help/pom.xml
+
 #Update calendar version for melete, luckily only one sakai version in this file
 #shell_command sed -i "s/sakai.version/sakai.calendar.version/g" melete/melete-impl/pom.xml
 
