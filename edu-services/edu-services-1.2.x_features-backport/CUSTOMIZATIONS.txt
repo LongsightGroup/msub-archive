@@ -7,3 +7,4 @@ SAK-25659 record the gradebook.updateItemScore event when grading an assignment 
 SAK-14519 Add Point Total column on the Gradebook Items Summary screen
 SAK-23787 Assignments / comments sent to gb along with grades
 SAK-22205 Gradebook Item Export Format
+SAK-27793 Issue with course grade calculation in GradebookService 
