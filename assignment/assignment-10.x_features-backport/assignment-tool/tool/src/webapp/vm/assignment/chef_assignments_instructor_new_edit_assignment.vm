@@ -30,7 +30,7 @@ $(document).ready(function() {
 	 		});
 	 	});
  	#end
-
+	SetMaxPoint(document.getElementById('$name_GradeType'), document.getElementById('$name_GradePoints'));
 });
 </script>
 
@@ -76,6 +76,11 @@ $(document).ready(function() {
 <script type="text/javascript">
     function SetMaxPoint(obj_option, obj_textfield)
     {
+		if (obj_option === null || obj_textfield === null)
+		{
+			return;
+		}
+
 		if(obj_option.value==3)
 		{ 
 			obj_textfield.disabled = false;
@@ -133,8 +138,10 @@ $(document).ready(function() {
 		var section = document.getElementById("reviewServiceOptions");
 		if(checked){
 			section.style.display="block";
+			resizeFrame('grow');
 		}else{
 			section.style.display="none";
+			resizeFrame('shrink');
 		}
 	}
 	
@@ -253,10 +260,10 @@ $(document).ready(function() {
                 #if ($visible_date_enabled) 
                <p class="shorttext">
                 <p class="checkbox" id="tempVisibleDate" >
-                    <input type="checkbox" id="allowVisibleDateToggle" name="allowVisibleDateToggle" #if($!assignment.getVisibleTime())checked="checked"#end onclick="if(checked){jQuery('.visibleDatePanel').show();resizeFrame();}else{jQuery('.visibleDatePanel').hide();}" />
+                    <input type="checkbox" id="allowVisibleDateToggle" name="allowVisibleDateToggle" #if($!new_assignment_visibletoggle)checked="checked"#end onclick="if(checked){jQuery('.visibleDatePanel').show();resizeFrame();}else{jQuery('.visibleDatePanel').hide();}" />
                     <label for="allowVisibleDateToggle">$tlang.getString("allowVisibleDate")</label>
                 </p>
-               <p class="shorttext visibleDatePanel" #if(!$!assignment.getVisibleTime())style="display:none;"#end>
+               <p class="shorttext visibleDatePanel" #if(!$!new_assignment_visibletoggle)style="display:none;"#end>
 			<span class="reqStar">*</span>
 			<label>
 				$tlang.getString("gen.visible.date")
@@ -279,7 +286,7 @@ $(document).ready(function() {
 				});
 			</script>
                     </p>
-               <p class="instruction labelindnt visibleDatePanel" #if(!$!assignment.getVisibleTime())style="display:none;"#end>
+               <p class="instruction labelindnt visibleDatePanel" #if(!$!new_assignment_visibletoggle)style="display:none;"#end>
 			$tlang.getString("gen.stuwonsee")
 		</p>
 		#end
@@ -780,6 +787,9 @@ $(document).ready(function() {
 				#end
 			</div>
 		#end
+		#if( ($!withGrade && $!withGradebook) || ($enableAnonGrading || $value_CheckAnonymousGrading.equals("true")) )
+			<h4>$!tlang.getString('grading')</h4>
+		#end
 		#if ($!withGrade && $!withGradebook)
 			## show the "Add to Gradebook" choices or not
 			#if(!$!allowGroupAssignmentsInGradebook)
@@ -787,9 +797,6 @@ $(document).ready(function() {
 			#else
 				#set ($addToGBDisplay="block")
 			#end
-				<h4>
-					$!tlang.getString('grading')
-				</h4>
 				<div style="display:$!addToGBDisplay">
 				<div class="checkbox  indnt2" style="display:$!addToGBDisplay">
 					## hide the assignment list from Gradebook when clicked
@@ -917,6 +924,28 @@ $(document).ready(function() {
 				</p>
 			#end
 		#end
+
+		## SAK-17606 - Show the anonymous grading checkbox if enabled
+		#if( $enableAnonGrading || $value_CheckAnonymousGrading.equals("true") )
+			#if ($withGrade && $withGradebook)
+				<br />
+			#end
+			<p class="checkbox indnt2">
+				<input id="$name_CheckAnonymousGrading" name="$name_CheckAnonymousGrading" type="checkbox" value="true" 
+					#if ($value_CheckAnonymousGrading.equals("true"))
+						checked="checked"
+					#end
+					#if( !$enableAnonGrading )
+						disabled="disabled"
+					#end
+				/>
+			<label for="$name_CheckAnonymousGrading" #if( !$enableAnonGrading ) class="disabled" #end>
+				$tlang.getString("grading.anonymous") 
+			</label>
+			</p>
+		#end
+		## end anonymous check
+
 		## Peer Assessment
 		#if ($allowPeerAssessment)
 			<div style="display:block">
@@ -1753,15 +1782,15 @@ $(document).ready(function() {
 			</p>
 		</fieldset>
 			<div class="act">
-				<input accesskey ="s" type="button" class="active" name="post" value="$tlang.getString("gen.pos")" 
+				<input accesskey="s" type="button" class="active" name="post" id="post" value="$tlang.getString("gen.pos")" 
 						onclick="javascript:document.newAssignmentForm.onsubmit();showNotif('submitnotif','post','newAssignmentForm');document.getElementById('option').value='post';document.newAssignmentForm.submit();return false;" />
-				<input accesskey ="v" type="button" name="preview" value="$tlang.getString("gen.pre")" 
+				<input accesskey="v" type="button" name="preview" id="preview" value="$tlang.getString("gen.pre")" 
 						onclick="javascript:document.newAssignmentForm.onsubmit();showNotif('submitnotif','preview','newAssignmentForm');document.getElementById('option').value='preview';document.newAssignmentForm.submit();return false;" />
 				#if (!($!assignment && !$assignment.draft))
-					<input accesskey ="d" type="button" name="save" value="$tlang.getString("gen.savdra")" 
+					<input accesskey="d" type="button" name="save" id="save" value="$tlang.getString("gen.savdra")" 
 							onclick="javascript:document.newAssignmentForm.onsubmit();showNotif('submitnotif','save','newAssignmentForm');document.getElementById('option').value='save';document.newAssignmentForm.submit();return false;" />
 				#end
-				<input accesskey ="x" type="button" name="cancel" value="$tlang.getString("gen.can")" 
+				<input accesskey="x" type="button" name="cancel" id="cancel" value="$tlang.getString("gen.can")" 
 							onclick="javascript:document.newAssignmentForm.onsubmit();document.getElementById('option').value='canceledit';document.newAssignmentForm.submit();return false;" />
 				<span id="submitnotif" style="visibility:hidden">$tlang.getString("gen.proces")</span>
 			</div>
