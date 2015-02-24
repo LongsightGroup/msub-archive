@@ -2486,7 +2486,7 @@ public class WSLongsight extends AbstractWebService {
 			Gradebook gb = (Gradebook) gradebookService.getGradebook(siteId);
 
 				// get the calculated grades
-				Map<String, String> cCourseGrade = gradebookService.getCalculatedCourseGrade(siteId); 
+				Map<String, String> cCourseGrade = gradebookService.getImportCourseGrade(siteId); 
 				Map<String, String> eCourseGrade = gradebookService.getEnteredCourseGrade(siteId);
 
 				// override any grades the instructor has manually set
@@ -2566,7 +2566,7 @@ public class WSLongsight extends AbstractWebService {
 					}
 
 					// get the calculated grades
-					Map<String, String> cCourseGrade = gradebookService.getCalculatedCourseGrade(siteId); 
+					Map<String, String> cCourseGrade = gradebookService.getImportCourseGrade(siteId); 
 					Map<String, String> eCourseGrade = gradebookService.getEnteredCourseGrade(siteId);
 
 					// override any grades the instructor has manually set
@@ -2631,7 +2631,7 @@ public class WSLongsight extends AbstractWebService {
 
 			if (gb.isCourseGradeDisplayed()) {
 				// get the calculated grades
-				Map<String, String> cCourseGrade = gradebookService.getCalculatedCourseGrade(siteId); 
+				Map<String, String> cCourseGrade = gradebookService.getImportCourseGrade(siteId); 
 				Map<String, String> eCourseGrade = gradebookService.getEnteredCourseGrade(siteId);
 
 				// override any grades the instructor has manually set

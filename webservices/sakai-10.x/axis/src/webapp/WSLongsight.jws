@@ -2237,7 +2237,7 @@ public String getCourseGrades(String sessionId, String siteId) throws AxisFault
       Gradebook gb = (Gradebook) aGradebookService.getGradebook(siteId);
 
         // get the calculated grades
-        Map<String, String> cCourseGrade = aGradebookService.getCalculatedCourseGrade(siteId); 
+        Map<String, String> cCourseGrade = aGradebookService.getImportCourseGrade(siteId); 
         Map<String, String> eCourseGrade = aGradebookService.getEnteredCourseGrade(siteId);
 
         // override any grades the instructor has manually set
@@ -2313,7 +2313,7 @@ public String getManyCourseGrades(String sessionId, String siteIds) throws AxisF
         }
 
           // get the calculated grades
-          Map<String, String> cCourseGrade = aGradebookService.getCalculatedCourseGrade(siteId); 
+          Map<String, String> cCourseGrade = aGradebookService.getImportCourseGrade(siteId); 
           Map<String, String> eCourseGrade = aGradebookService.getEnteredCourseGrade(siteId);
 
           // override any grades the instructor has manually set
@@ -2372,7 +2372,7 @@ public String getCourseGradesForUser(String sessionId, String siteId, String ins
 
       if (gb.isCourseGradeDisplayed()) {
         // get the calculated grades
-        Map<String, String> cCourseGrade = aGradebookService.getCalculatedCourseGrade(siteId); 
+        Map<String, String> cCourseGrade = aGradebookService.getImportCourseGrade(siteId); 
         Map<String, String> eCourseGrade = aGradebookService.getEnteredCourseGrade(siteId);
 
         // override any grades the instructor has manually set
