@@ -13,6 +13,7 @@ SAM-2352 Don't run on assessment attempts with a null submittedDate ; Tests and 
 SAM-2389 Post events for viewing assessment feedback and resuming an assessment
 SAM-2147 Do not allow instructors to edit or remove a published test after any activity
 SAM-2287 instructor metadata display stats on the objectives and keywords
+SAM-2501 Numbers appear in PDF download even with show sequences unchecked
 
 TODO: SAM-2056 Better usability in jquery ui
 Updated 08/28/2014 svn merge "^/sam/branches/sakai-10.x"
