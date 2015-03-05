@@ -26,6 +26,7 @@ SAM-2452 dont convert Sets to Lists big performance fix
   * SAM-2467 EMI needed the List for JSF dataTable
 SAM-2424 Auto-submit job depends on database server timezone instead of Java timezone
 SAM-2334 FIB and regrading warning. Git commit 9041282ecfb5ba6f081abe39c279c192733aa5b9
+SAM-2508 https://github.com/sakaiproject/sakai/pull/253 protect against NumberFormatException
 
 == EXPERIMENTAL PATCHES ==
 SAM-2461 Problems when autosubmit job runs during startup
