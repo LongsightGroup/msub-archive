@@ -589,16 +589,20 @@ public class SimpleLdapAttributeMapper implements LdapAttributeMapper {
 	 * @inheritDoc
 	 */
 	public String getManyUsersInOneSearch(Set<String> criteria) {
+		String eidAttr = attributeMappings.get(AttributeMappingConstants.LOGIN_ATTR_MAPPING_KEY);
+
 		StringBuilder sb = new StringBuilder();
-		sb.append("(|");
+		sb.append("(&(objectClass=user)(!(objectClass=computer))(!(userAccountControl:1.2.840.113556.1.4.803:=2))(|");
 
 		for ( Iterator<String> eidIterator = criteria.iterator(); eidIterator.hasNext(); ) {
-			sb.append("(");
-			sb.append(getFindUserByEidFilter(eidIterator.next()));
-			sb.append(")");
+			sb.append( "(");
+			sb.append( eidAttr );
+			sb.append( "=" );
+			sb.append( escapeSearchFilterTerm(eidIterator.next()) );
+			sb.append( ")" );
 		}
 		
-		sb.append(")");
+		sb.append("))");
 		
 		if (M_log.isDebugEnabled()) {
 			M_log.debug("getManyUsersInOneSearch() completed filter: " + sb.toString());
