@@ -19,12 +19,14 @@
                         #end
 				<h1 class="skip" id="totoolmenu">${rloader.sit_toolshead}</h1>
 				<div id="toolMenu" role="navigation" aria-label="${rloader.sit_toolshead}">
+					<div class="nocategory-container">
 					<ul>
 			#set( $category = "NONE" )
 			#foreach( $page in $sitePages.pageNavTools )
 		  			#if(!$sitePages.pageNavType.equalsIgnoreCase("myworkspace") && ${page.category} != "NONE" && ${page.category} != $category)
 			  			#set($category = ${page.category})
 			  			</ul>
+			  			</div><div class="category-container">
 			  			<div class="category-title">${page.category}</div>
 			  			<ul>		  		
 			  		#end
@@ -80,6 +82,7 @@
 #end	
 					</ul>
 				</div>
+			</div>
 				
 			<!-- Add subsite lists -->
 			#if ( $subSites ) 
