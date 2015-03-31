@@ -1574,13 +1574,16 @@ public class QuestionPoolFacadeQueries
                   boolean autoCommit = conn.getAutoCommit();
   		  String query = "";
   		  if (!"".equals(updateOwnerIdInPoolTableQueryString)) {
-  			  query = "UPDATE sam_questionpoolaccess_t SET agentid = '" + ownerId +"' WHERE questionpoolid IN (" + updateOwnerIdInPoolTableQueryString + ")" + 
-  					  " AND accesstypeid = 34";					 
+  			  query = "UPDATE SAM_QUESTIONPOOLACCESS_T SET agentid = ? WHERE questionpoolid IN (?) AND accesstypeid = 34";
   			  statement = conn.prepareStatement(query);
+  			  statement.setString(1, ownerId);
+  			  statement.setString(2, updateOwnerIdInPoolTableQueryString);
   			  statement.executeUpdate();
   			  
-  			  query = "UPDATE sam_questionpool_t SET ownerid = '" + ownerId + "' WHERE questionpoolid IN (" + updateOwnerIdInPoolTableQueryString + ")";
+  			  query = "UPDATE SAM_QUESTIONPOOL_T SET ownerid = ? WHERE questionpoolid IN (?)";
 			  statement = conn.prepareStatement(query);
+  			  statement.setString(1, ownerId);
+  			  statement.setString(2, updateOwnerIdInPoolTableQueryString);
 			  statement.executeUpdate();
                           
                           if (!autoCommit) {
@@ -1590,8 +1593,9 @@ public class QuestionPoolFacadeQueries
   
   		  // if the pool has parent but the parent doesn't transfer, need to remove the child-parent relationship.
   		  if (!"".equals(removeParentPoolString)) {
-  			  query = "UPDATE sam_questionpool_t SET parentpoolid = " + 0 + " WHERE questionpoolid IN (" + removeParentPoolString + ")";
+  			  query = "UPDATE SAM_QUESTIONPOOL_T SET parentpoolid = 0 WHERE questionpoolid IN (?)";
   			  statement = conn.prepareStatement(query);
+  			  statement.setString(1, removeParentPoolString);
   			  statement.executeUpdate();	
                           
                           if (!autoCommit) {
@@ -1605,7 +1609,7 @@ public class QuestionPoolFacadeQueries
 			  try {
 				  statement.close();
 			  } catch (Exception ex) {
-				  ex.printStackTrace();
+				  log.warn("Could not close statement", ex);
 			  }
 		  }
   		  
@@ -1613,7 +1617,7 @@ public class QuestionPoolFacadeQueries
 			  try {
 				  conn.close();
 			  } catch (Exception ex) {
-				  ex.printStackTrace();
+				  log.warn("Could not close conn", ex);
 			  }
 		  }
   		  
@@ -1621,7 +1625,7 @@ public class QuestionPoolFacadeQueries
   			  try {
   				  session.close();
 			  } catch (Exception ex) {
-				  ex.printStackTrace();
+				  log.warn("Could not close session", ex);
 			  }
   		  }
   	  }
