@@ -88,7 +88,7 @@ kernel https://source.sakaiproject.org/svn/msub/longsight.com/kernel/kernel-10.x
 lessonbuilder https://source.sakaiproject.org/svn/msub/longsight.com/lessonbuilder/LSNBLDR-222-10.x
 portal https://source.sakaiproject.org/svn/msub/longsight.com/sakai/portal/portal-SAK-29001-10.x
 sakai-mock https://source.sakaiproject.org/svn/msub/longsight.com/sakai-mock/sakai-mock-10.x_backport
-samigo https://source.sakaiproject.org/svn/msub/longsight.com/samigo/samigo-10.x_features-backport
+samigo https://source.sakaiproject.org/svn/msub/longsight.com/custom_builds/60/samigo/samigo-10.x_features-backport
 site-manage https://source.sakaiproject.org/svn/msub/longsight.com/site-manage/site-manage-10.x_custom
 
 
