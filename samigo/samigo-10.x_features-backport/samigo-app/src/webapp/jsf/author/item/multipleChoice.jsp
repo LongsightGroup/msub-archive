@@ -221,7 +221,7 @@ function toggleNegativePointVal(val){
   <!-- WYSIWYG -->
    
   <h:panelGrid>
-   <samigo:wysiwyg rows="140" value="#{itemauthor.currentItem.itemText}" hasToggle="yes">
+   <samigo:wysiwyg rows="140" value="#{itemauthor.currentItem.itemText}" hasToggle="yes" mode="author">
      <f:validateLength minimum="1" maximum="60000"/>
    </samigo:wysiwyg>
 
@@ -269,7 +269,7 @@ function toggleNegativePointVal(val){
         <!-- WYSIWYG -->
  <h:panelGrid>
 
-   <samigo:wysiwyg rows="140" value="#{answer.text}" hasToggle="yes" >
+   <samigo:wysiwyg rows="140" value="#{answer.text}" hasToggle="yes" mode="author">
      <f:validateLength maximum="60000"/>
    </samigo:wysiwyg>
  </h:panelGrid>
@@ -278,7 +278,7 @@ function toggleNegativePointVal(val){
 
         <!-- WYSIWYG -->
   <h:panelGrid rendered="#{itemauthor.target == 'questionpool' || (itemauthor.target != 'questionpool' && (author.isEditPendingAssessmentFlow && assessmentSettings.feedbackAuthoring ne '1') || (!author.isEditPendingAssessmentFlow && publishedSettings.feedbackAuthoring ne '1'))}">
-         <samigo:wysiwyg rows="140" value="#{answer.feedback}" hasToggle="yes" >
+         <samigo:wysiwyg rows="140" value="#{answer.feedback}" hasToggle="yes" mode="author">
            <f:validateLength maximum="60000"/>
          </samigo:wysiwyg>
   </h:panelGrid>
@@ -387,7 +387,7 @@ function toggleNegativePointVal(val){
 <br/>
   <!-- WYSIWYG --> 
 <h:panelGrid>
-   <samigo:wysiwyg rows="140" value="#{itemauthor.currentItem.corrFeedback}" hasToggle="yes" >
+   <samigo:wysiwyg rows="140" value="#{itemauthor.currentItem.corrFeedback}" hasToggle="yes" mode="author">
      <f:validateLength maximum="60000"/>
    </samigo:wysiwyg>
 </h:panelGrid>
@@ -396,7 +396,7 @@ function toggleNegativePointVal(val){
 
   <!-- WYSIWYG -->
    <h:panelGrid>
-   <samigo:wysiwyg rows="140" value="#{itemauthor.currentItem.incorrFeedback}"  hasToggle="yes" >
+   <samigo:wysiwyg rows="140" value="#{itemauthor.currentItem.incorrFeedback}"  hasToggle="yes" mode="author">
      <f:validateLength maximum="60000"/>
    </samigo:wysiwyg>
 </h:panelGrid>

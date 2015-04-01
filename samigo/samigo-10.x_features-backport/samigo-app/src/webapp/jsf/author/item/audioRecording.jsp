@@ -109,7 +109,7 @@
   <!-- WYSIWYG -->
 
   <h:panelGrid>
-   <samigo:wysiwyg rows="140" value="#{itemauthor.currentItem.itemText}" hasToggle="yes">
+   <samigo:wysiwyg rows="140" value="#{itemauthor.currentItem.itemText}" hasToggle="yes" mode="author">
      <f:validateLength maximum="60000"/>
    </samigo:wysiwyg>
   </h:panelGrid>
@@ -176,7 +176,7 @@
    <h:outputLabel value="#{commonMessages.feedback_optional}<br />" />
 
   <h:panelGrid >
-   <samigo:wysiwyg rows="140" value="#{itemauthor.currentItem.generalFeedback}" hasToggle="yes" >
+   <samigo:wysiwyg rows="140" value="#{itemauthor.currentItem.generalFeedback}" hasToggle="yes" mode="author">
      <f:validateLength maximum="60000"/>
    </samigo:wysiwyg>
   </h:panelGrid>

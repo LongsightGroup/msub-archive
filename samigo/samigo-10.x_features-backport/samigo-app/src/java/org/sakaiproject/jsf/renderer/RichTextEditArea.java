@@ -114,6 +114,8 @@ public class RichTextEditArea extends Renderer
     	
     String tmpCol = (String) component.getAttributes().get("columns");
     String tmpRow = (String) component.getAttributes().get("rows");
+    String mode = (String) component.getAttributes().get("mode");
+
     int col;
     int row;
     if (tmpCol != null)
@@ -182,11 +184,11 @@ public class RichTextEditArea extends Renderer
     if (editor.equalsIgnoreCase("FCKeditor") || editor.equalsIgnoreCase("ckeditor")) {
       if (tmpCol == null) {
     	  encodeFCK(writer, contextPath, (String) value, identity, outCol, 
-              outRow, justArea, clientId, valueHasRichText, hasToggle, true);
+              outRow, justArea, clientId, valueHasRichText, hasToggle, true, mode);
       }
       else {
     	  encodeFCK(writer, contextPath, (String) value, identity, outCol, 
-                  outRow, justArea, clientId, valueHasRichText, hasToggle, false);
+                  outRow, justArea, clientId, valueHasRichText, hasToggle, false, mode);
       }
     }
     else 
@@ -413,8 +415,21 @@ public class RichTextEditArea extends Renderer
 
    
   private void encodeFCK(ResponseWriter writer, String contextPath, String value, String identity, String outCol, 
-         String outRow, String justArea, String clientId, boolean valueHasRichText, String hasToggle, boolean columnsNotDefined) throws IOException
+         String outRow, String justArea, String clientId, boolean valueHasRichText, String hasToggle, boolean columnsNotDefined, String mode) throws IOException
   {
+    //If no specific mode is set, it's delivery by default
+    boolean disableWysiwyg = false;
+    if (mode == null) {
+      //Disable wysiwyg in delivery based on this property
+      disableWysiwyg = ServerConfigurationService.getBoolean("samigo.wysiwyg.delivery.disable",false);
+    }
+    //Maybe do something special for the other modes
+    else {
+      if ("author".equals(mode)) {
+        log.debug("author mode wysiwyg");
+      }
+    }
+
 	  //come up w/ rows/cols for the textarea if needed
 	  int textBoxRows = (new Integer(outRow).intValue()/20);
 	  int textBoxCols = 0;
@@ -435,7 +450,7 @@ public class RichTextEditArea extends Renderer
     //figure out if the toggle should be on
     boolean shouldToggle = ( (hasToggle != null) && (hasToggle.equals("yes")) && !valueHasRichText);
     
-    if(shouldToggle)
+    if(shouldToggle && !disableWysiwyg)
     {    	
     	//String show_hide_editor = (String) ContextUtil.getLocalizedString(
 		//	"org.sakaiproject.tool.assessment.bundle.AuthorMessages", "show_hide_editor");
@@ -449,7 +464,7 @@ public class RichTextEditArea extends Renderer
     writer.write("<textarea name=\"" + clientId + "_textinput\" id=\"" + clientId + "_textinput\" " + getIdentityAttribute(identity) + " rows=\""+ textBoxRows + "\" cols=\""+ textBoxCols + "\" class=\"simple_text_area\">");
     writer.write((String) value);
     writer.write("</textarea>");
-    if (shouldToggle) {
+    if (!disableWysiwyg && shouldToggle) {
     	writer.write("<input type=\"hidden\" name=\"" + clientId + "_textinput_current_status\" id=\"" + clientId + "_textinput_current_status\" value=\"firsttime\">");
     }
     else {
