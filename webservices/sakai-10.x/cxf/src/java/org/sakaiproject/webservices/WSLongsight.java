@@ -3080,6 +3080,11 @@ public class WSLongsight extends AbstractWebService {
 						// Need to clear the id - eid cache
 						boolean clearedCache = clearCache(ID_EID_CACHE);
 						LOG.info("Cache cleared because of eid update: " + ID_EID_CACHE + ":" + clearedCache);
+
+						// EST-3 clear out jldap_immutable table if it exists
+						int jldap = dbUpdate("DELETE FROM jldap_immutable WHERE eid=? OR eid=?", new String[]{currentEid,newEid});
+						LOG.info("Deleted from jldap_immutable where eid=" + currentEid + " or eid=" + newEid + " : " + jldap);
+
 						return "Successfully updated eid: " + currentEid + " to eid: " + newEid + ";cacheCleared=" + clearedCache;
 					}else{
 						return "Update failed for changing from eid: " + currentEid + " to eid: " + newEid;

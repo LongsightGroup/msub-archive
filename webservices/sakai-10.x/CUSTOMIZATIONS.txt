@@ -1,3 +1,4 @@
 LS-176: copy all Axis methods to CXF
 LS-177: make sure no method overrides in SakaiScript
 SAK-27503: backport from trunk to not deploy aopalliance and asm JARs
+EST-3: remove from jldap_immutable table
