@@ -122,7 +122,14 @@ public class SimpleLdapAttributeMapper implements LdapAttributeMapper {
 		
 		String emailAttr = 
 			attributeMappings.get(AttributeMappingConstants.EMAIL_ATTR_MAPPING_KEY);
-		return "(&(objectClass=user)(" + emailAttr + "=" + escapeSearchFilterTerm(emailAddr) + ")(!(objectClass=computer))(!(userAccountControl:1.2.840.113556.1.4.803:=2)))";
+
+		String eidAttr = attributeMappings.get(AttributeMappingConstants.LOGIN_ATTR_MAPPING_KEY);
+		if (StringUtils.equalsIgnoreCase(eidAttr, "sAMAccountName")) {
+			return "(&(objectClass=user)(" + emailAttr + "=" + escapeSearchFilterTerm(emailAddr) + ")(!(objectClass=computer))(!(userAccountControl:1.2.840.113556.1.4.803:=2)))";
+		}
+		else {
+			return "(&(" + emailAttr + "=" + escapeSearchFilterTerm(emailAddr) + ")(!(objectClass=computer)))";
+		}
 		
 	}
 
@@ -133,7 +140,12 @@ public class SimpleLdapAttributeMapper implements LdapAttributeMapper {
 		
 		String eidAttr = 
 			attributeMappings.get(AttributeMappingConstants.LOGIN_ATTR_MAPPING_KEY);
-		return "(&(objectClass=user)(" + eidAttr + "=" + escapeSearchFilterTerm(eid) + ")(!(objectClass=computer))(!(userAccountControl:1.2.840.113556.1.4.803:=2)))";
+		if (StringUtils.equalsIgnoreCase(eidAttr, "sAMAccountName")) {
+			return "(&(objectClass=user)(" + eidAttr + "=" + escapeSearchFilterTerm(eid) + ")(!(objectClass=computer))(!(userAccountControl:1.2.840.113556.1.4.803:=2)))";
+		}
+		else {
+			return "(&(" + eidAttr + "=" + escapeSearchFilterTerm(eid) + ")(!(objectClass=computer)))";
+		}
 		
 	}
 
@@ -592,7 +604,12 @@ public class SimpleLdapAttributeMapper implements LdapAttributeMapper {
 		String eidAttr = attributeMappings.get(AttributeMappingConstants.LOGIN_ATTR_MAPPING_KEY);
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("(&(objectClass=user)(!(objectClass=computer))(!(userAccountControl:1.2.840.113556.1.4.803:=2))(|");
+		if (StringUtils.equalsIgnoreCase(eidAttr, "sAMAccountName")) {
+			sb.append("(&(objectClass=user)(!(objectClass=computer))(!(userAccountControl:1.2.840.113556.1.4.803:=2))(|");
+		}
+		else {
+			sb.append("(&(!(objectClass=computer))(|");
+		}
 
 		for ( Iterator<String> eidIterator = criteria.iterator(); eidIterator.hasNext(); ) {
 			sb.append( "(");
