@@ -1740,7 +1740,26 @@ public class WSLongsight extends AbstractWebService {
 			User user = userDirectoryService.getUserByEid(userid);
 			return user.getDisplayName();
 		} catch (Exception e) {
-			LOG.warn("WS getUserDisplayName() failed for user: " + userid);
+			LOG.warn("WS longsightGetUserDisplayName() failed for user: " + userid);
+			return "";
+		}
+
+	}
+
+	@WebMethod
+	@Path("/longsightGetUserDisplayId")
+	@Produces("text/plain")
+	@GET
+	public String longsightGetUserDisplayId(
+			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+			@WebParam(name = "eid", partName = "eid") @QueryParam("eid") String eid) 
+	{
+		Session session = establishSession(sessionid);
+		try {
+			User user = userDirectoryService.getUserByEid(eid);
+			return user.getDisplayId();
+		} catch (Exception e) {
+			LOG.warn("WS longsightGetUserDisplayId() failed for eid: " + eid);
 			return "";
 		}
 
@@ -2608,6 +2627,74 @@ public class WSLongsight extends AbstractWebService {
 	}
 
 	@WebMethod
+	@Path("/getNumericalCourseGrades")
+	@Produces("text/plain")
+	@GET
+	public String getNumericalCourseGrades(
+			@WebParam(name = "sessionId", partName = "sessionId") @QueryParam("sessionId") String sessionId,
+			@WebParam(name = "siteId", partName = "siteId") @QueryParam("siteId") String siteId)
+        {
+                Session session = establishSession(sessionId);
+
+                if (!securityService.isSuperUser()) {
+                        LOG.warn("WS getCourseGrades(): Permission denied. Restricted to super users.");
+                        return "WS getCourseGrades(): Permission denied. Restricted to super users.";
+                }
+
+                String gradeResult = "";
+                try {
+                        Gradebook gb = (Gradebook) gradebookService.getGradebook(siteId);
+
+                        // get the calculated grades
+                        Map<String, String> cCourseGrade = gradebookService.getCalculatedCourseGrade(siteId, false);
+                        Map<String, String> eCourseGrade = gradebookService.getEnteredCourseGrade(siteId);
+
+                        Document dom = Xml.createDocument();
+                        Node course = dom.createElement("course");
+                        dom.appendChild(course);
+
+                        Node course_id = dom.createElement("course_id");
+                        course.appendChild(course_id);
+                        course_id.appendChild(dom.createTextNode(siteId));
+
+                        // override any grades the instructor has manually set
+                        for (Map.Entry<String, String> entry : eCourseGrade.entrySet()) {
+                                Node override = dom.createElement("override");
+                                course.appendChild(override);
+
+                                Node student_id = dom.createElement("student_id");
+                                override.appendChild(student_id);
+                                student_id.appendChild(dom.createTextNode(entry.getKey()));
+
+                                Node course_grade = dom.createElement("course_grade");
+                                override.appendChild(course_grade);
+
+                                course_grade.appendChild(dom.createTextNode(entry.getValue()));
+                        }
+
+                        for (Map.Entry<String, String> entry : cCourseGrade.entrySet()) {
+                                Node student = dom.createElement("student");
+                                course.appendChild(student);
+
+                                Node student_id = dom.createElement("student_id");
+                                student.appendChild(student_id);
+                                student_id.appendChild(dom.createTextNode(entry.getKey()));
+
+                                Node course_grade = dom.createElement("course_grade");
+                                student.appendChild(course_grade);
+
+                                course_grade.appendChild(dom.createTextNode(entry.getValue()));
+                        }
+
+                        gradeResult = Xml.writeDocumentToString(dom);
+                } catch (Exception e) {
+                        return e.getClass().getName() + " : " + e.getMessage();
+                }
+
+                return gradeResult;
+        }
+
+	@WebMethod
 	@Path("/getCourseGradesForUser")
 	@Produces("text/plain")
 	@GET
@@ -3287,7 +3374,7 @@ public class WSLongsight extends AbstractWebService {
 				return "Cannot get Gradebook service!";
 			}
 
-			/* if (! aGradebookService.isUserAbleToGradeStudent(gradebookUid,"..nonexistentstudent..")) {
+			/* if (! gradebookService.isUserAbleToGradeStudent(gradebookUid,"..nonexistentstudent..")) {
             return "Permission Denied";
           } */
 			LOG.warn("Gradebook: "+gradebookUid+" Assignment: "+assignmentName+" Student: "+studentUid);
@@ -3322,7 +3409,7 @@ public class WSLongsight extends AbstractWebService {
 
 			Assignment a1 = gradebookService.getAssignment(gradebookUid, assignmentName);
 			if (a1 == null) {
-				LOG.warn("getAssignmentPointsPossible() aGradebookService.getAssignment() is null!");
+				LOG.warn("getAssignmentPointsPossible() gradebookService.getAssignment() is null!");
 			}
 			retval = retval+a1.getPoints();
 		} catch (Exception e) {
@@ -3440,7 +3527,7 @@ public class WSLongsight extends AbstractWebService {
 				return "Cannot get Gradebook service!";
 			}
 
-			/* if (! aGradebookService.isUserAbleToGradeStudent(gradebookUid,"..nonexistentstudent..")) {
+			/* if (! gradebookService.isUserAbleToGradeStudent(gradebookUid,"..nonexistentstudent..")) {
              return "Permission Denied";
         } */
 			//LOG.warn("Gradebook: "+gradebookUid+" Assignment: "+assignmentId+" Student: "+studentUid);
@@ -3476,7 +3563,7 @@ public class WSLongsight extends AbstractWebService {
 
 			List a1 = gradebookService.getAssignments(gradebookUid);
 			if (a1 == null) {
-				LOG.warn("getGradebookAssignments() aGradebookService.getAssignments() is null!");
+				LOG.warn("getGradebookAssignments() gradebookService.getAssignments() is null!");
 			}
 
 			Document dom = Xml.createDocument();
