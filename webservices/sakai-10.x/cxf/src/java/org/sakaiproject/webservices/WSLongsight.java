@@ -410,12 +410,11 @@ public class WSLongsight extends AbstractWebService {
 			resourceProperties.addProperty(ResourceProperties.PROP_IS_COLLECTION, Boolean.FALSE.toString());
 			resourceProperties.addProperty(ResourceProperties.PROP_DISPLAY_NAME, basename + "." + extension);
 			resourceProperties.addProperty(ResourceProperties.PROP_DESCRIPTION, basename + "." + extension);
-
-			final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmssSSS");
-			formatter.setTimeZone(timeService.getLocalTimeZone());
-
-			// resourceProperties.addProperty(ResourceProperties.PROP_CREATION_DATE, formatter .format(displayDate));
 			resourceProperties.addProperty(ResourceProperties.PROP_CONTENT_LENGTH, filesize);
+
+			// final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+			// formatter.setTimeZone(timeService.getLocalTimeZone());
+			// resourceProperties.addProperty(ResourceProperties.PROP_CREATION_DATE, formatter .format(displayDate));
 
 			// now to commit the changes
 			contentHostingService.commitResource(cr, NotificationService.NOTI_NONE);
@@ -432,7 +431,6 @@ public class WSLongsight extends AbstractWebService {
 		catch (Exception e) 
 		{
 			e.printStackTrace();
-			LOG.error("Error when adding resource to folder", e);
 		}
 		return false;
 	}
