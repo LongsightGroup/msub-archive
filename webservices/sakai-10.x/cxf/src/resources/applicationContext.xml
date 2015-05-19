@@ -15,6 +15,13 @@ http://cxf.apache.org/schemas/jaxws.xsd">
   <!--import resource="classpath:META-INF/cxf/cxf-extension-jaxrs-binding.xml" /-->
   <import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
 
+  <!-- SAM: we want exceptions in the Tomcat catalina.out -->
+  <jaxrs:providers>
+    <bean class="org.apache.cxf.jaxrs.impl.WebApplicationExceptionMapper">
+      <property name="printStackTrace" value="true" />
+    </bean>
+  </jaxrs:providers>
+
     <!-- JAX-RS -->
     <jaxrs:server id="SakaiLoginRS" address="/rest/login">
         <jaxrs:serviceBeans>
