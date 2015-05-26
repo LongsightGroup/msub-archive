@@ -1,3 +1,5 @@
+Updated branch to latest version (2015-05-26 - r319584) svn merge "^/gradebook/branches/sakai-2.9.x" 
+
 SAK-21225 Extra Credit in Gradebook
 TODO: GYD-245872 & LS-51
 SAK-22164 Override grades should be clearer in All Grades view
