@@ -15,13 +15,6 @@ http://cxf.apache.org/schemas/jaxws.xsd">
   <!--import resource="classpath:META-INF/cxf/cxf-extension-jaxrs-binding.xml" /-->
   <import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
 
-  <!-- SAM: we want exceptions in the Tomcat catalina.out -->
-  <jaxrs:providers>
-    <bean class="org.apache.cxf.jaxrs.impl.WebApplicationExceptionMapper">
-      <property name="printStackTrace" value="true" />
-    </bean>
-  </jaxrs:providers>
-
     <!-- JAX-RS -->
     <jaxrs:server id="SakaiLoginRS" address="/rest/login">
         <jaxrs:serviceBeans>
@@ -97,7 +90,9 @@ http://cxf.apache.org/schemas/jaxws.xsd">
 
     <jaxws:endpoint id="SakaiScript"
                     implementor="#org.sakaiproject.webservices.SakaiScript"
-                    address="/soap/sakai"/>
+                    address="/soap/sakai">
+        <jaxws:properties> <entry key="exceptionMessageCauseEnabled" value="true" /> <entry key="faultStackTraceEnabled" value="true" /> </jaxws:properties>
+    </jaxws:endpoint>
 
     <jaxws:endpoint id="Assignments"
                     implementor="#org.sakaiproject.webservices.Assignments"
@@ -121,7 +116,9 @@ http://cxf.apache.org/schemas/jaxws.xsd">
 
     <jaxws:endpoint id="WSLongsight"
                     implementor="#org.sakaiproject.webservices.WSLongsight"
-                    address="/soap/longsight"/>
+                    address="/soap/longsight">
+        <jaxws:properties> <entry key="exceptionMessageCauseEnabled" value="true" /> <entry key="faultStackTraceEnabled" value="true" /> </jaxws:properties>
+    </jaxws:endpoint>
 
     <bean id="org.sakaiproject.webservices.AbstractWebService" class="org.sakaiproject.webservices.AbstractWebService" init-method="init">
         <property name="serverConfigurationService" ref="org.sakaiproject.component.api.ServerConfigurationService"/>
