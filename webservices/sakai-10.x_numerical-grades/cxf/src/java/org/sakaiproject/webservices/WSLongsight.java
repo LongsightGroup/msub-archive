@@ -2644,7 +2644,7 @@ public class WSLongsight extends AbstractWebService {
                         Gradebook gb = (Gradebook) gradebookService.getGradebook(siteId);
 
                         // get the calculated grades
-                        Map<String, String> cCourseGrade = gradebookService.getCalculatedCourseGrade(siteId, false);
+                        Map<String, String> cCourseGrade = gradebookService.getImportCourseGrade(siteId, true, false);
                         Map<String, String> eCourseGrade = gradebookService.getEnteredCourseGrade(siteId);
 
                         Document dom = Xml.createDocument();

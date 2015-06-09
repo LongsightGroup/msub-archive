@@ -2381,7 +2381,7 @@ public String getNumericalCourseGrades(String sessionId, String siteId) throws A
                 Gradebook gb = (Gradebook) aGradebookService.getGradebook(siteId);
 
                 // get the calculated grades
-                Map<String, String> cCourseGrade = aGradebookService.getCalculatedCourseGrade(siteId, false);
+                Map<String, String> cCourseGrade = aGradebookService.getImportCourseGrade(siteId, true, false);
                 Map<String, String> eCourseGrade = aGradebookService.getEnteredCourseGrade(siteId);
 
                 Document dom = Xml.createDocument();
