@@ -33,6 +33,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.SocketException;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -42,6 +43,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -49,6 +51,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.Stack;
 import java.util.StringTokenizer;
+import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeSet;
@@ -80,19 +83,7 @@ import org.sakaiproject.authz.api.SecurityAdvisor;
 import org.sakaiproject.authz.api.SecurityService;
 import org.sakaiproject.component.api.ServerConfigurationService;
 import org.sakaiproject.conditions.api.ConditionService;
-import org.sakaiproject.content.api.ContentCollection;
-import org.sakaiproject.content.api.ContentCollectionEdit;
-import org.sakaiproject.content.api.ContentEntity;
-import org.sakaiproject.content.api.ContentFilter;
-import org.sakaiproject.content.api.ContentHostingHandler;
-import org.sakaiproject.content.api.ContentHostingService;
-import org.sakaiproject.content.api.ContentResource;
-import org.sakaiproject.content.api.ContentResourceEdit;
-import org.sakaiproject.content.api.ContentTypeImageService;
-import org.sakaiproject.content.api.GroupAwareEdit;
-import org.sakaiproject.content.api.GroupAwareEntity;
-import org.sakaiproject.content.api.ResourceType;
-import org.sakaiproject.content.api.ResourceTypeRegistry;
+import org.sakaiproject.content.api.*;
 import org.sakaiproject.content.api.GroupAwareEntity.AccessMode;
 import org.sakaiproject.content.api.providers.SiteContentAdvisor;
 import org.sakaiproject.content.api.providers.SiteContentAdvisorProvider;
@@ -254,6 +245,10 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 	private boolean m_useMimeMagic = true;
 
 	private static final Detector DETECTOR = new DefaultDetector(MimeTypes.getDefaultMimeTypes());
+	
+	// This is the date format for Last-Modified header
+	public static final String RFC1123_DATE = "EEE, dd MMM yyyy HH:mm:ss zzz";
+	public static final Locale LOCALE_US = Locale.US;
 
 	static
 	{
@@ -272,8 +267,6 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 
 	/** Optional set of folders just within the m_bodyPath to distribute files among. */
 	protected String[] m_bodyVolumes = null;
-	
-	protected List<ContentFilter> m_outputFilters = Collections.emptyList();
 
 	/**********************************************************************************************************************************************************************************************************************************************************
 	 * Constructors, Dependencies and their setter methods
@@ -478,6 +471,21 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 	{
 		m_collectionAccessFormatter = service;
 	}
+
+	/** Dependency: ContentFilterService */
+	protected ContentFilterService m_contentFilterService;
+
+	/**
+	 * Dependency: ContentFilterService.
+	 *
+	 * @param service
+	 *        The ContentFilterService.
+	 */
+	public void setContentFilterService(ContentFilterService service)
+	{
+		m_contentFilterService = service;
+	}
+
 
 	/**
 	 * Set the site quota.
@@ -834,12 +842,7 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 		this.convertToContextQueryForCollectionSize = convertToContextQueryForCollectionSize;
 	}
 
-	public void setOutputFilters(List<ContentFilter> outputFilters)
-	{
-		this.m_outputFilters = outputFilters;
-	}
 
-	
 	/**********************************************************************************************************************************************************************************************************************************************************
 	 * Init and Destroy
 	 *********************************************************************************************************************************************************************************************************************************************************/
@@ -3498,7 +3501,7 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 					name = basename + "-" + attempts + extension;
 					id = collectionId + name;
 
-					if (attempts > maximum_tries)
+					if (attempts >= maximum_tries)
 					{
 						throw new IdUniquenessException(id);
 					}
@@ -6831,15 +6834,32 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 		}
 		
 		// Wrap up the resource if we need to.
-		for (ContentFilter filter: m_outputFilters)
-		{
-			resource = filter.wrap(resource);
-		}
+		resource = m_contentFilterService.wrap(resource);
+
+		// Set some headers to tell browsers to revalidate and check for updated files
+		res.addHeader("Cache-Control", "must-revalidate, private");
+		res.addHeader("Expires", "-1");
 
 		try
 		{
 			long len = resource.getContentLength();
 			String contentType = resource.getContentType();
+			ResourceProperties rp = resource.getProperties();
+			long lastModTime = 0;
+
+			try {
+				Time modTime = rp.getTimeProperty(ResourceProperties.PROP_MODIFIED_DATE);
+				lastModTime = modTime.getTime();
+			} catch (Exception e1) {
+				M_log.info("Could not retrieve modified time for: " + resource.getId());
+			}
+			
+			// KNL-1316 tell the browser when our file was last modified for caching reasons
+			if (lastModTime > 0) {
+				SimpleDateFormat rfc1123Date = new SimpleDateFormat(RFC1123_DATE, LOCALE_US);
+				rfc1123Date.setTimeZone(TimeZone.getTimeZone("GMT"));
+				res.addHeader("Last-Modified", rfc1123Date.format(lastModTime));
+			}
 
 			// for url content type, encode a redirect to the body URL
 			if (contentType.equalsIgnoreCase(ResourceProperties.TYPE_URL))
@@ -6883,7 +6903,6 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 				            || lcct.contains("html") || lcct.contains("script") ) && 
 				            m_serverConfigurationService.getBoolean(SECURE_INLINE_HTML, true)) {
 				        // increased checks to handle more mime-types - https://jira.sakaiproject.org/browse/KNL-749
-						ResourceProperties rp = resource.getProperties();
 
 						boolean fileInline = false;
 						boolean folderInline = false;
@@ -6927,10 +6946,17 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 				{
 					contentType = contentType + "; charset=" + encoding;
 				}
+				
+				// KNL-1316 let's see if the user already has a cached copy. Code copied and modified from Tomcat DefaultServlet.java
+				long headerValue = req.getDateHeader("If-Modified-Since");
+				if (headerValue != -1 && (lastModTime < headerValue + 1000)) {
+					// The entity has not been modified since the date specified by the client. This is not an error case.
+					res.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+					return; 
+				}
 
 				ArrayList<Range> ranges = parseRange(req, res, len);
 				res.addHeader("Accept-Ranges", "bytes");
-				res.addHeader("Cache-Control", "max-age=0, no-cache, no-store");
 
 		        if (req.getHeader("Range") == null || (ranges == null) || (ranges.isEmpty())) {
 		        	
@@ -13555,9 +13581,7 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 						{
 							try
 							{
-								ContentCollectionEdit edit = editCollection(oId);
-
-								this.removeCollection(edit.getId());
+								this.removeCollection(oId);
 							}
 							catch (Exception ee)
 							{
