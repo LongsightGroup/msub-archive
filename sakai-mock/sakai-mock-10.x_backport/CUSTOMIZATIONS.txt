@@ -1,1 +1,2 @@
+Updating mocks 06-23-2015 svn merge "^/sakai-mock/branches/sakai-10.x"
 SAK-25867 Improvements to Site Archive tool
