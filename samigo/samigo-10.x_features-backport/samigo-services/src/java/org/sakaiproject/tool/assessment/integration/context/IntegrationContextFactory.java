@@ -49,9 +49,8 @@ public abstract class IntegrationContextFactory
    */
   public static IntegrationContextFactory getInstance()
   {
-	Log log = LogFactory.getLog(IntegrationContextFactory.class);
-    log.debug("IntegrationContextFactory.getInstance() is instance null=" + instance == null);
-
+    Log log = LogFactory.getLog(IntegrationContextFactory.class);
+    log.debug("IntegrationContextFactory.getInstance()");
     if (instance==null)
     {
       try

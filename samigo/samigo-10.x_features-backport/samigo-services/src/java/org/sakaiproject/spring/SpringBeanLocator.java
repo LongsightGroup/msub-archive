@@ -25,6 +25,12 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 public class SpringBeanLocator
 {
+
+  // The object callers wait on if the bean locator hasn't been set yet.
+  // This is needed because this bean allows the service to get at beans in the tool
+  // The job scheduler can run before the webapp has been started and therefore can
+  // attempt to get beans out of the tool before the tool has been started up.
+  private static Object waitLock = new Object();
   private static WebApplicationContext waCtx = null;
   private static ConfigurableApplicationContext caCtx = null;
   private static boolean inWebContext = false;
@@ -40,8 +46,12 @@ public class SpringBeanLocator
    */
   public static void setApplicationContext(WebApplicationContext context)
   {
-	  SpringBeanLocator.waCtx = context;
-	  SpringBeanLocator.inWebContext = true;
+    synchronized(waitLock)
+    {
+      SpringBeanLocator.waCtx = context;
+      SpringBeanLocator.inWebContext = true;
+      waitLock.notifyAll();
+    }
   }
 
   /**
@@ -51,12 +61,23 @@ public class SpringBeanLocator
    */
   public static void setConfigurableApplicationContext(ConfigurableApplicationContext ca)
   {
-    SpringBeanLocator.caCtx = ca;
-    SpringBeanLocator.inWebContext = false;
+    synchronized (waitLock)
+    {
+      SpringBeanLocator.caCtx = ca;
+      SpringBeanLocator.inWebContext = false;
+      waitLock.notifyAll();
+    }
   }
 
   public Object getBean(String name)
   {
+    if (waCtx == null && caCtx == null) {
+      try {
+        waitLock.wait();
+      } catch (InterruptedException e) {
+        throw new RuntimeException("Got interrupted waiting for bean to be setup.", e);
+      }
+    }
     if (inWebContext)
     {
       return waCtx.getBean(name);

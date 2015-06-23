@@ -185,7 +185,10 @@ public class AuthorActionListener
 		author.setEditPubAssessmentRestricted(true);
 	}
     } 
-	
+
+	author.setEditPubAssessmentRestrictedAfterStarted(ServerConfigurationService.getBoolean("samigo.editPubAssessment.restricted.afterStart", false));
+	author.setCanRemovePublishedAssessmentsAfterStarted(ServerConfigurationService.getBoolean("samigo.removePubAssessment.restricted.afterStart", false));
+
 	String s2 = ServerConfigurationService.getString("samigo.editPubAssessment.restricted.afterStart");
 	if (s2 != null && s2.toLowerCase().equals("true")) {
 		author.setEditPubAssessmentRestrictedAfterStarted(Boolean.TRUE);

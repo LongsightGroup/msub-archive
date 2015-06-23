@@ -137,8 +137,8 @@ public interface AssessmentGradingFacadeQueriesAPI
   public ItemGradingData getLastItemGradingDataByAgent(Long publishedItemId,
       String agentId);
 
-  public ItemGradingData getItemGradingData(Long assessmentGradingId,
-      Long publishedItemId);
+  public ItemGradingData getItemGradingData(Long assessmentGradingId);
+  public ItemGradingData getItemGradingData(Long assessmentGradingId, Long publishedItemId);
 
   public AssessmentGradingData load(Long id);
   
@@ -227,7 +227,7 @@ public interface AssessmentGradingFacadeQueriesAPI
 
   public int getLateSubmissionsNumberByAgentId(Long publishedAssessmentId, String agentIdString, Date dueDate);
   
-  public List getExportResponsesData(String publishedAssessmentId, boolean anonymous, String audioMessage, String fileUploadMessage, String noSubmissionMessage, boolean showPartAndTotalScoreSpreadsheetColumns, String poolString, String sectionString, String questionString, String textString, String rationaleString, String itemGradingCommentsString, Map useridMap);
+  public List getExportResponsesData(String publishedAssessmentId, boolean anonymous, String audioMessage, String fileUploadMessage, String noSubmissionMessage, boolean showPartAndTotalScoreSpreadsheetColumns, String poolString, String sectionString, String questionString, String textString, String rationaleString, String itemGradingCommentsString, Map useridMap, String responseCommentString);
   
   public boolean getHasGradingData(Long publishedAssessmentId);
 

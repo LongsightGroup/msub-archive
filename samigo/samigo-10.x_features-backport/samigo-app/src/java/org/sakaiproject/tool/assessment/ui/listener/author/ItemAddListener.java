@@ -842,7 +842,7 @@ public class ItemAddListener
 
         if (!qpdelegate.hasItem(item.getItemIdString(),
         		Long.valueOf(itemauthor.getQpoolId()))) {
-          qpdelegate.addItemToPool(item.getItemIdString(),
+          qpdelegate.addItemToPool(item.getItemId(),
                                    Long.valueOf(itemauthor.getQpoolId()));
 
         }
@@ -1007,7 +1007,7 @@ public class ItemAddListener
         QuestionPoolService qpdelegate = new QuestionPoolService();
 	// removed the old pool-item mappings
           if ( (bean.getOrigPool() != null) && (!bean.getOrigPool().equals(""))) {
-            qpdelegate.removeQuestionFromPool(item.getItemIdString(),
+            qpdelegate.removeQuestionFromPool(item.getItemId(),
             		Long.valueOf(bean.getOrigPool()));
           }
 
@@ -1021,7 +1021,7 @@ public class ItemAddListener
 
           if (!qpdelegate.hasItem(item.getItemIdString(),
                                  Long.valueOf(bean.getSelectedPool()))) {
-            qpdelegate.addItemToPool(item.getItemIdString(),
+            qpdelegate.addItemToPool(item.getItemId(),
             					Long.valueOf(bean.getSelectedPool()));
           }
         }

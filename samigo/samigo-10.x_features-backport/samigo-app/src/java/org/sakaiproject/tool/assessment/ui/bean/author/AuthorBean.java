@@ -104,7 +104,6 @@ public class AuthorBean implements Serializable
   private ArrayList<SelectItem> publishedActionList;
   private Boolean canRemovePublishedAssessments;
   private Boolean canRemovePublishedAssessmentsAfterStarted;
-  
   private boolean isGradeable;
   private boolean isEditable;
   
@@ -598,7 +597,7 @@ public class AuthorBean implements Serializable
   {
 	  this.editPubAssessmentRestricted = editPubAssessmentRestricted;
   }
-  
+ 
   public Boolean isEditPubAssessmentRestrictedAfterStarted(){
 	  return getEditPubAssessmentRestrictedAfterStarted();
   }
@@ -612,7 +611,7 @@ public class AuthorBean implements Serializable
   {
 	  this.editPubAssessmentRestrictedAfterStarted = editPubAssessmentRestrictedAfterStarted;
   }
-  
+ 
   public boolean getIsRepublishAndRegrade()
   {
 	  return isRepublishAndRegrade;
@@ -780,7 +779,7 @@ public class AuthorBean implements Serializable
   public Boolean getCanRemovePublishedAssessmentsAfterStarted(){
 	  return canRemovePublishedAssessmentsAfterStarted;
   }
-  
+
   public ArrayList<SelectItem> getPublishedSelectActionList()
   {
 	  if (publishedActionList != null) {
@@ -794,7 +793,6 @@ public class AuthorBean implements Serializable
 	  boolean isEditAnyAssessment = authorizationBean.getEditAnyAssessment();
 	  boolean isEditOwnAssessment = authorizationBean.getEditOwnAssessment();
 
-
 	  if (isEditAnyAssessment || isEditOwnAssessment) {
 		  publishedActionList.add(new SelectItem("preview_published", com.getString("action_preview")));
 		  if (Boolean.parseBoolean(ServerConfigurationService.getString("samigo.printAssessment"))) {
@@ -804,6 +802,10 @@ public class AuthorBean implements Serializable
 	  }
 
 	  return publishedActionList;
+  }
+
+  public Date getCurrentTime() {
+	  return Calendar.getInstance().getTime();
   }
 
   public boolean getCanRecordAverage() {
@@ -877,10 +879,6 @@ public class AuthorBean implements Serializable
   
   public void setProtocol(String protocol){
 	  this.protocol = protocol;
-  }
-
-  public Date getCurrentTime() {
-	  return Calendar.getInstance().getTime();
   }
 
 }

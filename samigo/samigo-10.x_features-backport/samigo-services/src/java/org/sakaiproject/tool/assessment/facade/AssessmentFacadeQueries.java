@@ -99,7 +99,7 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 public class AssessmentFacadeQueries extends HibernateDaoSupport implements
 		AssessmentFacadeQueriesAPI {
-	private static Log log = LogFactory.getLog(AssessmentFacadeQueries.class);
+	private Log log = LogFactory.getLog(AssessmentFacadeQueries.class);
 
 	// private ResourceBundle rb =
 	// ResourceBundle.getBundle("org.sakaiproject.tool.assessment.bundle.Messages");
@@ -811,6 +811,14 @@ public class AssessmentFacadeQueries extends HibernateDaoSupport implements
 				AssessmentData.class, assessmentId);
 		AssessmentFacade f = new AssessmentFacade(a.getAssessmentBaseId(), a
 				.getTitle(), a.getLastModifiedDate());
+		f.setCreatedBy(a.getCreatedBy());
+		return f;
+	}
+
+	public AssessmentFacade getBasicInfoOfAnAssessmentFromSectionId(Long sectionId) {
+		SectionData section = loadSection(sectionId);
+		AssessmentData a = (AssessmentData) section.getAssessment();
+		AssessmentFacade f = new AssessmentFacade(a.getAssessmentBaseId(), a.getTitle(), a.getLastModifiedDate());
 		f.setCreatedBy(a.getCreatedBy());
 		return f;
 	}

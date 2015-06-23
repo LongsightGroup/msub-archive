@@ -46,7 +46,7 @@ import org.sakaiproject.tool.assessment.facade.AuthzQueriesFacadeAPI;
 public class AuthzQueriesFacade
           extends HibernateDaoSupport implements AuthzQueriesFacadeAPI
 {
-  private static Log log = LogFactory.getLog(AuthzQueriesFacade.class);
+  private Log log = LogFactory.getLog(AuthzQueriesFacade.class);
 
   // stores sql strings
   private static ResourceBundle res = ResourceBundle.getBundle(
@@ -185,15 +185,13 @@ public class AuthzQueriesFacade
    * @param qualifierId the target of the function.
    * @return the list of authorizations.
    */
-  public List getAuthorizationByFunctionAndQualifier(String functionId, String qualifierId) {
-    try
-    {
-      String query =
-        res.getString("select_authdata_f_id") + functionId +
-        res.getString("and_q_id") + qualifierId + "'";
+  public List<AuthorizationData> getAuthorizationByFunctionAndQualifier(String functionId, String qualifierId) {
+    try    {
+      String query = res.getString("select_authdata_f_id") + functionId + res.getString("and_q_id") + qualifierId + "'";
 
-      List list = getHibernateTemplate().find(query);
-      //System.out.println("list="+list);
+      @SuppressWarnings("unchecked")
+      List<AuthorizationData> list = getHibernateTemplate().find(query);
+
       return list;
     }
     catch (DataAccessException ex)

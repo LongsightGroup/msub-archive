@@ -24,6 +24,8 @@ package org.sakaiproject.tool.assessment.integration.context.spring;
 
 import java.io.File;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -38,6 +40,7 @@ import org.sakaiproject.spring.SpringBeanLocator;
  */
 public class FactoryUtil
 {
+  private Log log = LogFactory.getLog(FactoryUtil.class);
   private static boolean useLocator = false;
 
   private static final String FS = File.separator;
