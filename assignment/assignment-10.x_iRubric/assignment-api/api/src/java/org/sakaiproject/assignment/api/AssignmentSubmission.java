@@ -56,6 +56,12 @@ public interface AssignmentSubmission extends Entity
 	 * @return the Assignment
 	 */
 	public Assignment getAssignment();
+	
+	/**
+	 * call this method to store the assignment object to avoid costly lookup by assignment id later
+	 * will do nothing if assignment ids don't match
+	 */
+	public void setAssignment(Assignment value);
 
 	/**
 	 * Access the ID for the Assignment for this Submission
@@ -273,4 +279,10 @@ public interface AssignmentSubmission extends Entity
      * @return error string, if any, returned from review service
      */
     public String getReviewError();
+        
+        /**
+        * SAK-17606 - Method to return a specialized string for anonymous grading.
+        * @return
+        */
+        public String getAnonymousSubmissionId();
 }

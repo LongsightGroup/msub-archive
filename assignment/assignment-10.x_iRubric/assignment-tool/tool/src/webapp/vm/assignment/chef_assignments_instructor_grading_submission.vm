@@ -25,6 +25,7 @@ function handleEnterKeyPress(ev)
 			var $pan = $('#peerReviewInfo')
    	 		if ($pan.is(':visible') && ev.target.id !== 'peerReviewInfo' && ev.target.id !== 'infoImg' && ev.target.id !== 'grade') $pan.hide();
 		});
+		disableBackButton();
     });
 </script>
 <div class="portletBody">
@@ -33,7 +34,7 @@ function handleEnterKeyPress(ev)
 		#if ($allowAddAssignment)
 			#set($prevAction=true)
 			<li class="firstToolBarItem">
-				<span><a href="#toolLink("$action" "doNew_assignment")" title="$!tlang.getString("new")">$!tlang.getString("new")</a></span>
+				<span><a href="#" title = "$!tlang.getString('new')" onclick="javascript:document.gradeForm.onsubmit();document.getElementById('option').value='new';document.getElementById('view').value='new';document.gradeForm.submit();return false;">$!tlang.getString("new")</a></span>
 			</li>
 		#end
 		<li #if ($prevAction==false) class="firstToolBarItem" #set($prevAction=true)  #end>
@@ -155,7 +156,7 @@ function handleEnterKeyPress(ev)
 						#set($submitterId = $submitter.getDisplayId())
 						#if ($!submitterId)
 							##attach the displayId
-							#set($submitterName=$submitterName.concat("(").concat($submitterId).concat(")"))
+							#set($submitterName=$submitterName.concat(" (").concat($submitterId).concat(")"))
 						#end
 						#if ($!submitterName)
 							#if ($count == 1)
@@ -166,7 +167,13 @@ function handleEnterKeyPress(ev)
 						#end
 						#set ($count = $count + 1)
 					#end
+					
+					## SAK-17606
+					#if ($value_CheckAnonymousGrading.equals("true"))
+						$validator.escapeHtml($submission.anonymousSubmissionId)
+					#else
 					$validator.escapeHtml($!submitterNames)
+					#end
 				</td>
 			</tr>
 			#if ($!submissionType != 4)
