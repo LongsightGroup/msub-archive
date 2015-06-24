@@ -160,7 +160,7 @@ function updateRunningTotal(thisForm) {
   	var weightInput = getTheElement(thisForm.name + ":categoriesTable:" + row + ":weightInput");
   	//just threw 10000 in there just in case as an out
   	while(weightInput && row < 10000){
-  		weight = parseFloat(weightInput.value);
+		weight = parseFloat(weightInput.value.replace(/,/, '.'));
   		var extraCreditCheckbox = getTheElement(thisForm.name + ":categoriesTable:" + row + ":catExtraCredit");
 		if (weight >= 0 && extraCreditCheckbox != null && !extraCreditCheckbox.checked) {
             runningTotal += weight;
@@ -174,8 +174,8 @@ function updateRunningTotal(thisForm) {
   var runningTotalValEl = getTheElement(thisForm.name + ":runningTotalVal");
   var runningTotalEl = getTheElement(thisForm.name + ":runningTotal");
   var neededTotalEl = getTheElement(thisForm.name + ":neededTotalVal");
-  runningTotalValEl.innerHTML = runningTotal;
-  neededTotalEl.innerHTML = neededTotal;
+  runningTotalValEl.innerHTML = (Math.round(runningTotal*100)/100).toFixed(2);
+  neededTotalEl.innerHTML = (Math.round(neededTotal*100)/100).toFixed(2);
   if (neededTotal == 0)
   	runningTotalEl.className="courseGrade";
   else
@@ -520,11 +520,16 @@ function assignmentReleased(myForm, releasedChanged) {
 
 // if categories are enabled, we don't want to be able to check the calculate box 
 // for unassigned items.  This function will ensure this happens in the UI
-function categorySelected(myForm)
+function categorySelected(myForm, extraCreditCategories)
 {
+	var extraCreditCatsArr = new Array();
+	if(typeof extraCreditCategories === 'string'){
+		extraCreditCatsArr = extraCreditCategories.split(",");
+	}
 	var categoryDDEl = getTheElement(myForm + ':selectCategory');
 	var countedCheckboxEl = getTheElement(myForm + ':countAssignment');
 	var releasedCheckboxEl =  getTheElement(myForm + ':released');
+	var extraCreditCheckboxEl =  getTheElement(myForm + ':extraCredit');
 	if (undefined != categoryDDEl)
 	{
 		if (categoryDDEl.options[categoryDDEl.selectedIndex].value == "unassigned")
@@ -545,6 +550,13 @@ function categorySelected(myForm)
 			{
 				countedCheckboxEl.disabled = false;
 			}
+		}
+		//check if category is EC, if so, disable EC item checkbox:
+		if(extraCreditCatsArr.indexOf(categoryDDEl.options[categoryDDEl.selectedIndex].value) > -1){
+			extraCreditCheckboxEl.disabled = true;
+			extraCreditCheckboxEl.checked = false;
+		}else{
+			extraCreditCheckboxEl.disabled = false;
 		}
 	}
 	return;
