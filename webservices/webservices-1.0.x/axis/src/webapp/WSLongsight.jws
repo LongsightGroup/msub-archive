@@ -3478,10 +3478,10 @@ public String updateMembershipWithProvider (String sessionId, String siteid) thr
   
     Session s = establishSession(sessionId);
     
-    AuthzGroup realmEdit = AuthzGroupService.getAuthzGroup("/site/"+siteid);
-    AuthzGroupService.save(realmEdit);
+    AuthzGroup realmEdit = authzGroupService.getAuthzGroup("/site/"+siteid);
+    authzGroupService.save(realmEdit);
     
-    AuthzGroup realm = AuthzGroupService.getAuthzGroup("/site/"+siteid);
+    AuthzGroup realm = authzGroupService.getAuthzGroup("/site/"+siteid);
     
     return "success";
   } catch (Exception e) {
