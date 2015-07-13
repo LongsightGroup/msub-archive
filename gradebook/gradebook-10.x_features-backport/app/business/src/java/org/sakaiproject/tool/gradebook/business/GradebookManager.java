@@ -122,6 +122,16 @@ public interface GradebookManager {
     public List getAssignmentGradeRecords(Assignment assignment, Collection studentUids);
 
     /**
+     * Get one course grade record (with autocalculated fields) for the given
+     * gradebook and the given student UID
+     *
+     * @param gradebookId
+     * @param studentUid
+     * @return CourseGradeRecord
+     */
+    public CourseGradeRecord getPointsEarnedCourseGradeRecords(CourseGrade courseGrade, String studentUid);
+
+    /**
      * Get all course grade records (with autocalculated fields) for the given
      * gradebook and the given set of student UIDs
      *
@@ -241,11 +251,6 @@ public interface GradebookManager {
      * @return
      */
     public List getStudentGradeRecordsConverted(Long gradebookId, String studentId);
-
-    /**
-     * Gets the course grade for a single student.
-     */
-    public CourseGradeRecord getStudentCourseGradeRecord(Gradebook gradebook, String studentId);
 
     /**
      * Gets the grading events for the enrollments on the given gradable object.
@@ -559,6 +564,20 @@ public interface GradebookManager {
      * @return Category list - the last object is CourseGrade for this gradebook
      */
     public List getCategoriesWithStats(Long gradebookId, String assignmentSort, boolean assignAscending, String categorySort, boolean categoryAscending, boolean includeDroppedScores);
+    
+    /**
+     * Get all categories with stats
+     *  
+     * @param gradebookId
+     * @param assignmentSort assignment sorting string
+     * @param assignAscending assignment sorting ascending/descending
+     * @param categorySort category sorting string
+     * @param categoryAscending category sorting ascending/descending
+     * @param includeDroppedScores whether or not to include dropped scores in the calculations
+     * @param studentUids list of students you want the statistics for
+     * @return Category list - the last object is CourseGrade for this gradebook
+     */
+    public List getCategoriesWithStats(Long gradebookId, String assignmentSort, boolean assignAscending, String categorySort, boolean categoryAscending, boolean includeDroppedScores, Set studentUids);
     
     /**
      * 

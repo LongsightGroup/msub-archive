@@ -1,1 +1,2 @@
 SAK-27937 - Add a course grade option to disable course points on the student view
+2015-07-13 - Updated to latest 10.x    svn merge "^/gradebook/branches/sakai-10.x"

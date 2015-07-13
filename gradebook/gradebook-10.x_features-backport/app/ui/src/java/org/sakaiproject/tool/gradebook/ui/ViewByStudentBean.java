@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +61,7 @@ public class ViewByStudentBean extends EnrollmentTableBean implements Serializab
     private String userDisplayName;
     private boolean courseGradeReleased;
     private boolean coursePointsReleased;
-    private CourseGradeRecord courseGrade;
+    private CourseGradeRecord courseGradeRecord;
     private String courseGradeLetter;
     private boolean assignmentsReleased;
     private boolean anyNotCounted;
@@ -208,6 +209,7 @@ public class ViewByStudentBean extends EnrollmentTableBean implements Serializab
     public void init() {
     	// Get the active gradebook
     	gradebook = getGradebook();
+    	CourseGrade cg = getGradebookManager().getCourseGrade(getGradebookId());
     	
     	isAllItemsViewOnly = true;
 
@@ -227,10 +229,10 @@ public class ViewByStudentBean extends EnrollmentTableBean implements Serializab
     	rowStyles = new StringBuilder();
 
     	// Display course grade if we've been instructed to.
-    	CourseGradeRecord gradeRecord = getGradebookManager().getStudentCourseGradeRecord(gradebook, studentUid);
+    	CourseGradeRecord gradeRecord = getGradebookManager().getPointsEarnedCourseGradeRecords(cg, studentUid);
     	if (gradeRecord != null) {
     		if (courseGradeReleased || isInstructorView) {
-    			courseGrade = gradeRecord;
+    			courseGradeRecord = gradeRecord;
     			courseGradeLetter = gradeRecord.getDisplayGrade();
     		}
     		if(gradeRecord.getPointsEarned() != null){
@@ -269,8 +271,8 @@ public class ViewByStudentBean extends EnrollmentTableBean implements Serializab
     /**
      * @return Returns the CourseGradeRecord for this student
      */
-    public CourseGradeRecord getCourseGrade() {
-        return courseGrade;
+    public CourseGradeRecord getCourseGradeRecord() {
+        return courseGradeRecord;
     }
     /**
      * 
@@ -587,10 +589,12 @@ public class ViewByStudentBean extends EnrollmentTableBean implements Serializab
     			// we will also have to determine the student's category avg - the category stats
     			// are for class avg
     			List categoryListWithCG = new ArrayList();
+    			Set studentUids = new HashSet<String>();
+    			studentUids.add(studentUid);
     			if (sortColumn.equals(Category.SORT_BY_WEIGHT))
-    				categoryListWithCG = getGradebookManager().getCategoriesWithStats(getGradebookId(), Assignment.DEFAULT_SORT, true, sortColumn, sortAscending);
+    				categoryListWithCG = getGradebookManager().getCategoriesWithStats(getGradebookId(), Assignment.DEFAULT_SORT, true, sortColumn, sortAscending, false, studentUids);
     			else
-    				categoryListWithCG = getGradebookManager().getCategoriesWithStats(getGradebookId(), Assignment.DEFAULT_SORT, true, Category.SORT_BY_NAME, true);
+    				categoryListWithCG = getGradebookManager().getCategoriesWithStats(getGradebookId(), Assignment.DEFAULT_SORT, true, Category.SORT_BY_NAME, true, false, studentUids);
   
     			List categoryList = new ArrayList();
     			

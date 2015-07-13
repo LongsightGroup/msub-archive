@@ -36,7 +36,7 @@
 			<h:outputText value="#{msgs.course_grade_name}" />
 			<h:panelGroup>
 				<h:outputText id="letterGrade" value="#{studentViewBean.courseGradeLetter} " rendered="#{studentViewBean.courseGradeReleased}"/>
-				<h:outputText id="cumScore" value="#{studentViewBean.courseGrade}" rendered="#{studentViewBean.courseGradeReleased}">
+				<h:outputText id="cumScore" value="#{studentViewBean.courseGradeRecord}" rendered="#{studentViewBean.courseGradeReleased}">
 					<f:converter converterId="org.sakaiproject.gradebook.jsf.converter.CLASS_AVG_CONVERTER" />
 				</h:outputText>
 				<h:outputText value="#{msgs.student_view_not_released}" rendered="#{!studentViewBean.courseGradeReleased}"/>
@@ -52,9 +52,9 @@
 						<f:converter
 							converterId="org.sakaiproject.gradebook.jsf.converter.POINTS" />
 			  </h:outputText>
-					<h:outputText
-						rendered="#{studentViewBean.coursePointsReleased && studentViewBean.totalPoints != -1}">
-						<f:verbatim>/</f:verbatim>
+			  <h:outputText rendered="#{studentViewBean.showCoursePoints && studentViewBean.totalPoints != -1}"><f:verbatim>/</f:verbatim></h:outputText>
+			  <h:outputText id="totalPoints" value="#{studentViewBean.totalPoints}" rendered="#{studentViewBean.showCoursePoints && studentViewBean.totalPoints != -1}">
+		      <f:converter converterId="org.sakaiproject.gradebook.jsf.converter.POINTS" />
 		    </h:outputText>
 					<h:outputText id="totalPoints"
 						value="#{studentViewBean.totalPoints}"
