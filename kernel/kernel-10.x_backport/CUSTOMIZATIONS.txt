@@ -4,8 +4,6 @@
   --- Merging r315590 through r316085 into '.':
 2015-06-23 - svn merge "^/kernel/branches/sakai-10.x" 
   --- Merging r316196 through r319919 into '.':
-2015-07-14 - svn merge "^/kernel/branches/sakai-10.x" 
-  --- Merging r316196 through r319919 into '.':
 
 KNL-1210 SAK-25867 Improvements to Site Archive tool
 KNL-1252 "Hard" Delete
