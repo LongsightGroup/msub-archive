@@ -119,6 +119,8 @@
                 <module>web</module>
                 <module>webservices</module>
                 <module>gradebook-export</module>
+                <module>sms</module>
+                <module>qna</module>
             </modules>
         </profile>
         <profile>
