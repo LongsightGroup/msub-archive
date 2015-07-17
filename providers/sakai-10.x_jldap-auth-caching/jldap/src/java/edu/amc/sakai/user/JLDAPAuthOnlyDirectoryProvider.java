@@ -15,6 +15,10 @@ import org.sakaiproject.user.api.UserFactory;
  */
 public class JLDAPAuthOnlyDirectoryProvider extends JLDAPDirectoryProvider {
 
+	public JLDAPAuthOnlyDirectoryProvider() {
+		super();
+	}
+
 	@Override
 	public Collection<UserEdit> findUsersByEmail(String email, UserFactory factory) {
 		return Collections.emptyList();
