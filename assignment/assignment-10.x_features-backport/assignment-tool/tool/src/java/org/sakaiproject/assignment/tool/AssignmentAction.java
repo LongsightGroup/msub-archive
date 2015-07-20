@@ -4530,9 +4530,9 @@ public class AssignmentAction extends PagedResourceActionII
 				Assignment a = getAssignment(assignmentRef, "integrateGradebook", state);
 				if (a != null)
 				{
+					String propAddToGradebook = a.getProperties().getProperty(NEW_ASSIGNMENT_ADD_TO_GRADEBOOK);
 					if ("update".equals(updateRemoveSubmission)
-							&& a.getProperties().getProperty(NEW_ASSIGNMENT_ADD_TO_GRADEBOOK) != null
-							&& !a.getProperties().getProperty(NEW_ASSIGNMENT_ADD_TO_GRADEBOOK).equals(AssignmentService.GRADEBOOK_INTEGRATION_NO)
+							&& (StringUtils.equals( propAddToGradebook, AssignmentService.GRADEBOOK_INTEGRATION_ADD) || StringUtils.equals( propAddToGradebook, AssignmentService.GRADEBOOK_INTEGRATION_ASSOCIATE))
 							&& a.getContent().getTypeOfGrade() == Assignment.SCORE_GRADE_TYPE)
 					{
 						if (submissionRef == null)
@@ -10292,6 +10292,9 @@ public class AssignmentAction extends PagedResourceActionII
 			{
 				// permissions
 				doPermissions(data);
+			}
+			else if ("new".equals(option)) {
+			    doNew_assignment(data,null);
 			}
 			else if ("returngrade".equals(option))
 			{
