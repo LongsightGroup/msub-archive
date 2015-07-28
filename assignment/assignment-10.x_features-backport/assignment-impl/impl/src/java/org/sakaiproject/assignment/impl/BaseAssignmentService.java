@@ -10258,7 +10258,7 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
                         return -2;
                     }
 
-					int score = contentReviewService.getReviewScore(contentId, getAssignment().getReference(), getSubmitterId());
+					int score = contentReviewService.getReviewScore(contentId, getAssignment().getReference(), getContentReviewSubmitterId(cr));
 					m_reviewScore = score;
 					M_log.debug(this + " getReviewScore CR returned a score of: " + score);
 					return score;
@@ -10269,9 +10269,8 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
 					try {
 						
 							M_log.debug(this + " getReviewScore Item is not in queue we will try add it");
-							String userId = this.getSubmitterId();
                                                         try {
-								contentReviewService.queueContent(userId, this.getContext(), getAssignment().getReference(), Arrays.asList(cr));
+								contentReviewService.queueContent(getContentReviewSubmitterId(cr), this.getContext(), getAssignment().getReference(), Arrays.asList(cr));
 							}
 							catch (QueueException qe) {
 								M_log.warn(" getReviewScore Unable to queue content with content review Service: " + qe.getMessage());
@@ -10330,7 +10329,7 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
 					return -2;
 				}
 
-				int score = contentReviewService.getReviewScore(contentId, getAssignment().getReference(), getSubmitterId());
+				int score = contentReviewService.getReviewScore(contentId, getAssignment().getReference(), getContentReviewSubmitterId(cr));
 				// TODO: delete the following line if there will be no repercussions:
 				m_reviewScore = score;
 				M_log.debug(this + " getReviewScore(ContentResource) CR returned a score of: " + score);
@@ -10341,11 +10340,10 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
 				//should we add the item
 				try
 				{
-					M_log.debug(" getReviewScore(ContentResource) Item is not in queue we will try to add it");
-					String userId = (String)this.getSubmitterId();
+					M_log.debug(" getReviewScore(ContentResource) Item is not in queue we will try to add it");					
 					try
 					{
-						contentReviewService.queueContent(userId, this.getContext(), getAssignment().getReference(), Arrays.asList(cr));
+						contentReviewService.queueContent(getContentReviewSubmitterId(cr), this.getContext(), getAssignment().getReference(), Arrays.asList(cr));
 					}
 					catch (QueueException qe)
 					{
@@ -10363,6 +10361,21 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
 				M_log.warn(this + " getReviewScore " + e.getMessage());
 				return -1;
 			}
+		}
+		
+		public String getContentReviewSubmitterId(ContentResource cr){
+			//Group submissions store the group ID as the submitterId, so find an actual user ID
+			String userId = null;
+			if(cr != null && getAssignment().isGroup()){
+				if(cr.getProperties() != null
+						&& StringUtils.isNotEmpty(cr.getProperties().getProperty(ResourceProperties.PROP_CREATOR))){
+					//this isn't the best solution since the instructor could have submitted on behalf of the group, resulting in getting the instructors ID
+					userId = cr.getProperties().getProperty(ResourceProperties.PROP_CREATOR);
+				}
+			}else{						
+				userId = (String)this.getSubmitterId();
+			}
+			return userId;
 		}
 		
 		public String getReviewReport() {
@@ -12564,7 +12577,20 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
 				Assignment ass = this.getAssignment();			
 				if (ass != null)
 				{
-					contentReviewService.queueContent(this.getSubmitterId(), this.getContext(), ass.getReference(), resources);
+					//Group submissions store the group ID as the submitterId, so find an actual user ID
+					String userId = null;
+					if(getAssignment().isGroup()){
+						//first first user id from an attachment
+						for(ContentResource cr : resources){
+							userId = this.getContentReviewSubmitterId(cr);
+							if(userId != null){
+								break;
+							}
+						}
+					}else{						
+						userId = this.getContentReviewSubmitterId(null);
+					}
+					contentReviewService.queueContent(userId, this.getContext(), ass.getReference(), resources);
 				}
 				else
 				{
