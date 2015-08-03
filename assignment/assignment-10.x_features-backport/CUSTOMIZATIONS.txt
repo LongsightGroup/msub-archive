@@ -6,3 +6,4 @@ SAK-27812 Content Review scores are stored in the Assignment Submission causing 
 SAK-27748 Inline Files are named too long
 SAK-27863 Send over assignment instructions and attachments to content review
 SAK-29749 Group ID is passed over to Content Review for group assignments
+SAK-29752 manual merge of r320334 from sakai-10.x branch
