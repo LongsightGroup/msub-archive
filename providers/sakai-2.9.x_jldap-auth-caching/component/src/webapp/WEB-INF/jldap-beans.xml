@@ -35,6 +35,13 @@
 		<property name="secureConnection">
 			<value>true</value>
 		</property>
+		<!-- Use SocketFactory that trusts any X509 cert
+		     Can specify which protocol to use TLS or SSL (defaults to SSL) -->
+		<!--property name="secureSocketFactory">
+			<bean class="edu.amc.sakai.user.LDAPTrustAllSecureSocketFactory">
+				<constructor-arg value="TLS" />
+			</bean>
+		</property-->
 		<!-- property name="autoBind">
 			<value>false</value>
 		</property -->

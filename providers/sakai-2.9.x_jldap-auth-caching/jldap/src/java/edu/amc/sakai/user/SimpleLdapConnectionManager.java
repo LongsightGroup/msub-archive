@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -74,21 +75,23 @@ public class SimpleLdapConnectionManager implements LdapConnectionManager {
 		applyConstraints(conn);
 		connect(conn);
 
-		if ( conn != null && config.isAutoBind() ) {
-			if ( M_log.isDebugEnabled() ) {
-				M_log.debug("getConnection(): auto-binding");
-			}
-			try {
-				bind(conn, config.getLdapUser(), config.getLdapPassword());
-			} catch (LDAPException ldape) {
-				if (ldape.getResultCode() == LDAPException.INVALID_CREDENTIALS) {
-					M_log.warn("Failed to bind against: "+ conn.getHost()+ " with user: "+ config.getLdapUser()+ " password: "+ config.getLdapPassword().replaceAll(".", "*"));
+		if ( conn != null && conn.isConnected()) {
+			if (config.isAutoBind()) {
+				if ( M_log.isDebugEnabled() ) {
+					M_log.debug("getConnection(): auto-binding");
 				}
-				throw ldape;
+				try {
+					bind(conn, config.getLdapUser(), config.getLdapPassword());
+				} catch (LDAPException ldape) {
+					if (ldape.getResultCode() == LDAPException.INVALID_CREDENTIALS) {
+						M_log.warn("Failed to bind against: "+ conn.getHost()+ " with user: "+ config.getLdapUser()+ " password: "+ config.getLdapPassword().replaceAll(".", "*"));
+					}
+					throw ldape;
+				}
 			}
+			return conn;
 		}
-
-		return conn;
+		throw new LDAPException("JLDAP getConnection() Connection Error", LDAPException.CONNECT_ERROR, null);
 	}
 	
 	/**
@@ -405,19 +408,14 @@ public class SimpleLdapConnectionManager implements LdapConnectionManager {
 				return true;
 			}
 		} catch (IOException e) {
-			if (M_log.isDebugEnabled()) {
-				M_log.debug("JLDAP isSocketAlive dead host: " + host + ":" + port);
-			}
+			M_log.error("JLDAP isSocketAlive dead host: " + host + ":" + port, e);
 		}
 		finally {
 			if ( socket != null ) try {
 				socket.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				M_log.error("JLDAP isSocketAlive error closing socket", e);
 			}
-			
-			
 		}
 		
 		lastHealthCheck.put(host, timeNow);
