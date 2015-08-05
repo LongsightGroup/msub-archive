@@ -1862,10 +1862,12 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 			List<LdapUserData> ldapUsers = searchDirectory(filter, null, null, null, null, 0);
 			
 			for(LdapUserData ldapUserData: ldapUsers) {
+				String ldapUserEid = ldapUserData.getEid();
+				if (StringUtils.isBlank(ldapUserEid)) continue;
 				
 				//create a user object and map the data onto it
 				//SAK-20625 ensure we have an id-eid mapping at this time
-				UserEdit user = factory.newUser(ldapUserData.getEid());
+				UserEdit user = factory.newUser(ldapUserEid);
 				mapUserDataOntoUserEdit(ldapUserData, user);
 				
 				users.add(user);
