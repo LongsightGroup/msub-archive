@@ -1,0 +1,1 @@
+LSNBLDR-455 - When importing from cartridge HTML should be inline rather than linked
