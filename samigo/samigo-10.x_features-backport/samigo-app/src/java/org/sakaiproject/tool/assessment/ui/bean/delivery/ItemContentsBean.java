@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.Map;
 import javax.faces.model.SelectItem;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.event.cover.EventTrackingService;
@@ -1387,6 +1388,26 @@ public class ItemContentsBean implements Serializable {
 	return answerKey;
   }
 
+  public String getAnswerKeyCalcQuestion() {
+	String answerKey = "";
+	if(itemData!=null){
+		String answerKeyToSplit = itemData.getAnswerKey();
+		if(answerKeyToSplit==null){
+			return answerKey;
+		}
+		String keys[] = answerKeyToSplit.split(",");
+		GradingService gradingService = new GradingService();
+		for(String key: keys){
+			if(!gradingService.extractVariables(key).isEmpty()){
+				if(StringUtils.isNotEmpty(answerKey)){
+					answerKey += ", ";
+				}
+				answerKey += key;
+			}
+		}
+	}
+	return answerKey;
+  }
   
   public void setAttachment(Long itemGradingId){
 	  List itemGradingAttachmentList = new ArrayList();
