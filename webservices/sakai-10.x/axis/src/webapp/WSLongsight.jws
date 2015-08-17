@@ -2366,6 +2366,7 @@ public String getManyCourseGrades(String sessionId, String siteIds) throws AxisF
   return gradeResult;
 }
 
+/*
 public String getNumericalCourseGrades(String sessionId, String siteId) throws AxisFault {
         Session session = establishSession(sessionId);
 
@@ -2381,7 +2382,7 @@ public String getNumericalCourseGrades(String sessionId, String siteId) throws A
                 Gradebook gb = (Gradebook) aGradebookService.getGradebook(siteId);
 
                 // get the calculated grades
-                Map<String, String> cCourseGrade = aGradebookService.getImportCourseGrade(siteId, true, false);
+                Map<String, String> cCourseGrade = aGradebookService.getImportCourseGrade(siteId);
                 Map<String, String> eCourseGrade = aGradebookService.getEnteredCourseGrade(siteId);
 
                 Document dom = Xml.createDocument();
@@ -2428,7 +2429,7 @@ public String getNumericalCourseGrades(String sessionId, String siteId) throws A
 
         return gradeResult;
 }
-
+*/
 
 public String getCourseGradesForUser(String sessionId, String siteId, String instructorId, String userid) throws AxisFault
 {
