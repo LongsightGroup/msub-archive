@@ -2,3 +2,5 @@ SAK-27937 - Add a course grade option to disable course points on the student vi
 SAK-29243 getImportCourseGrade numerical grade option
   * https://github.com/sakaiproject/sakai/pull/574.patch
 2015-05-26 svn merge -r314071:319572 ^/edu-services/branches/sakai-10.0
+2015-08-26 svn merge "^/edu-services/branches/sakai-10.x"
+    --- Merging r319573 through r320975 into '.':
