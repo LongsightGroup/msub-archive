@@ -3150,9 +3150,9 @@ public class WSLongsight extends AbstractWebService {
 				String COUNT_SQL = "select count(*) c from SAKAI_USER_ID_MAP where EID = ?";
 				List<Map<String, String>> existingEidList = dbRead(COUNT_SQL, new String[]{newEid}, new String[]{"c"});
 				boolean existingNewEid = existingEidList != null && existingEidList.size() > 0 && !"0".equals(existingEidList.get(0).get("c"));
-				if(existingNewEid && !force){
+				if(existingNewEid && !force) {
 					return "A user with eid : " + newEid + " already exists.";
-				}else{
+				} else {
 					if(existingNewEid && force){
 						// drop the old new eid (probably user already signed in and created a blank user)
 						String DELETE_SQL = "Delete from SAKAI_USER_ID_MAP where EID = ?";
@@ -3169,16 +3169,18 @@ public class WSLongsight extends AbstractWebService {
 						LOG.info("Cache cleared because of eid update: " + ID_EID_CACHE + ":" + clearedCache);
 
 						// EST-3 clear out jldap_immutable table if it exists
-						int jldap = dbUpdate("DELETE FROM jldap_immutable WHERE eid=? OR eid=?", new String[]{currentEid,newEid});
+						int jldap = dbUpdate("DELETE IGNORE FROM jldap_immutable WHERE eid=? OR eid=?", new String[]{currentEid,newEid});
 						LOG.info("Deleted from jldap_immutable where eid=" + currentEid + " or eid=" + newEid + " : " + jldap);
 
 						return "Successfully updated eid: " + currentEid + " to eid: " + newEid + ";cacheCleared=" + clearedCache;
-					}else{
+					}
+                                        else {
 						return "Update failed for changing from eid: " + currentEid + " to eid: " + newEid;
 					}
 				}
 
-			} else {
+			} 
+                        else {
 				return "FAILURE: Access to changeUserEidForce is restricted to super admins";
 			}
 		}catch(Exception e){
