@@ -3154,16 +3154,16 @@ public class WSLongsight extends AbstractWebService {
 					return "A user with eid : " + newEid + " already exists.";
 				}else{
 					if(existingNewEid && force){
-						//drop the old new eid (probably user already signed in and created a blank user)
+						// drop the old new eid (probably user already signed in and created a blank user)
 						String DELETE_SQL = "Delete from SAKAI_USER_ID_MAP where EID = ?";
 						int success = dbUpdate(DELETE_SQL, new String[]{newEid});
-						if(success <= 0){
+						if(success <= 0) {
 							return "Failed to delete existing new eid: " + newEid;
 						}
 					}
 					String UPDATE_SQL = "update SAKAI_USER_ID_MAP set EID = ? where EID = ?";
 					int success = dbUpdate(UPDATE_SQL, new String[]{newEid, currentEid});
-					if(success > 0){
+					if(success > 0) {
 						// Need to clear the id - eid cache
 						boolean clearedCache = clearCache(ID_EID_CACHE);
 						LOG.info("Cache cleared because of eid update: " + ID_EID_CACHE + ":" + clearedCache);
@@ -3178,8 +3178,8 @@ public class WSLongsight extends AbstractWebService {
 					}
 				}
 
-			}else{
-				return "FAILURE: Access to recoverDeletedTest is restricted to super admins";
+			} else {
+				return "FAILURE: Access to changeUserEidForce is restricted to super admins";
 			}
 		}catch(Exception e){
 			return "FAILURE: " + e.toString();
@@ -4052,7 +4052,7 @@ public class WSLongsight extends AbstractWebService {
 	@Path("/clearUserIdEidCache")
 	@Produces("text/plain")
 	@GET
-	public boolean clearCache() {
+	public boolean clearUserIdEidCache() {
 		return clearCache(ID_EID_CACHE);
 	}
 
