@@ -1,1 +1,2 @@
 SAK-24999 getNeedtoPostFirst NPE
+SAK-27570 queries performing when replying 
