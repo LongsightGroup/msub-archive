@@ -1,3 +1,4 @@
 SAK-24999 getNeedtoPostFirst NPE
 SAK-27570 queries performing when replying 
 SAK-27571 synoptic efficiency
+SAK-24864 hibernate batch sizing
