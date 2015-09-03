@@ -2,3 +2,4 @@ SAK-24999 getNeedtoPostFirst NPE
 SAK-27570 queries performing when replying 
 SAK-27571 synoptic efficiency
 SAK-24864 hibernate batch sizing
+SAK-29857 slowness when loading Messages. Sam analysis was bad query plan (Nested Block Loop) in MySQL 5.6+ .... reduce the joins and just fetch the data in separate queries
