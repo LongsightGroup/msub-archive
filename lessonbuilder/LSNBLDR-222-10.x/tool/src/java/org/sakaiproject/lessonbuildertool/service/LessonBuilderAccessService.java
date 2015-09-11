@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.TimeZone;
@@ -53,6 +54,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 
+import org.sakaiproject.content.api.ContentFilterService;
 import org.sakaiproject.time.api.Time;
 import org.sakaiproject.time.cover.TimeService;
 import org.sakaiproject.authz.api.SecurityAdvisor;
@@ -114,6 +116,7 @@ public class LessonBuilderAccessService {
 
 	// This is the date format for Last-Modified header
 	public static final String RFC1123_DATE = "EEE, dd MMM yyyy HH:mm:ss zzz";
+	public static final Locale LOCALE_US = Locale.US;
 
 	LessonBuilderAccessAPI lessonBuilderAccessAPI = null;
 
@@ -182,6 +185,12 @@ public class LessonBuilderAccessService {
 	}
 
 	LessonEntity assignmentEntity = null;
+
+	ContentFilterService contentFilterService;
+
+	public void setContentFilterService(ContentFilterService s) {
+		contentFilterService = s;
+	}
 
 	public void setAssignmentEntity(Object e) {
 		assignmentEntity = (LessonEntity) e;
@@ -592,6 +601,9 @@ public class LessonBuilderAccessService {
 					    throw new EntityCopyrightException(resource.getReference());
 					}  
 					try {
+						// Wrap it in any filtering needed.
+						resource = contentFilterService.wrap(resource);
+
 					    // following cast is redundant is current kernels, but is needed for Sakai 2.6.1
 						long len = (long)resource.getContentLength();
 						String contentType = resource.getContentType();
@@ -698,7 +710,7 @@ public class LessonBuilderAccessService {
 							
 							// KNL-1316 tell the browser when our file was last modified for caching reasons
 							if (lastModTime > 0) {
-							    SimpleDateFormat rfc1123Date = new SimpleDateFormat(RFC1123_DATE);
+							    SimpleDateFormat rfc1123Date = new SimpleDateFormat(RFC1123_DATE, LOCALE_US);
 							    rfc1123Date.setTimeZone(TimeZone.getTimeZone("GMT"));
 							    res.addHeader("Last-Modified", rfc1123Date.format(lastModTime));
 							}
