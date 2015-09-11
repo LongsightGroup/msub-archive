@@ -155,6 +155,9 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
 	// SAK-17606 - Property for whether an assignment uses anonymous grading (user settable)
 	protected static final String NEW_ASSIGNMENT_CHECK_ANONYMOUS_GRADING = "new_assignment_check_anonymous_grading";
 
+	// SAK-29314
+	private static final String SUBMISSION_ATTR_IS_USER_SUB = "isUserSubmission";
+
 //	spring service injection
 	
 	
@@ -2961,9 +2964,19 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
 		buffer.append(rb.getString("noti.site.title") + " " + siteTitle + newline);
 		buffer.append(rb.getString("noti.site.id") + " " + siteId +newline + newline);
 		// notification text
-		buffer.append(rb.getFormattedMessage("noti.releaseresubmission.text", new String[]{a.getTitle(), siteTitle}));
+		//Get the actual person that submitted, for a group submission just get the first person from that group (This is why the array is used)
+		String userId = null;
+		if (s.getSubmitterIds() != null && s.getSubmitterIds().size() > 0) {
+		    userId = (String) s.getSubmitterIds().get(0);
+		}
+		if (canSubmit(context,a,userId)) {
+		    buffer.append(rb.getFormattedMessage("noti.releaseresubmission.text", new String[]{a.getTitle(), siteTitle}));
+		}
+		else {
+		    buffer.append(rb.getFormattedMessage("noti.releaseresubmission.noresubmit.text", new String[]{a.getTitle(), siteTitle}));
+		}
 	 		
-	 		return buffer.toString();
+	 	return buffer.toString();
 	}
 	/**
 	 * Cancel the changes made to a AssignmentSubmissionEdit object, and release the lock.
@@ -4761,7 +4774,15 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
 						            AssignmentSubmissionEdit s = addSubmission(contextString, a.getId(), u.getId());
 									if (s != null)
 									{
-										s.setSubmitted(false);
+										// Note: If we had s.setSubmitted(false);, this would put it in 'draft mode'
+										s.setSubmitted(true);
+										/*
+										 * SAK-29314 - Since setSubmitted represents whether the submission is in draft mode state, we need another property. So we created isUserSubmission.
+										 * This represents whether the submission was geenrated by a user.
+										 * We set it to false because these submissions are generated so that the instructor has something to grade;
+										 * the user did not in fact submit anything.
+										 */
+										s.setIsUserSubmission(false);
 										s.setAssignment(a);
 										
 										// set the resubmission properties
@@ -7122,12 +7143,22 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
 	/**
 	 * {@inheritDoc}
 	 */
-	public boolean canSubmit(String context, Assignment a)
+	public boolean canSubmit(String context, Assignment a) {
+	    return canSubmit (context,a,null);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public boolean canSubmit(String context, Assignment a, String userId)
 	{
 		// return false if not allowed to submit at all
 		if (!allowAddSubmissionCheckGroups(context, a) && !allowAddAssignment(context) /*SAK-25555 return true if user is allowed to add assignment*/) return false;
 		
-		String userId = SessionManager.getCurrentSessionUserId();
+		//If userId is not defined look it up
+		if (userId == null) {
+		    userId = SessionManager.getCurrentSessionUserId();
+		}
 
 		// if user can submit to this assignment
 		List visibleAssignments = assignments(context, userId);
@@ -10173,7 +10204,10 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
 		protected String m_reviewIconUrl;
 
         protected String m_reviewError;
-		
+
+		// SAK-29314
+		protected boolean m_isUserSubmission;
+
 		protected Assignment m_asn;
 		
 		// return the variables
@@ -10423,6 +10457,9 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
 			m_timeLastModified = TimeService.newTime();
                         m_submitterId = submitterId;
 
+			// SAK-29314
+			m_isUserSubmission = true;
+
 			if (submitterId == null)
 			{
 				String currentUser = SessionManager.getCurrentSessionUserId();
@@ -10510,6 +10547,9 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
                         
 			// SAK-17606
 			m_anonymousSubmissionId = el.getAttribute("anonymousSubmissionId");
+
+			// SAK-29314
+			m_isUserSubmission = getBool(el.getAttribute(SUBMISSION_ATTR_IS_USER_SUB));
 
 			m_submitterId = el.getAttribute("submitterid");
 			m_submissionLog = new ArrayList();
@@ -10785,6 +10825,10 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
                                                         // SAK-17606
                                                         m_anonymousSubmissionId = m_id.substring(27)+" (" + rb.getString("grading.anonymous.title")  + ")";
 
+
+							// SAK-29314
+							m_isUserSubmission = getBool(attributes.getValue(SUBMISSION_ATTR_IS_USER_SUB));
+
 							m_submitterId = attributes.getValue("submitterid");
 
 							m_submissionLog = new ArrayList();
@@ -10953,6 +10997,9 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
                         // SAK-17606
                         submission.setAttribute("anonymousSubmissionId", m_anonymousSubmissionId);
 
+			// SAK-29314
+			submission.setAttribute(SUBMISSION_ATTR_IS_USER_SUB, getBoolString(m_isUserSubmission));
+
 			if (M_log.isDebugEnabled()) M_log.debug(this + " BaseAssignmentSubmission: SAVED REGULAR PROPERTIES");
 
 			submission.setAttribute("submitterid", m_submitterId == null ? "": m_submitterId);
@@ -11085,6 +11132,9 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
                         
                         // SAK-17606
                         m_anonymousSubmissionId = submission.getAnonymousSubmissionId();
+
+			// SAK-29314
+			m_isUserSubmission = submission.isUserSubmission();
 		}
 
 		/**
@@ -11879,7 +11929,15 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
 				String anonTitle = rb.getString("grading.anonymous.title") ;
 				return this.getId().substring(27) + " (" + anonTitle + ")";
 		}
-		
+
+		/**
+		 * SAK-29314 - Determines whether this submission was submitted by a user or by the system
+		 */
+		public boolean isUserSubmission()
+		{
+			return m_isUserSubmission;
+		}
+
 	} // AssignmentSubmission
 	
 	/***************************************************************************
@@ -12397,6 +12455,11 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
             this.m_reviewError = error;
         }
 
+		// SAK-29314
+		public void setIsUserSubmission(boolean isUserSubmission)
+		{
+			this.m_isUserSubmission = isUserSubmission;
+		}
 
 	} // BaseAssignmentSubmissionEdit
 
