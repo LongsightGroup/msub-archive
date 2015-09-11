@@ -1,0 +1,1 @@
+SAK-29857 getPrivateForumByOwnerAreaWithAllTopics results in a bad MySQL query plan
