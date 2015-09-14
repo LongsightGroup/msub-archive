@@ -24,6 +24,7 @@ Updated 01/28/2015 svn merge "^/sam/branches/sakai-10.x"
 Updated 03/16/2015 svn merge "^/sam/branches/sakai-10.x"
 Updated 06/23/2015 svn merge "^/sam/branches/sakai-10.x"
 Updated 08/17/2015 svn merge "^/sam/branches/sakai-10.x"
+Updated 09/14/2015 svn merge "^/sam/branches/sakai-10.x"
 
 SAM-2452 dont convert Sets to Lists big performance fix
   * SAM-2467 EMI needed the List for JSF dataTable
