@@ -1,0 +1,1 @@
+KNL-1268 allow cloud-content
