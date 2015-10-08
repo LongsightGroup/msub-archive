@@ -1085,7 +1085,7 @@ public class WSLongsight extends AbstractWebService {
 			String userid = userDirectoryService.getUserByEid(eid).getId();
 
 			site.removeMember(userid);
-			siteService.save(site);
+			siteService.saveSiteMembership(site);
 		}
 		catch (Exception e) {
 			return e.getClass().getName() + " : " + e.getMessage();
@@ -1834,7 +1834,7 @@ public class WSLongsight extends AbstractWebService {
 			Site site = siteService.getSite(siteid);
 			String userid = userDirectoryService.getUserByEid(eid).getId();
 			site.addMember(userid,roleid,false,false);
-			siteService.save(site);
+			siteService.saveSiteMembership(site);
 		}
 		catch (Exception e) {
 			return e.getClass().getName() + " : " + e.getMessage();
@@ -2141,7 +2141,7 @@ public class WSLongsight extends AbstractWebService {
 		try {
 			Site site = siteService.getSite(siteid);
 			site.removeMember(userid);
-			siteService.save(site);
+			siteService.saveSiteMembership(site);
 		}
 		catch (Exception e) {
 			return e.getClass().getName() + " : " + e.getMessage();
@@ -2417,7 +2417,7 @@ public class WSLongsight extends AbstractWebService {
 			Member m = site.getMember(userId);
 			group.addMember(userId, r != null ? r.getId()   : "",
 					m != null ? m.isActive() : true,   false);
-			siteService.save(site);
+			siteService.saveGroupMembership(site);
 			return true;
 		}
 		catch (Exception e)
@@ -3018,7 +3018,7 @@ public class WSLongsight extends AbstractWebService {
 			Role r = site.getUserRole(userId);
 			Member m = site.getMember(userId);
 			group.removeMember(userId);
-			siteService.save(site);
+			siteService.saveGroupMembership(site);
 			return true;
 		}
 		catch (Exception e)
