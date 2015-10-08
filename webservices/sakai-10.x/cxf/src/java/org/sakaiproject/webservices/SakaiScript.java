@@ -1123,6 +1123,7 @@ public class SakaiScript extends AbstractWebService {
             String userid = userDirectoryService.getUserByEid(eid).getId();
             site.addMember(userid, roleid, true, false);
             siteService.saveSiteMembership(site);
+            Thread.sleep(250);
         } catch (Exception e) {
             LOG.error("WS addMemberToSiteWithRole(): " + e.getClass().getName() + " : " + e.getMessage());
             return e.getClass().getName() + " : " + e.getMessage();
@@ -2533,6 +2534,7 @@ public class SakaiScript extends AbstractWebService {
             String userid = userDirectoryService.getUserByEid(eid).getId();
             site.removeMember(userid);
             siteService.saveSiteMembership(site);
+            Thread.sleep(250);
         } catch (Exception e) {
             LOG.error("WS removeMemberFromSite(): " + e.getClass().getName() + " : " + e.getMessage());
             return e.getClass().getName() + " : " + e.getMessage();

@@ -1573,7 +1573,7 @@ public class WSLongsight extends AbstractWebService {
 
 		} catch (Exception e) {
 			LOG.error("WS getMemberStatus(): "+ e.getClass().getName() + " : "+ e.getMessage());
-			return "";
+			return "failure: " + e.getMessage();
 		}
 
 		return status;
@@ -1592,22 +1592,22 @@ public class WSLongsight extends AbstractWebService {
 		Session s = establishSession(sessionid); 
 
 		try {
-			AuthzGroup site = authzGroupService.getAuthzGroup("/site/"+siteid);
+			AuthzGroup site = authzGroupService.getAuthzGroup("/site/" + siteid);
 
 			String userid = userDirectoryService.getUserByEid(eid).getId();
 			Member membership = site.getMember(userid);
 
 			if (membership.isActive() && !active) {
 				membership.setActive(false);
-			} else if (!membership.isActive() && active) {
+			}
+            else if (!membership.isActive() && active) {
 				membership.setActive(true);
 			}
 			authzGroupService.save(site);
-			//siteService.save(site);
-
+			Thread.sleep(250);
 		} catch (Exception e) {
 			LOG.error("WS setMemberStatus(): "+ e.getClass().getName() + " : "+ e.getMessage());
-			return "";
+			return "failure: " + e.getMessage();
 		}
 
 		return "success";
