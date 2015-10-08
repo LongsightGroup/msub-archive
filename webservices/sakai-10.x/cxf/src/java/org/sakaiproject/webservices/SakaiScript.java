@@ -92,7 +92,7 @@ public class SakaiScript extends AbstractWebService {
         Session s = sessionManager.getSession(sessionid);
 
         if (s == null) {
-            return "null";
+            return "";
         } else {
             return sessionid;
         }
@@ -3935,8 +3935,7 @@ public class SakaiScript extends AbstractWebService {
         } catch (Throwable t) {
             LOG.warn(this + "getPlacementId(): Error encountered: " + t.getMessage(), t);
         }
-        return null;
-
+        return "";
     }
 
     /**
