@@ -10,3 +10,5 @@ KNL-1252 "Hard" Delete
 SAK-23555 Create new events that differentiate the site.upd event
 
 LS-188 crazy corruption of some private meleteDoc assets so re-read using IOUtils
+KNL-1385 wrap calls to advisors in try/catch to avoid an advisor preventing a save
+ * https://github.com/sakaiproject/sakai/pull/1175
