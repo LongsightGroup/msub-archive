@@ -1,6 +1,7 @@
 Updated branch 10/6/2014 - Merging r311441 through r314028 into '.':
 Updated branch 10/31/2014 - Merging r314029 through r315075 into '.':
 Updated branch 09/11/2015 - Merging r320335 through r321151 into '.':
+Updated branch 10/22/2015 - Merging r321151 through r321584 into '.':
 
 SAK-26318 Content Review Improvements
 SAK-27812 Content Review scores are stored in the Assignment Submission causing stale data
@@ -8,3 +9,5 @@ SAK-27748 Inline Files are named too long
 SAK-27863 Send over assignment instructions and attachments to content review
 SAK-29749 Group ID is passed over to Content Review for group assignments
 SAK-29752 manual merge of r320334 from sakai-10.x branch
+SAK-29997 Add VeriCite option to set whether to exclude quotes for an assignment
+
