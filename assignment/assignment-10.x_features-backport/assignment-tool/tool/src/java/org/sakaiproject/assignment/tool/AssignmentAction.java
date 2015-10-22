@@ -4744,9 +4744,8 @@ public class AssignmentAction extends PagedResourceActionII
 		boolean rv = false;
 		try
 		{
-			GradebookService g = (GradebookService)  ComponentManager
-					.get("org.sakaiproject.service.gradebook.GradebookService");
-			String gradebookUid = ToolManager.getInstance().getCurrentPlacement().getContext();
+			GradebookService g = (GradebookService) ComponentManager.get("org.sakaiproject.service.gradebook.GradebookService");
+			String gradebookUid = ToolManager.getCurrentPlacement().getContext();
 			if (g.isGradebookDefined(gradebookUid) && (g.currentUserHasEditPerm(gradebookUid) || g.currentUserHasGradingPerm(gradebookUid)))
 			{
 				rv = true;
@@ -4861,7 +4860,7 @@ public class AssignmentAction extends PagedResourceActionII
 		GradebookService g = (GradebookService) ComponentManager.get("org.sakaiproject.service.gradebook.GradebookService");
 		GradebookExternalAssessmentService gExternal = (GradebookExternalAssessmentService) ComponentManager.get("org.sakaiproject.service.gradebook.GradebookExternalAssessmentService");
 		
-		String gradebookUid = ToolManager.getInstance().getCurrentPlacement().getContext();
+		String gradebookUid = ToolManager.getCurrentPlacement().getContext();
 		if (g.isGradebookDefined(gradebookUid) && g.currentUserHasGradingPerm(gradebookUid))
 		{
 			boolean isExternalAssignmentDefined=gExternal.isExternalAssignmentDefined(gradebookUid, assignmentRef);
@@ -4890,19 +4889,8 @@ public class AssignmentAction extends PagedResourceActionII
 						addAlert(state, rb.getFormattedMessage("addtogradebook.nonUniqueTitle", new Object[]{"\"" + newAssignment_title + "\""}));
 						M_log.warn(this + ":integrateGradebook " + e.getMessage());
 					}
-					catch (ConflictingExternalIdException e)
-					{
-						// this shouldn't happen, as we have already checked for assignment reference before. Log the error
-						M_log.warn(this + ":integrateGradebook " + e.getMessage());
-					}
-					catch (GradebookNotFoundException e)
-					{
-						// this shouldn't happen, as we have checked for gradebook existence before
-						M_log.warn(this + ":integrateGradebook " + e.getMessage());
-					}
 					catch (Exception e)
 					{
-						// ignore
 						M_log.warn(this + ":integrateGradebook " + e.getMessage());
 					}
 				}
@@ -4933,11 +4921,13 @@ public class AssignmentAction extends PagedResourceActionII
 			if (updateRemoveSubmission != null)
 			{
 				Assignment a = getAssignment(assignmentRef, "integrateGradebook", state);
+				
 				if (a != null)
 				{
 					String propAddToGradebook = a.getProperties().getProperty(NEW_ASSIGNMENT_ADD_TO_GRADEBOOK);
 					if ("update".equals(updateRemoveSubmission)
-							&& (StringUtils.equals( propAddToGradebook, AssignmentService.GRADEBOOK_INTEGRATION_ADD) || StringUtils.equals( propAddToGradebook, AssignmentService.GRADEBOOK_INTEGRATION_ASSOCIATE))
+					        && (StringUtils.equals( propAddToGradebook, AssignmentService.GRADEBOOK_INTEGRATION_ADD) 
+							        || StringUtils.equals( propAddToGradebook, AssignmentService.GRADEBOOK_INTEGRATION_ASSOCIATE))
 							&& a.getContent().getTypeOfGrade() == Assignment.SCORE_GRADE_TYPE)
 					{
 						if (submissionRef == null)
@@ -4964,7 +4954,7 @@ public class AssignmentAction extends PagedResourceActionII
 									for (int i=0; submitters != null && i < submitters.length; i++) {
  										String submitterId = submitters[i].getId();
 										String gradeStringToUse = (a.isGroup() && aSubmission.getGradeForUser(submitterId) != null)
-		                                                                                      ? displayGrade(state,aSubmission.getGradeForUser(submitterId)): grade;
+										        ? displayGrade(state,aSubmission.getGradeForUser(submitterId)): grade;
 										sm.put(submitterId, gradeStringToUse);
 										cm.put(submitterId, commentString);
 									}
@@ -4984,6 +4974,7 @@ public class AssignmentAction extends PagedResourceActionII
 									}
 									else if (isAssignmentDefined)
 									{
+									    String associateGradebookAssignmentName = g.getAssignment(gradebookUid, associateGradebookAssignment).getName();
 										// the associated assignment is internal one, update records one by one
 										for (Map.Entry<String, String> entry : sm.entrySet())
 										{
@@ -4991,7 +4982,9 @@ public class AssignmentAction extends PagedResourceActionII
 											String grade = StringUtils.trimToNull(displayGrade(state, (String) sm.get(submitterId)));
 											if (grade != null)
 											{
-												g.setAssignmentScoreString(gradebookUid, associateGradebookAssignment, submitterId, grade, "");
+												g.setAssignmentScoreString(gradebookUid, associateGradebookAssignmentName, submitterId, grade, "");
+												String comment = StringUtils.isNotEmpty(cm.get(submitterId)) ? cm.get(submitterId) : "";
+												g.setAssignmentScoreComment(gradebookUid, associateGradebookAssignmentName, submitterId, comment);
 											}
 										}
 									}
@@ -5012,8 +5005,10 @@ public class AssignmentAction extends PagedResourceActionII
 								User[] submitters = aSubmission.getSubmitters();
 								String gradeString = displayGrade(state, StringUtils.trimToNull(aSubmission.getGrade(false)));
 								for (int i=0; submitters != null && i < submitters.length; i++) {
-									String gradeStringToUse = (a.isGroup() && aSubmission.getGradeForUser(submitters[i].getId()) != null)
+								    String gradeStringToUse = (a.isGroup() && aSubmission.getGradeForUser(submitters[i].getId()) != null) 
 									        ? displayGrade(state,aSubmission.getGradeForUser(submitters[i].getId())): gradeString;
+								    //Gradebook only supports plaintext strings
+								    String commentString = FormattedText.convertFormattedTextToPlaintext(aSubmission.getFeedbackComment());
 									if (associateGradebookAssignment != null)
 									{
 										if (gExternal.isExternalAssignmentDefined(gradebookUid, associateGradebookAssignment))
@@ -5021,22 +5016,25 @@ public class AssignmentAction extends PagedResourceActionII
 											// the associated assignment is externally maintained
 											gExternal.updateExternalAssessmentScore(gradebookUid, associateGradebookAssignment, submitters[i].getId(),
 													(gradeStringToUse != null && aSubmission.getGradeReleased()) ? gradeStringToUse : "");
-											//Gradebook only supports plaintext strings
-											String commentString = FormattedText.convertFormattedTextToPlaintext(aSubmission.getFeedbackComment());
 											gExternal.updateExternalAssessmentComment(gradebookUid, associateGradebookAssignment, submitters[i].getId(),
 													(commentString != null && aSubmission.getGradeReleased()) ? commentString : "");
 										}
 										else if (g.isAssignmentDefined(gradebookUid, associateGradebookAssignment))
 										{
+										    String associateGradebookAssignmentName = g.getAssignment(gradebookUid, associateGradebookAssignment).getName();
 											// the associated assignment is internal one, update records
-											g.setAssignmentScoreString(gradebookUid, associateGradebookAssignment, submitters[i].getId(),
+											g.setAssignmentScoreString(gradebookUid, associateGradebookAssignmentName, submitters[i].getId(),
 													(gradeStringToUse != null && aSubmission.getGradeReleased()) ? gradeStringToUse : "", "");
+											g.setAssignmentScoreComment(gradebookUid, associateGradebookAssignmentName, submitters[i].getId(), 
+											        (commentString != null && aSubmission.getGradeReleased()) ? commentString : "");
 										}
 									}
 									else
 									{
 										gExternal.updateExternalAssessmentScore(gradebookUid, assignmentRef, submitters[i].getId(),
 												(gradeStringToUse != null && aSubmission.getGradeReleased()) ? gradeStringToUse : "");
+										gExternal.updateExternalAssessmentComment(gradebookUid, assignmentRef, submitters[i].getId(),
+										        (commentString != null && aSubmission.getGradeReleased()) ? commentString : "");
 									}
 								}
 							}
@@ -8560,7 +8558,7 @@ public class AssignmentAction extends PagedResourceActionII
 		if (gradebookExists)
 		{
 			GradebookService g = (GradebookService)  ComponentManager.get("org.sakaiproject.service.gradebook.GradebookService");
-			String gradebookUid = ToolManager.getInstance().getCurrentPlacement().getContext();
+			String gradebookUid = ToolManager.getCurrentPlacement().getContext();
 			
 			String aReference = a.getReference();
 			String addUpdateRemoveAssignment = "remove";
@@ -13836,21 +13834,15 @@ public class AssignmentAction extends PagedResourceActionII
 
 			    } else {
 
-			        List<String> submitterIds = AssignmentService.getSubmitterIdList(searchFilterOnly.toString(), allOrOneGroup, search, aRef, contextString);
+			        //List<String> submitterIds = AssignmentService.getSubmitterIdList(searchFilterOnly.toString(), allOrOneGroup, search, aRef, contextString);
+					Map<User, AssignmentSubmission> submitters = AssignmentService.getSubmitterMap(searchFilterOnly.toString(), allOrOneGroup, search, aRef, contextString);
 
 			        // construct the user-submission list
-			        if (submitterIds != null && !submitterIds.isEmpty())
+					for (User u : submitters.keySet())
 			        {
-			            for (Iterator<String> iSubmitterIdsIterator = submitterIds.iterator(); iSubmitterIdsIterator.hasNext();)
-			            {
-			                String uId = iSubmitterIdsIterator.next();
-			                try
-			                {
-			                    User u = UserDirectoryService.getUser(uId);
+						String uId = u.getId();
 
-			                    try
-			                    {
-			                        AssignmentSubmission sub = AssignmentService.getSubmission(aRef, u);
+						AssignmentSubmission sub = submitters.get(u);
 			                        SubmitterSubmission us = new SubmitterSubmission(u, sub);
 			                        String submittedById = (String)sub.getProperties().get(AssignmentSubmission.SUBMITTER_USER_ID);
 			                        if ( submittedById != null) {
@@ -13862,23 +13854,7 @@ public class AssignmentAction extends PagedResourceActionII
 			                        }
 			                        returnResources.add(us);
 			                    }
-			                    catch (IdUnusedException subIdException)
-			                    {
-			                        M_log.warn(this + ".sizeResources: looking for submission for unused assignment id " + aRef + subIdException.getMessage());
 			                    }
-			                    catch (PermissionException subPerException)
-			                    {
-			                        M_log.warn(this + ".sizeResources: cannot have permission to access submission of assignment " + aRef + " of user " + u.getId());
-			                    }
-			                }
-			                catch (UserNotDefinedException e)
-			                {
-			                    M_log.warn(this + ":sizeResources cannot find user id=" + uId + e.getMessage() + "");
-			                }
-			            }
-			        }
-
-			    }
 
 			} catch (PermissionException aPerException) {
 			    M_log.warn(":getSubmitterGroupList: Not allowed to get assignment " + aRef + " " + aPerException.getMessage());
@@ -14650,38 +14626,14 @@ public class AssignmentAction extends PagedResourceActionII
 		String search = (String) state.getAttribute(VIEW_SUBMISSION_SEARCH);
 		Boolean searchFilterOnly = (state.getAttribute(SUBMISSIONS_SEARCH_ONLY) != null && ((Boolean) state.getAttribute(SUBMISSIONS_SEARCH_ONLY)) ? Boolean.TRUE:Boolean.FALSE);
 		
-		List<String> submitterIds = AssignmentService.getSubmitterIdList(searchFilterOnly.toString(), allOrOneGroup, search, aRef, contextString);
+		//List<String> submitterIds = AssignmentService.getSubmitterIdList(searchFilterOnly.toString(), allOrOneGroup, search, aRef, contextString);
+		Map<User, AssignmentSubmission> submitters = AssignmentService.getSubmitterMap(searchFilterOnly.toString(), allOrOneGroup, search, aRef, contextString);
 
 		// construct the user-submission list
-		if (submitterIds != null && !submitterIds.isEmpty())
+		for (AssignmentSubmission sub : submitters.values())
 		{
-			for (Iterator<String> iSubmitterIdsIterator = submitterIds.iterator(); iSubmitterIdsIterator.hasNext();)
-			{
-				String uId = iSubmitterIdsIterator.next();
-				try
-				{
-					User u = UserDirectoryService.getUser(uId);
-
-					try
-					{
-						AssignmentSubmission sub = AssignmentService.getSubmission(aRef, u);
 						if (!rv.contains(sub)) rv.add(sub);  
 					}
-					catch (IdUnusedException subIdException)
-					{
-						M_log.warn(this + ".sizeResources: looking for submission for unused assignment id " + aRef + subIdException.getMessage());
-					}
-					catch (PermissionException subPerException)
-					{
-						M_log.warn(this + ".sizeResources: cannot have permission to access submission of assignment " + aRef + " of user " + u.getId());
-					}
-				}
-				catch (UserNotDefinedException e)
-				{
-					M_log.warn(this + ":sizeResources cannot find user id=" + uId + e.getMessage() + "");
-				}
-			}
-		}
 		
 		return rv;
 	}
