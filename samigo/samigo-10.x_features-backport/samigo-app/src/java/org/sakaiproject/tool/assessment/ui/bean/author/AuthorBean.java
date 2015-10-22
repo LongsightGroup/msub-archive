@@ -36,7 +36,6 @@ import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.component.cover.ServerConfigurationService;
 import org.sakaiproject.tool.assessment.facade.AssessmentFacade;
 import org.sakaiproject.tool.assessment.facade.AssessmentTemplateFacade;
-import org.sakaiproject.tool.assessment.facade.PublishedAssessmentFacade;
 import org.sakaiproject.tool.assessment.ui.bean.authz.AuthorizationBean;
 import org.sakaiproject.tool.assessment.ui.listener.util.ContextUtil;
 import org.sakaiproject.util.ResourceLoader;
@@ -103,7 +102,8 @@ public class AuthorBean implements Serializable
   private ArrayList<SelectItem> pendingActionList1;
   private ArrayList<SelectItem> pendingActionList2;
   private ArrayList<SelectItem> publishedActionList;
-  private Boolean removePubAssessmentsRestrictedAfterStarted;
+  private Boolean canRemovePublishedAssessments;
+  private Boolean canRemovePublishedAssessmentsAfterStarted;
   private boolean isGradeable;
   private boolean isEditable;
   
@@ -598,6 +598,15 @@ public class AuthorBean implements Serializable
 	  this.editPubAssessmentRestricted = editPubAssessmentRestricted;
   }
  
+  public Boolean isEditPubAssessmentRestrictedAfterStarted(){
+	  return getEditPubAssessmentRestrictedAfterStarted();
+  }
+  
+  public Boolean getEditPubAssessmentRestrictedAfterStarted()
+  {
+	  return editPubAssessmentRestrictedAfterStarted;
+  }
+
   public void setEditPubAssessmentRestrictedAfterStarted(Boolean editPubAssessmentRestrictedAfterStarted)
   {
 	  this.editPubAssessmentRestrictedAfterStarted = editPubAssessmentRestrictedAfterStarted;
@@ -745,47 +754,30 @@ public class AuthorBean implements Serializable
 	  return pendingActionList2;
   }
 
-  public Boolean canEditPublishedAssessment(PublishedAssessmentFacade assessment) {
-	  AuthorizationBean authorizationBean = (AuthorizationBean) ContextUtil.lookupBean("authorization");
+  public Boolean getCanRemovePublishedAssessments(){
+	  if(canRemovePublishedAssessments == null){
+		  AuthorizationBean authorizationBean = (AuthorizationBean) ContextUtil.lookupBean("authorization");
 
-	  if (authorizationBean.isSuperUser()) {
-		  return Boolean.TRUE;
-	  } else if (authorizationBean.getEditAnyAssessment() || authorizationBean.getEditOwnAssessment()) {
-		  if (editPubAssessmentRestrictedAfterStarted) {
-			  if (assessment.getSubmittedCount() == 0 && assessment.getInProgressCount() == 0) {
-				  // allow the ability to edit if there are no assessments started or submitted
-				  return Boolean.TRUE;
-			  } else if (assessment.getRetractDate() != null && assessment.getRetractDate().before(getCurrentTime())) {
-				// however if there is activity only if the retract date has passed
-				  return Boolean.TRUE;
-			  }
-		  } else {
-			  return Boolean.TRUE;
+		  boolean isDeleteAnyAssessment = authorizationBean.getDeleteAnyAssessment();
+		  boolean isDeleteOwnAssessment = authorizationBean.getDeleteOwnAssessment();
+		  if (isDeleteAnyAssessment || isDeleteOwnAssessment) {
+			  canRemovePublishedAssessments = Boolean.TRUE;
+		  }else{
+			  canRemovePublishedAssessments = Boolean.FALSE;
 		  }
 	  }
-	  return Boolean.FALSE;
+	  
+	  return canRemovePublishedAssessments;
   }
   
-  public Boolean canRemovePublishedAssessment(PublishedAssessmentFacade assessment){
-		AuthorizationBean authorizationBean = (AuthorizationBean) ContextUtil.lookupBean("authorization");
-
-		if (authorizationBean.isSuperUser()) {
-			return Boolean.TRUE;
-		} else if (authorizationBean.getDeleteAnyAssessment() || authorizationBean.getDeleteOwnAssessment()) {
-			if (removePubAssessmentsRestrictedAfterStarted) {
-				if (assessment.getSubmittedCount() == 0 && assessment.getInProgressCount() == 0) {
-					// allow the ability to remove if there are no assessments started or submitted
-					return Boolean.TRUE;
-				}
-			} else {
-				return Boolean.TRUE;
-			}
-		}
-		return Boolean.FALSE;
+  public void setCanRemovePublishedAssessmentsAfterStarted(Boolean canRemovePublishedAssessmentsAfterStarted){
+	  this.canRemovePublishedAssessmentsAfterStarted = canRemovePublishedAssessmentsAfterStarted;
   }
-  
-  public void setRemovePubAssessmentsRestrictedAfterStarted(Boolean removePubAssessmentsRestrictedAfterStarted){
-	  this.removePubAssessmentsRestrictedAfterStarted = removePubAssessmentsRestrictedAfterStarted;
+  public Boolean isCanRemovePublishedAssessmentsAfterStarted(){
+	  return getCanRemovePublishedAssessmentsAfterStarted();
+  }
+  public Boolean getCanRemovePublishedAssessmentsAfterStarted(){
+	  return canRemovePublishedAssessmentsAfterStarted;
   }
 
   public ArrayList<SelectItem> getPublishedSelectActionList()
