@@ -26,6 +26,7 @@ package org.sakaiproject.tool.assessment.ui.bean.authz;
 import org.sakaiproject.tool.assessment.facade.AgentFacade;
 import org.sakaiproject.tool.assessment.services.PersistenceService;
 import org.sakaiproject.tool.assessment.ui.listener.util.ContextUtil;
+import org.sakaiproject.authz.cover.SecurityService;
 import org.sakaiproject.tool.assessment.data.dao.authz.AuthorizationData;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -52,6 +53,7 @@ private static Log log = LogFactory.getLog(AuthorizationBean.class);
   private boolean adminAssessmentPrivilege = false;
   private boolean adminTemplatePrivilege = false;
   private boolean adminQuestionPoolPrivilege = false;
+  private Boolean superUser = null;
 
   public AuthorizationBean(){}
 
@@ -431,4 +433,14 @@ private static Log log = LogFactory.getLog(AuthorizationBean.class);
     return isAssessmentInSite(assessmentId, AgentFacade.getCurrentSiteId(), published);
   }
 
+  public Boolean getSuperUser() {
+	  return isSuperUser();
+  }
+  
+  public Boolean isSuperUser() {
+	  if (superUser == null) {
+		  superUser = SecurityService.isSuperUser();
+	  }
+	  return superUser;
+  }
 }
