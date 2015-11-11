@@ -87,12 +87,7 @@ function handleEnterKeyPress(ev)
 		<input type="hidden" name="submissionId" id="submissionId" value="$submission.Reference" />
 		
 		<div class="navPanel">
-<<<<<<< .working
-		   <div class="viewNav highlight"
-		         style="width:50%;line-height:1.4em">
-=======
 			<div class="highlight gradingHeader">
->>>>>>> .merge-right.r320133
 				 		
 				<h3>
                                         #assignmentTitleIcon($assignment)
@@ -782,21 +777,14 @@ function handleEnterKeyPress(ev)
 						</div> <!-- End of the allowResubmitContainer -->
 					#end
 		<div class="navPanel">
-		  <div class="viewNav highlight" style="width:50%;line-height:1.4em;padding-top:.75em;">
+		  <div class="viewNav highlight" style="width:70%;line-height:1.4em;padding-top:.75em;">
 				<span class="act">
-<<<<<<< .working
-					<input type="button" accesskey="d" class="active"  name="save" value="$tlang.getString('gen.savdragra')" onclick="javascript:document.gradeForm.action=document.gradeForm.action+'&submissionId=$validator.escapeUrl($submission.Reference)';document.gradeForm.onsubmit();document.getElementById('option').value='savegrade';document.gradeForm.submit();return false;" title="$tlang.getString("gen.savdratit")" />
-					<input type="button" accesskey="s" name="return" value="$tlang.getString('gen.retustud')" onclick="javascript:document.gradeForm.action=document.gradeForm.action+'&submissionId=$validator.escapeUrl($submission.Reference)';document.gradeForm.onsubmit();document.getElementById('option').value='returngrade';document.gradeForm.submit();return false;" title="$tlang.getString("gen.retustudtit")" />
-					<input type="button" accesskey="v" name="preview" value="$tlang.getString('gen.pre')" onclick="javascript:document.gradeForm.action=document.gradeForm.action+'&submissionId=$validator.escapeUrl($submission.Reference)';document.gradeForm.onsubmit();document.getElementById('option').value='previewgrade';document.gradeForm.submit();return false;" />
-					<input type="button" accesskey="x" name="cancel" value="$tlang.getString('cancel_changes')" onclick="javascript:document.gradeForm.onsubmit();document.getElementById('option').value='cancelgrade';document.gradeForm.submit();return false;" />
-=======
 					## SAK-29314
 					<input type="button" accesskey="d" class="active"  name="save" value="$tlang.getString('gen.savdragra')" onclick="ASN.doGradingFormAction( '$validator.escapeUrl( $submission.Reference )', 'savegrade' );" title="$tlang.getString("gen.savdratit")" />
 					<input type="button" accesskey="s" name="return" value="$tlang.getString('gen.retustud')" onclick="ASN.doGradingFormAction( '$validator.escapeUrl( $submission.Reference )', 'returngrade' );" title="$tlang.getString("gen.retustudtit")" />
 					<input type="button" accesskey="v" name="preview" value="$tlang.getString('gen.pre')" onclick="ASN.doGradingFormAction( '$validator.escapeUrl( $submission.Reference )', 'previewgrade' );" />
 					<input type="button" accesskey="x" name="cancel" value="$tlang.getString('cancel_changes')" onclick="ASN.doGradingFormAction( null, 'cancelgrade' );" />
 					<img id="gradeFormSpinner" class="spinner" src="/library/image/indicator.gif" />
->>>>>>> .merge-right.r320133
 					#if ($!prevSubmissionId)
 						<input type="hidden" name="prevSubmissionId" id="prevSubmissionId" value = "$!prevSubmissionId" />
 					#end
