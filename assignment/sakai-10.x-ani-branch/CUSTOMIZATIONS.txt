@@ -1,2 +1,3 @@
 Branched from r319491 of rsmart assignment branches 10.4.x
  * SAK-29062  Comments introduced by an instructor using double curly braces are not being displayed to instructor after saving/grading the assignment submission.
+ * SAK-29007 Assignments / download all does not list all students
