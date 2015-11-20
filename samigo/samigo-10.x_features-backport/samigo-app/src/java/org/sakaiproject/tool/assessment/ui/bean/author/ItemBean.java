@@ -74,6 +74,7 @@ public class ItemBean
   private String itemType;
   private double itemScore= 0.0d;
   private double itemDiscount = 0.0d;
+  private String itemMinScore;
   private String itemScoreDisplayFlag= "true";
   private String partialCreditFlag = "Default";
   private String[] answers;
