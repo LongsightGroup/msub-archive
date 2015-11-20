@@ -358,8 +358,7 @@ document.links[newindex].onclick();
          </h:panelGroup>
       <!-- h:outputText value="#{part.unansweredQuestions}/#{part.questions} " / -->
       <!-- h:outputText value="#{deliveryMessages.ans_q}, " / -->
-      <h:outputText value="#{part.pointsDisplayString} #{part.maxPoints} #{deliveryMessages.pt}" 
-         rendered="#{delivery.actionString=='reviewAssessment'}"/>
+      <h:outputText value="#{part.pointsDisplayString} #{part.roundedMaxPoints} #{deliveryMessages.pt}" rendered="#{delivery.actionString=='reviewAssessment'}"/>
 </h:panelGrid>
       <f:verbatim></h4></f:verbatim>
       <h:outputText value="#{part.description}" escape="false"/>
@@ -381,9 +380,9 @@ document.links[newindex].onclick();
            <f:verbatim></h5></f:verbatim>
          </h:panelGroup>
 <h:panelGroup>
-<h:outputText value=" #{question.pointsDisplayString} #{question.maxPoints} #{deliveryMessages.pt}" rendered="#{delivery.actionString=='reviewAssessment'}"/>
+<h:outputText value=" #{question.pointsDisplayString} #{question.roundedMaxPoints} #{deliveryMessages.pt}" rendered="#{delivery.actionString=='reviewAssessment'}"/>
 
-        <h:outputText value="#{question.maxPoints} #{deliveryMessages.pt}" rendered="#{delivery.settings.displayScoreDuringAssessments != '2' && question.itemData.scoreDisplayFlag && delivery.actionString!='reviewAssessment'}" />
+        <h:outputText value="#{question.roundedMaxPoints} #{deliveryMessages.pt}" rendered="#{delivery.actionString!='reviewAssessment'}" />
 </h:panelGroup>
 </h:panelGrid>
           <f:verbatim><div class="tier3"></f:verbatim>
