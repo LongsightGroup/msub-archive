@@ -9265,6 +9265,25 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 		Map transversalMap = new HashMap();
 
 		if (!((pageList == null) || (pageList.size() == 0))) {
+			// GRBK-1444 if gb2 is there, must do it first
+			for (ListIterator i = pageList.listIterator(); i.hasNext();) {
+				SitePage page = (SitePage) i.next();
+				List pageToolList = page.getTools();
+
+				if (!(pageToolList == null || pageToolList.size() == 0)) {
+					Tool tool = ((ToolConfiguration) pageToolList.get(0)).getTool();
+					String toolId = tool != null ? tool.getId() : "";
+					if (toolId.equals("sakai.gradebook.gwt.rpc")) {
+						Map<String,String> entityMap = transferCopyEntities(toolId, oSiteId, nSiteId);
+						if(entityMap != null) {
+							transversalMap.putAll(entityMap);
+						}
+						toolsCopied.add(toolId);
+						break;
+					}
+				}
+			}
+
 			for (ListIterator i = pageList
 					.listIterator(); i.hasNext();) {
 				SitePage page = (SitePage) i.next();
