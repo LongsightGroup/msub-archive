@@ -748,6 +748,9 @@ public class SiteAction extends PagedResourceActionII {
 	private final static String SAK_PROP_SKIP_COURSE_SECTION_SELECTION = "wsetup.skipCourseSectionSelection";
 	private static final String SAK_PROP_FILTER_TERMS = "worksitesetup.filtertermdropdowns";
 
+    //SAK-22432 Template descriptions are not copied
+    private final static String SAK_PROP_COPY_TEMPLATE_DESCRIPTION = "site.setup.copy.template.description";
+
 	private List prefLocales = new ArrayList();
 	
 	private static final String VM_ALLOWED_ROLES_DROP_DOWN 	= "allowedRoles";
@@ -7493,6 +7496,9 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 			Site.setTitle(siteInfo.title);
 		}
 
+		//Process description so it doesn't give an error on home
+		siteInfo.description = FormattedText.processFormattedText(siteInfo.description, new StringBuilder());
+		
 		Site.setDescription(siteInfo.description);
 		Site.setShortDescription(siteInfo.short_description);
 
@@ -14216,8 +14222,12 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 			siteInfo.title = StringUtils.trimToNull(params.getString("siteTitleField"));
 			siteInfo.term = StringUtils.trimToNull(params.getString("selectTermTemplate"));
 			siteInfo.iconUrl = templateSite.getIconUrl();
-			// description is site-specific. Shouldn't come from template
-			// siteInfo.description = templateSite.getDescription();
+			
+			Boolean copyTemplateDescription = ServerConfigurationService.getBoolean(SAK_PROP_COPY_TEMPLATE_DESCRIPTION, Boolean.TRUE);
+			if(copyTemplateDescription.booleanValue()){
+				siteInfo.description = templateSite.getDescription();
+			}
+			
 			siteInfo.short_description = templateSite.getShortDescription();
 			siteInfo.joinable = templateSite.isJoinable();
 			siteInfo.joinerRole = templateSite.getJoinerRole();
