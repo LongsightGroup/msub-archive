@@ -2457,11 +2457,7 @@ public class AssignmentAction extends PagedResourceActionII
 		context.put("value_UseReviewService", state.getAttribute(NEW_ASSIGNMENT_USE_REVIEW_SERVICE));
 		context.put("turnitin_forceSingleAttachment", ServerConfigurationService.getBoolean("turnitin.forceSingleAttachment", false));
 		//Rely on the deprecated "turnitin.allowStudentView.default" setting if set, otherwise use "contentreview.allowStudentView.default"
-		String defaultAllowStudentViewStr = ServerConfigurationService.getString("turnitin.allowStudentView.default", "");
-		if(StringUtils.isEmpty(defaultAllowStudentViewStr)){
-			defaultAllowStudentViewStr = ServerConfigurationService.getString("contentreview.allowStudentView.default", Boolean.FALSE.toString());
-		}
-		boolean defaultAllowStudentView = Boolean.valueOf(defaultAllowStudentViewStr);
+		boolean defaultAllowStudentView = ServerConfigurationService.getBoolean("turnitin.allowStudentView.default", ServerConfigurationService.getBoolean("contentreview.allowStudentView.default", Boolean.FALSE));
 		context.put("value_AllowStudentView", state.getAttribute(NEW_ASSIGNMENT_ALLOW_STUDENT_VIEW) == null ? Boolean.toString(defaultAllowStudentView) : state.getAttribute(NEW_ASSIGNMENT_ALLOW_STUDENT_VIEW));
 	
 		List<String> subOptions = getSubmissionRepositoryOptions();
@@ -2494,19 +2490,11 @@ public class AssignmentAction extends PagedResourceActionII
 		
 		//exclude quoted materials
 		//Rely on the deprecated "turnitin.option.exclude_quoted" setting if set, otherwise use "contentreview.option.exclude_quoted"
-		String showExcludeQuotedStr = ServerConfigurationService.getString("turnitin.option.exclude_quoted", "");
-		if(StringUtils.isEmpty(showExcludeQuotedStr)){
-			showExcludeQuotedStr = ServerConfigurationService.getString("contentreview.option.exclude_quoted", Boolean.TRUE.toString());
-		}
-		boolean showExcludeQuoted = Boolean.valueOf(showExcludeQuotedStr);
+		boolean showExcludeQuoted = ServerConfigurationService.getBoolean("turnitin.option.exclude_quoted", ServerConfigurationService.getBoolean("contentreview.option.exclude_quoted", Boolean.TRUE));
 		context.put("show_NEW_ASSIGNMENT_REVIEW_SERVICE_EXCLUDE_QUOTED", showExcludeQuoted);
 		//Rely on the deprecated "turnitin.option.exclude_quoted.default" setting if set, otherwise use "contentreview.option.exclude_quoted.default"
-		String defaultExcludeQuotedStr = ServerConfigurationService.getString("turnitin.option.exclude_quoted.default", "");
-		if(StringUtils.isEmpty(defaultExcludeQuotedStr)){
-			defaultExcludeQuotedStr = ServerConfigurationService.getString("contentreview.option.exclude_quoted.default", Boolean.toString(showExcludeQuoted));
-		}
-		boolean defaultExcludeQuoted = Boolean.valueOf(defaultExcludeQuotedStr);
-		context.put("value_NEW_ASSIGNMENT_REVIEW_SERVICE_EXCLUDE_QUOTED", (state.getAttribute(NEW_ASSIGNMENT_REVIEW_SERVICE_EXCLUDE_QUOTED) == null) ? Boolean.toString(defaultExcludeQuoted) : state.getAttribute(NEW_ASSIGNMENT_REVIEW_SERVICE_EXCLUDE_QUOTED));		
+		boolean defaultExcludeQuoted = ServerConfigurationService.getBoolean("turnitin.option.exclude_quoted.default", ServerConfigurationService.getBoolean("contentreview.option.exclude_quoted.default", showExcludeQuoted));
+		context.put("value_NEW_ASSIGNMENT_REVIEW_SERVICE_EXCLUDE_QUOTED", (state.getAttribute(NEW_ASSIGNMENT_REVIEW_SERVICE_EXCLUDE_QUOTED) == null) ? Boolean.toString(defaultExcludeQuoted) : state.getAttribute(NEW_ASSIGNMENT_REVIEW_SERVICE_EXCLUDE_QUOTED));
 
 		//exclude quoted materials
 		boolean displayExcludeType = ServerConfigurationService.getBoolean("turnitin.option.exclude_smallmatches", true);
