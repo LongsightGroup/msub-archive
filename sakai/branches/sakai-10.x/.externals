@@ -94,7 +94,7 @@ site-manage https://source.sakaiproject.org/svn/msub/longsight.com/site-manage/s
 
 # Additional tools
 
-attendance https://github.com/UDayton/attendance/tree/10.x
+attendance https://github.com/UDayton/attendance/branches/10.x
 blogwow https://source.sakaiproject.org/contrib/programmerscafe/blogwow/branches/sakai-10.x
 dashboard https://source.sakaiproject.org/svn/dashboard/branches/sakai-10.x
 #evaluation https://source.sakaiproject.org/contrib/evaluation/branches/sakai-10.x 
