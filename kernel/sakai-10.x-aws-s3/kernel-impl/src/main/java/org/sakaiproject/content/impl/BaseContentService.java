@@ -6991,6 +6991,9 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 					} else {
 						res.addHeader("Content-Length", Long.toString(len));
 					}
+					
+					// SAK-30455: Track event now so the direct link still records a content.read
+					eventTrackingService.post(eventTrackingService.newEvent(EVENT_RESOURCE_READ, resource.getReference(null), false));
 
 					// Bypass loading the asset and just send the user a link to it.
 					if (directLinkUri != null) {
@@ -7066,9 +7069,6 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 							}
 						}
 					}
-					
-					// Track event - only for full reads
-					eventTrackingService.post(eventTrackingService.newEvent(EVENT_RESOURCE_READ, resource.getReference(null), false));
 
 		        } 
 		        else 

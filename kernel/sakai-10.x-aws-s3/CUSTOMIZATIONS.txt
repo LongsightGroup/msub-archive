@@ -1,3 +1,4 @@
 KNL-1268 allow cloud-content
  * SAK-30325 deliver the file directly to Nginx via X-Accel-Redirect and keep the file out of the JVM heap
    * https://github.com/sakaiproject/sakai/pull/1691
+   * SAK-30455 make sure to record content.read events
