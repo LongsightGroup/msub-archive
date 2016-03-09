@@ -3099,7 +3099,7 @@ public class AssessmentGradingFacadeQueries extends HibernateDaoSupport implemen
 	
 	public void autoSubmitAssessments() {
 		java.util.Date currentTime = new java.util.Date();
-		Object [] values = {currentTime};
+		Object [] values = {currentTime, currentTime};
 
 		List list = getHibernateTemplate()
 				.find("select new AssessmentGradingData(a.assessmentGradingId, a.publishedAssessmentId, " +
@@ -3109,7 +3109,8 @@ public class AssessmentGradingFacadeQueries extends HibernateDaoSupport implemen
 						" where a.publishedAssessmentId = c.assessment.publishedAssessmentId " +
 						" and c.retractDate <= ?" +
 						" and a.status not in (5) and (a.hasAutoSubmissionRun = 0 or a.hasAutoSubmissionRun is null) and c.autoSubmit = 1 " +
-						" and a.submittedDate is not null and a.attemptDate <= c.retractDate " +
+						" and a.attemptDate is not null " +
+						" and (a.attemptDate <= c.retractDate or (c.dueDate <= ? and c.lateHandling = 2)) " +
 						" order by a.publishedAssessmentId, a.agentId, a.forGrade desc, a.assessmentGradingId", values);
 		
 	    Iterator iter = list.iterator();
@@ -3148,6 +3149,7 @@ public class AssessmentGradingFacadeQueries extends HibernateDaoSupport implemen
 	    						|| !lastAgentId.equals(adata.getAgentId())) {
 	    			lastPublishedAssessmentId = adata.getPublishedAssessmentId();
 	    			lastAgentId = adata.getAgentId();
+	    			Date endDate = new Date();
 	    			if (Boolean.FALSE.equals(adata.getForGrade())){
 
 	    				adata.setForGrade(Boolean.TRUE);
@@ -3157,10 +3159,17 @@ public class AssessmentGradingFacadeQueries extends HibernateDaoSupport implemen
 	    				if (adata.getFinalScore() == null) {
 	    					adata.setFinalScore(0d);
 	    				}
+	    				if (adata.getAttemptDate() != null && assessment != null && assessment.getDueDate() != null &&
+	    						adata.getAttemptDate().after(assessment.getDueDate())) {
+	    					adata.setIsLate(true);
+	    				}
 	    				// SAM-1088
-	    				if (adata.getSubmittedDate() != null && assessment != null && assessment.getDueDate() != null &&
+	    				else if (adata.getSubmittedDate() != null && assessment != null && assessment.getDueDate() != null &&
 	    						adata.getSubmittedDate().after(assessment.getDueDate())) {
 	    					adata.setIsLate(true);
+	    				}
+	    				if (adata.getSubmittedDate() == null && adata.getAttemptDate() != null) {
+	    					adata.setSubmittedDate(endDate);
 	    				}
 
 	    				adata.setIsAutoSubmitted(Boolean.TRUE);
@@ -3173,7 +3182,6 @@ public class AssessmentGradingFacadeQueries extends HibernateDaoSupport implemen
     					    EventLogData eventLogData= (EventLogData) eventLogDataList.get(0);
     					    //will do the i18n issue later.
     					    eventLogData.setErrorMsg("No Errors (Auto submit)");
-    					    Date endDate = new Date();
     					    eventLogData.setEndDate(endDate);
     					    if(endDate != null && eventLogData.getStartDate() != null) {
     						    double minute= 1000*60;
