@@ -12,11 +12,11 @@
     <parent>
         <groupId>org.sakaiproject.webservices</groupId>
         <artifactId>webservices</artifactId>
-        <version>10-SNAPSHOT</version>
+        <version>11-SNAPSHOT</version>
     </parent>
 
     <properties>
-        <cxf.version>2.7.16</cxf.version>
+        <cxf.version>2.7.17</cxf.version>
     </properties>
 
     <dependencies>
@@ -44,8 +44,9 @@
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-transports-http-jetty</artifactId>
+            <artifactId>cxf-rt-transports-local</artifactId>
             <version>${cxf.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -55,10 +56,10 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
         </dependency>
-        <!--dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-webapp</artifactId>
-        </dependency-->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+        </dependency>
 
         <!--  Sakai dependencies -->
         <dependency>
@@ -104,6 +105,11 @@
             <groupId>org.sakaiproject.edu-services.gradebook</groupId>
             <artifactId>gradebook-service-api</artifactId>
         </dependency>
+    <dependency>
+      <groupId>org.sakaiproject.edu-services.gradebook</groupId>
+      <artifactId>gradebook-service-hibernate</artifactId>
+      <scope>provided</scope>
+    </dependency>
         <dependency>
             <groupId>org.sakaiproject.msgcntr</groupId>
             <artifactId>messageforums-api</artifactId>
@@ -144,7 +150,21 @@
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20090211</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jumpmind.symmetric</groupId>
+            <artifactId>symmetric-csv</artifactId>
+            <version>3.0.10.1</version>
+        </dependency>
+        <dependency>
+            <groupId>xalan</groupId>
+            <artifactId>serializer</artifactId>
+            <version>2.7.1</version>
+        </dependency>
         <!-- SAK-27503 we do not want aopalliance JAR deployed in our WAR! -->
         <dependency>
             <groupId>aopalliance</groupId>
@@ -162,16 +182,26 @@
         <dependency>
         	<groupId>junit</groupId>
         	<artifactId>junit</artifactId>
-        	<version>4.11</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>2.0.31-beta</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>OKI</groupId>
+            <artifactId>OkiOSID</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>OKI</groupId>
+            <artifactId>OkiSID</artifactId>
+            <version>rc6.1</version>
         </dependency>
 
 	<!-- Needed for WSLongsight only -->
-    <dependency>
-      <groupId>org.sakaiproject.edu-services.gradebook</groupId>
-      <artifactId>gradebook-service-hibernate</artifactId>
-      <scope>provided</scope>
-    </dependency>
     <dependency>
       <groupId>org.sakaiproject.edu-services.gradebook</groupId>
       <artifactId>gradebook-service-impl</artifactId>
@@ -182,6 +212,8 @@
     </dependencies>
 
     <build>
+        <sourceDirectory>src/java</sourceDirectory>
+        <testSourceDirectory>src/test/java</testSourceDirectory>
         <resources>
             <resource>
                 <directory>${basedir}/src/resources</directory>

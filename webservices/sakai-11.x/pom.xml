@@ -5,13 +5,12 @@
 	<name>Sakai WebServices Project</name>
   	<groupId>org.sakaiproject.webservices</groupId>
   	<artifactId>webservices</artifactId>
-  	<version>10-SNAPSHOT</version>
   	<packaging>pom</packaging>
   	
   	<parent>
 		<groupId>org.sakaiproject</groupId>
 		<artifactId>master</artifactId>
-		<version>10-SNAPSHOT</version>
+		<version>11-SNAPSHOT</version>
 		<relativePath>../master/pom.xml</relativePath>
 	</parent>
   	
@@ -44,16 +43,9 @@
     </developers>
     
     <modules>
-        <module>axis</module>
         <module>cxf</module>
-        <module>util</module>
     </modules>
     
-    <scm>
-        <connection>scm:svn:https://source.sakaiproject.org/svn/webservices/trunk</connection>
-        <developerConnection>scm:svn:https://source.sakaiproject.org/svn/webservices/trunk</developerConnection>
-        <url>https://source.sakaiproject.org/svn/webservices/trunk</url>
-    </scm>
     
     <distributionManagement>
         <site>
@@ -63,13 +55,4 @@
         </site>
     </distributionManagement>
     
-  	<dependencyManagement>
-    	<dependencies>
-      		<dependency>
-        		<groupId>org.sakaiproject.webservices</groupId>
-        		<artifactId>sakai-util-axis</artifactId>
-        		<version>${project.version}</version>
-      		</dependency>
-    	</dependencies>
-  	</dependencyManagement>
 </project>

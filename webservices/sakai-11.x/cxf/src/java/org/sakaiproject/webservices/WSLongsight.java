@@ -34,7 +34,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.sakaiproject.alias.cover.AliasService;
 import org.sakaiproject.api.app.messageforums.SynopticMsgcntrItem;
 import org.sakaiproject.api.app.messageforums.SynopticMsgcntrManager;
 import org.sakaiproject.api.app.messageforums.cover.SynopticMsgcntrManagerCover;
@@ -1133,37 +1132,6 @@ public class WSLongsight extends AbstractWebService {
 			return "FAILURE: " + (e.toString());
 		}
 
-	}
-
-	@WebMethod
-	@Path("/longsightAddCalendarAlias")
-	@Produces("text/plain")
-	@GET
-	public String longsightAddCalendarAlias(
-			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
-			@WebParam(name = "siteid", partName = "siteid") @QueryParam("siteid") String siteid) {
-
-		String calId = "/calendar/calendar/"+ siteid +"/main"; 
-		Calendar calendarObj = null;
-
-		Session session = establishSession(sessionid); 
-		try
-		{
-			calendarObj = CalendarService.getCalendar(calId);
-
-			// first clear all existing 
-			AliasService.removeTargetAliases(calendarObj.getReference());
-			AliasService.setAlias(siteid + ".ics", calendarObj.getReference());
-
-			// make sure export is enabled
-			CalendarService.setExportEnabled( calId, true );
-			return "success";
-		}
-		catch (Exception e)
-		{
-			LOG.warn("Calendar alias enabling failed", e);
-			return "fail";
-		}
 	}
 
 	@WebMethod
@@ -3377,9 +3345,8 @@ public class WSLongsight extends AbstractWebService {
           } */
 			LOG.warn("Gradebook: "+gradebookUid+" Assignment: "+assignmentName+" Student: "+studentUid);
 
-			Double score = gradebookService.getAssignmentScore(gradebookUid, assignmentName, studentUid);
-			LOG.warn("Score: "+score);
-			retval = retval+score;
+			retval = gradebookService.getAssignmentScoreString(gradebookUid, assignmentName, studentUid);
+			LOG.warn("Score: " + retval);
 
 		} catch (Exception e) {
 			return e.getClass().getName() + " : " + e.getMessage();
@@ -3531,10 +3498,7 @@ public class WSLongsight extends AbstractWebService {
 			//LOG.warn("Gradebook: "+gradebookUid+" Assignment: "+assignmentId+" Student: "+studentUid);
 
 			Long aId = Long.parseLong(assignmentId, 10);
-			String score = gradebookService.getAssignmentScoreString(gradebookUid, aId, studentUid);
-			Double score2 = gradebookService.getAssignmentScore(gradebookUid, aId, studentUid);
-			//LOG.warn("ScoreString: "+score+" ScoreDouble: "+score2);
-			retval = retval+score;
+			retval = gradebookService.getAssignmentScoreString(gradebookUid, aId, studentUid);
 
 		} catch (Exception e) {
 			return e.getClass().getName() + " : " + e.getMessage();
