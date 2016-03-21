@@ -261,7 +261,7 @@ function handleReportsTriangleDisclosure(btn)
 					</td>
 				</tr>
 			#end
-				#if($allowReviewService && $assignmentContent.AllowReviewService && $assignmentContent.AllowStudentViewReport)
+				#if($allowReviewService && $assignmentContent.AllowReviewService)
 					<tr>
 						<th>
 							$reviewServiceName&nbsp;$tlang.getString("review.report")
