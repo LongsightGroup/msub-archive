@@ -1600,7 +1600,7 @@ public class WSLongsight extends AbstractWebService {
 			if (membership.isActive() && !active) {
 				membership.setActive(false);
 			}
-            else if (!membership.isActive() && active) {
+			else if (!membership.isActive() && active) {
 				membership.setActive(true);
 			}
 			authzGroupService.save(site);
@@ -2031,7 +2031,9 @@ public class WSLongsight extends AbstractWebService {
 				siteTitle.appendChild( dom.createTextNode(site.getTitle()) );
 
 				item.appendChild(siteId);
-				item.appendChild(siteTitle);                                                                                                                                                                                                          list.appendChild(item);                                                                                                                                                                                                       }
+				item.appendChild(siteTitle);
+				list.appendChild(item);
+			}
 
 			return Xml.writeDocumentToString(dom);
 		}
@@ -2552,8 +2554,8 @@ public class WSLongsight extends AbstractWebService {
 		Session session = establishSession(sessionId);
 
 		if (!securityService.isSuperUser()) {
-			LOG.warn("WS getCourseGrades(): Permission denied. Restricted to super users.");
-			return "FAILURE: getCourseGrades(): Permission denied. Restricted to super users.";
+			LOG.warn("WS getManyCourseGrades(): Permission denied. Restricted to super users.");
+			return "FAILURE: getManyCourseGrades(): Permission denied. Restricted to super users.";
 		}
 
 		String[] siteArray = siteIds.split(",");
@@ -2624,7 +2626,6 @@ public class WSLongsight extends AbstractWebService {
 		return gradeResult;
 	}
 
-/*
 	@WebMethod
 	@Path("/getNumericalCourseGrades")
 	@Produces("text/plain")
@@ -2707,8 +2708,8 @@ public class WSLongsight extends AbstractWebService {
 		Session session = establishSession(sessionId);
 
 		if (!securityService.isSuperUser()) {
-			LOG.warn("WS getCourseGrades(): Permission denied. Restricted to super users.");
-			return "FAILURE: getCourseGrades(): Permission denied. Restricted to super users.";
+			LOG.warn("WS getCourseGradesForUser(): Permission denied. Restricted to super users.");
+			return "FAILURE: getCourseGradesForUser(): Permission denied. Restricted to super users.";
 		}
 
 		String gradeResult = "";
@@ -2778,8 +2779,8 @@ public class WSLongsight extends AbstractWebService {
 		Session session = establishSession(sessionId);
 
 		if (!securityService.isSuperUser()) {
-			LOG.warn("WS getCourseGrades(): Permission denied. Restricted to super users.");
-			return "FAILURE: getCourseGrades(): Permission denied. Restricted to super users.";
+			LOG.warn("WS longsightImportFromFile(): Permission denied. Restricted to super users.");
+			return "FAILURE: longsightImportFromFile(): Permission denied. Restricted to super users.";
 		}
 
 		try {
@@ -3031,10 +3032,10 @@ public class WSLongsight extends AbstractWebService {
 	@Path("/deleteAllMyWorkspaceSites")
 	@Produces("text/plain")
 	@GET
-	public String deleteAllMyWorkspaceSites(
-			@WebParam(name = "sessionId", partName = "sessionId") @QueryParam("sessionId") String sessionId) {
-		try{
-			Session session = establishSession(sessionId);
+	public String deleteAllMyWorkspaceSites(@WebParam(name = "sessionId", partName = "sessionId") @QueryParam("sessionId") String sessionId) {
+		Session session = establishSession(sessionId);
+
+		try {
 			if (securityService.isSuperUser()) {
 				//get special users
 				String config = serverConfigurationService.getString("webservice.specialUsers", "admin,postmaster");
@@ -3082,36 +3083,55 @@ public class WSLongsight extends AbstractWebService {
 	@Path("/findDeletedTest")
 	@Produces("text/plain")
 	@GET
-	public Object findDeletedTest(String sessionId, String siteId) {
-		try{
+	public String findDeletedTest(String sessionId, String siteId) {
+		Session session = establishSession(sessionId);
+		if (!securityService.isSuperUser()) {
+			return "FAILURE: to findDeletedTest is restricted to super admins";
+		}
 
-			Session session = establishSession(sessionId);
-			if (securityService.isSuperUser()) {
+		String retval = "";
 
-				String DELETED_TEST_SQL = "Select spt.ID, spt.TITLE, spt.DESCRIPTION, spt.CREATEDBY, spt.CREATEDDATE, spt.LASTMODIFIEDBY, spt.LASTMODIFIEDDATE " +
-						"from SAM_PUBLISHEDASSESSMENT_T spt left join SAM_AUTHZDATA_T sat on sat.QUALIFIERID = spt.ID " + 
-						"where (sat.AGENTID = ? or sat.AGENTID = (Select TITLE from SAKAI_SITE where SITE_ID = ?) " +
-						"or sat.AGENTID in (select GROUP_ID from SAKAI_SITE_GROUP where SITE_ID = ?) ) and spt.STATUS = 2 group by spt.ID" ;
-				String SUBMISSIONS_SQL = "select count(*) as SUB_COUNT " +
-						"from (select ASSESSMENTGRADINGID from SAM_ASSESSMENTGRADING_T " +
-						"where PUBLISHEDASSESSMENTID = ? " +
-						"and SUBMITTEDDATE is not null group by AGENTID) counttable";
+		try {
 
-				List<Map<String, String>> returnList = dbRead(DELETED_TEST_SQL, new String[]{siteId, siteId, siteId}, new String[]{"ID", "TITLE", "DESCRIPTION", "CREATEDBY", "CREATEDDATE", "LASTMODIFIEDBY", "LASTMODIFIEDDATE"});
+			String DELETED_TEST_SQL = "Select spt.ID, spt.TITLE, spt.DESCRIPTION, spt.CREATEDBY, spt.CREATEDDATE, spt.LASTMODIFIEDBY, spt.LASTMODIFIEDDATE " +
+				"from SAM_PUBLISHEDASSESSMENT_T spt left join SAM_AUTHZDATA_T sat on sat.QUALIFIERID = spt.ID " + 
+				"where (sat.AGENTID = ? or sat.AGENTID = (Select TITLE from SAKAI_SITE where SITE_ID = ?) " +
+				"or sat.AGENTID in (select GROUP_ID from SAKAI_SITE_GROUP where SITE_ID = ?) ) and spt.STATUS = 2 group by spt.ID" ;
+			String SUBMISSIONS_SQL = "select count(*) as SUB_COUNT " +
+				"from (select ASSESSMENTGRADINGID from SAM_ASSESSMENTGRADING_T " +
+				"where PUBLISHEDASSESSMENTID = ? " +
+				"and SUBMITTEDDATE is not null group by AGENTID) counttable";
 
-				for(Map<String, String> map : returnList){
-					List<Map<String, String>> returnList2 = dbRead(SUBMISSIONS_SQL, new String[]{map.get("ID")}, new String[]{"SUB_COUNT"});
-					if(returnList2 != null && returnList2.size() == 1){
-						map.put("SUBMISSIONS", returnList2.get(0).get("SUB_COUNT"));
-					}
+			List<Map<String, String>> returnList = dbRead(DELETED_TEST_SQL, new String[]{siteId, siteId, siteId}, new String[]{"ID", "TITLE", "DESCRIPTION", "CREATEDBY", "CREATEDDATE", "LASTMODIFIEDBY", "LASTMODIFIEDDATE"});
+
+			for(Map<String, String> map : returnList){
+				List<Map<String, String>> returnList2 = dbRead(SUBMISSIONS_SQL, new String[]{map.get("ID")}, new String[]{"SUB_COUNT"});
+				if(returnList2 != null && returnList2.size() == 1) {
+					map.put("SUBMISSIONS", returnList2.get(0).get("SUB_COUNT"));
 				}
-				return returnList;
-			}else{
-				return "FAILURE: to findDeletedTest is restricted to super admins";
 			}
-		}catch(Exception e){
+
+			Document dom = Xml.createDocument();
+			Node xml = dom.createElement("sites");
+			dom.appendChild(xml);
+
+			for(Map<String, String> map : returnList) {
+				Node site = dom.createElement("site");
+				xml.appendChild(site);
+
+				for(Map.Entry<String, String> pair : map.entrySet()) {
+					Node x = dom.createElement(pair.getKey());
+					site.appendChild(x);
+					x.appendChild(dom.createTextNode(pair.getValue()));
+				}
+                        }
+
+			retval = Xml.writeDocumentToString(dom);
+		} catch(Exception e) {
 			return "FAILURE: " + e.toString();
 		}
+
+                return retval;
 	}
 
 	@WebMethod

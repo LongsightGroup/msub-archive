@@ -116,6 +116,12 @@
         <dependency>
           <groupId>org.sakaiproject.samigo</groupId>
           <artifactId>samigo-services</artifactId>
+          <exclusions>
+            <exclusion>
+              <groupId>*</groupId>
+              <artifactId>*</artifactId>
+            </exclusion>
+          </exclusions>
         </dependency>
         <dependency>
             <groupId>org.sakaiproject.common</groupId>
@@ -167,7 +173,7 @@
             <scope>test</scope>
         </dependency>
 
-	<!-- Needed for WSLongsight only -->
+    <!-- Needed for WSLongsight only -->
     <dependency>
       <groupId>org.sakaiproject.edu-services.gradebook</groupId>
       <artifactId>gradebook-service-hibernate</artifactId>
@@ -177,8 +183,14 @@
       <groupId>org.sakaiproject.edu-services.gradebook</groupId>
       <artifactId>gradebook-service-impl</artifactId>
       <version>${sakai.version}</version>
+          <exclusions>
+            <exclusion>
+              <groupId>*</groupId>
+              <artifactId>*</artifactId>
+            </exclusion>
+          </exclusions>
     </dependency>
-	<!-- End WSLongsight only-->
+    <!-- End WSLongsight only-->
 
     </dependencies>
 
