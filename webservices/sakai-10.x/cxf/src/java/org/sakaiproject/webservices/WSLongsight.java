@@ -2626,6 +2626,7 @@ public class WSLongsight extends AbstractWebService {
 		return gradeResult;
 	}
 
+/*
 	@WebMethod
 	@Path("/getNumericalCourseGrades")
 	@Produces("text/plain")

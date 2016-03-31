@@ -1085,7 +1085,7 @@ public class WSLongsight extends AbstractWebService {
 			String userid = userDirectoryService.getUserByEid(eid).getId();
 
 			site.removeMember(userid);
-			siteService.save(site);
+			siteService.saveSiteMembership(site);
 		}
 		catch (Exception e) {
 			return e.getClass().getName() + " : " + e.getMessage();
@@ -1573,7 +1573,7 @@ public class WSLongsight extends AbstractWebService {
 
 		} catch (Exception e) {
 			LOG.error("WS getMemberStatus(): "+ e.getClass().getName() + " : "+ e.getMessage());
-			return "";
+			return "failure: " + e.getMessage();
 		}
 
 		return status;
@@ -1592,22 +1592,22 @@ public class WSLongsight extends AbstractWebService {
 		Session s = establishSession(sessionid); 
 
 		try {
-			AuthzGroup site = authzGroupService.getAuthzGroup("/site/"+siteid);
+			AuthzGroup site = authzGroupService.getAuthzGroup("/site/" + siteid);
 
 			String userid = userDirectoryService.getUserByEid(eid).getId();
 			Member membership = site.getMember(userid);
 
 			if (membership.isActive() && !active) {
 				membership.setActive(false);
-			} else if (!membership.isActive() && active) {
+			}
+			else if (!membership.isActive() && active) {
 				membership.setActive(true);
 			}
 			authzGroupService.save(site);
-			//siteService.save(site);
-
+			Thread.sleep(250);
 		} catch (Exception e) {
 			LOG.error("WS setMemberStatus(): "+ e.getClass().getName() + " : "+ e.getMessage());
-			return "";
+			return "failure: " + e.getMessage();
 		}
 
 		return "success";
@@ -1834,7 +1834,7 @@ public class WSLongsight extends AbstractWebService {
 			Site site = siteService.getSite(siteid);
 			String userid = userDirectoryService.getUserByEid(eid).getId();
 			site.addMember(userid,roleid,false,false);
-			siteService.save(site);
+			siteService.saveSiteMembership(site);
 		}
 		catch (Exception e) {
 			return e.getClass().getName() + " : " + e.getMessage();
@@ -2031,7 +2031,9 @@ public class WSLongsight extends AbstractWebService {
 				siteTitle.appendChild( dom.createTextNode(site.getTitle()) );
 
 				item.appendChild(siteId);
-				item.appendChild(siteTitle);                                                                                                                                                                                                          list.appendChild(item);                                                                                                                                                                                                       }
+				item.appendChild(siteTitle);
+				list.appendChild(item);
+			}
 
 			return Xml.writeDocumentToString(dom);
 		}
@@ -2141,7 +2143,7 @@ public class WSLongsight extends AbstractWebService {
 		try {
 			Site site = siteService.getSite(siteid);
 			site.removeMember(userid);
-			siteService.save(site);
+			siteService.saveSiteMembership(site);
 		}
 		catch (Exception e) {
 			return e.getClass().getName() + " : " + e.getMessage();
@@ -2417,7 +2419,7 @@ public class WSLongsight extends AbstractWebService {
 			Member m = site.getMember(userId);
 			group.addMember(userId, r != null ? r.getId()   : "",
 					m != null ? m.isActive() : true,   false);
-			siteService.save(site);
+			siteService.saveGroupMembership(site);
 			return true;
 		}
 		catch (Exception e)
@@ -2552,8 +2554,8 @@ public class WSLongsight extends AbstractWebService {
 		Session session = establishSession(sessionId);
 
 		if (!securityService.isSuperUser()) {
-			LOG.warn("WS getCourseGrades(): Permission denied. Restricted to super users.");
-			return "FAILURE: getCourseGrades(): Permission denied. Restricted to super users.";
+			LOG.warn("WS getManyCourseGrades(): Permission denied. Restricted to super users.");
+			return "FAILURE: getManyCourseGrades(): Permission denied. Restricted to super users.";
 		}
 
 		String[] siteArray = siteIds.split(",");
@@ -2776,8 +2778,8 @@ public class WSLongsight extends AbstractWebService {
 		Session session = establishSession(sessionId);
 
 		if (!securityService.isSuperUser()) {
-			LOG.warn("WS getCourseGrades(): Permission denied. Restricted to super users.");
-			return "FAILURE: getCourseGrades(): Permission denied. Restricted to super users.";
+			LOG.warn("WS longsightImportFromFile(): Permission denied. Restricted to super users.");
+			return "FAILURE: longsightImportFromFile(): Permission denied. Restricted to super users.";
 		}
 
 		try {
@@ -3016,7 +3018,7 @@ public class WSLongsight extends AbstractWebService {
 			Role r = site.getUserRole(userId);
 			Member m = site.getMember(userId);
 			group.removeMember(userId);
-			siteService.save(site);
+			siteService.saveGroupMembership(site);
 			return true;
 		}
 		catch (Exception e)
@@ -3029,10 +3031,10 @@ public class WSLongsight extends AbstractWebService {
 	@Path("/deleteAllMyWorkspaceSites")
 	@Produces("text/plain")
 	@GET
-	public String deleteAllMyWorkspaceSites(
-			@WebParam(name = "sessionId", partName = "sessionId") @QueryParam("sessionId") String sessionId) {
-		try{
+	public String deleteAllMyWorkspaceSites(@WebParam(name = "sessionId", partName = "sessionId") @QueryParam("sessionId") String sessionId) {
 			Session session = establishSession(sessionId);
+
+		try {
 			if (securityService.isSuperUser()) {
 				//get special users
 				String config = serverConfigurationService.getString("webservice.specialUsers", "admin,postmaster");
@@ -3080,11 +3082,15 @@ public class WSLongsight extends AbstractWebService {
 	@Path("/findDeletedTest")
 	@Produces("text/plain")
 	@GET
-	public Object findDeletedTest(String sessionId, String siteId) {
-		try{
-
+	public String findDeletedTest(String sessionId, String siteId) {
 			Session session = establishSession(sessionId);
-			if (securityService.isSuperUser()) {
+		if (!securityService.isSuperUser()) {
+			return "FAILURE: to findDeletedTest is restricted to super admins";
+		}
+
+		String retval = "";
+
+		try {
 
 				String DELETED_TEST_SQL = "Select spt.ID, spt.TITLE, spt.DESCRIPTION, spt.CREATEDBY, spt.CREATEDDATE, spt.LASTMODIFIEDBY, spt.LASTMODIFIEDDATE " +
 						"from SAM_PUBLISHEDASSESSMENT_T spt left join SAM_AUTHZDATA_T sat on sat.QUALIFIERID = spt.ID " + 
@@ -3099,17 +3105,32 @@ public class WSLongsight extends AbstractWebService {
 
 				for(Map<String, String> map : returnList){
 					List<Map<String, String>> returnList2 = dbRead(SUBMISSIONS_SQL, new String[]{map.get("ID")}, new String[]{"SUB_COUNT"});
-					if(returnList2 != null && returnList2.size() == 1){
+				if(returnList2 != null && returnList2.size() == 1) {
 						map.put("SUBMISSIONS", returnList2.get(0).get("SUB_COUNT"));
 					}
 				}
-				return returnList;
-			}else{
-				return "FAILURE: to findDeletedTest is restricted to super admins";
+
+			Document dom = Xml.createDocument();
+			Node xml = dom.createElement("sites");
+			dom.appendChild(xml);
+
+			for(Map<String, String> map : returnList) {
+				Node site = dom.createElement("site");
+				xml.appendChild(site);
+
+				for(Map.Entry<String, String> pair : map.entrySet()) {
+					Node x = dom.createElement(pair.getKey());
+					site.appendChild(x);
+					x.appendChild(dom.createTextNode(pair.getValue()));
 			}
-		}catch(Exception e){
+                        }
+
+			retval = Xml.writeDocumentToString(dom);
+		} catch(Exception e) {
 			return "FAILURE: " + e.toString();
 		}
+
+                return retval;
 	}
 
 	@WebMethod
@@ -3148,36 +3169,38 @@ public class WSLongsight extends AbstractWebService {
 				String COUNT_SQL = "select count(*) c from SAKAI_USER_ID_MAP where EID = ?";
 				List<Map<String, String>> existingEidList = dbRead(COUNT_SQL, new String[]{newEid}, new String[]{"c"});
 				boolean existingNewEid = existingEidList != null && existingEidList.size() > 0 && !"0".equals(existingEidList.get(0).get("c"));
-				if(existingNewEid && !force){
+				if(existingNewEid && !force) {
 					return "A user with eid : " + newEid + " already exists.";
-				}else{
+				} else {
 					if(existingNewEid && force){
-						//drop the old new eid (probably user already signed in and created a blank user)
+						// drop the old new eid (probably user already signed in and created a blank user)
 						String DELETE_SQL = "Delete from SAKAI_USER_ID_MAP where EID = ?";
 						int success = dbUpdate(DELETE_SQL, new String[]{newEid});
-						if(success <= 0){
+						if(success <= 0) {
 							return "Failed to delete existing new eid: " + newEid;
 						}
 					}
 					String UPDATE_SQL = "update SAKAI_USER_ID_MAP set EID = ? where EID = ?";
 					int success = dbUpdate(UPDATE_SQL, new String[]{newEid, currentEid});
-					if(success > 0){
+					if(success > 0) {
 						// Need to clear the id - eid cache
 						boolean clearedCache = clearCache(ID_EID_CACHE);
 						LOG.info("Cache cleared because of eid update: " + ID_EID_CACHE + ":" + clearedCache);
 
 						// EST-3 clear out jldap_immutable table if it exists
-						int jldap = dbUpdate("DELETE FROM jldap_immutable WHERE eid=? OR eid=?", new String[]{currentEid,newEid});
+						int jldap = dbUpdate("DELETE IGNORE FROM jldap_immutable WHERE eid=? OR eid=?", new String[]{currentEid,newEid});
 						LOG.info("Deleted from jldap_immutable where eid=" + currentEid + " or eid=" + newEid + " : " + jldap);
 
 						return "Successfully updated eid: " + currentEid + " to eid: " + newEid + ";cacheCleared=" + clearedCache;
-					}else{
+					}
+                                        else {
 						return "Update failed for changing from eid: " + currentEid + " to eid: " + newEid;
 					}
 				}
 
-			}else{
-				return "FAILURE: Access to recoverDeletedTest is restricted to super admins";
+			} 
+                        else {
+				return "FAILURE: Access to changeUserEidForce is restricted to super admins";
 			}
 		}catch(Exception e){
 			return "FAILURE: " + e.toString();
@@ -4050,7 +4073,7 @@ public class WSLongsight extends AbstractWebService {
 	@Path("/clearUserIdEidCache")
 	@Produces("text/plain")
 	@GET
-	public boolean clearCache() {
+	public boolean clearUserIdEidCache() {
 		return clearCache(ID_EID_CACHE);
 	}
 
