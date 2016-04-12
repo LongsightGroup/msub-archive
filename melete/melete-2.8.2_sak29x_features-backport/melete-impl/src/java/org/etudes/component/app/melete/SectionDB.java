@@ -114,7 +114,7 @@ public class SectionDB implements Serializable {
 					Query query = session.createQuery("from Module mod where mod.moduleId=:moduleId");
 					query.setParameter("moduleId", module.getModuleId());
 					List secModules = query.list();
-					if (secModules != null) {
+					if (secModules != null && !secModules.isEmpty()) {
 						Module secModule = (Module) secModules.get(0);
 						// set xml structure for sequencing and placement of sections
 						String sectionsSeqXML = secModule.getSeqXml();
