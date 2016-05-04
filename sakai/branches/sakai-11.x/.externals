@@ -86,9 +86,12 @@ web https://github.com/sakaiproject/sakai/branches/11.x/web
 # Additional tools
 blogwow https://github.com/sakaicontrib/blogwow/trunk
 evaluation https://github.com/sakaicontrib/evaluation/branches/11.x
-attendance https://github.com/UDayton/attendance/branches/10.x
-kaltura -r 313603 https://source.sakaiproject.org/svn/msub/unicon.net/kaltura/trunk
-qna https://source.sakaiproject.org/contrib/qna/branches/sakai-10.x/
-sms https://source.sakaiproject.org/contrib/longsight/sms/sms-sakai10.x-datepicker/
+#kaltura -r 313603 https://source.sakaiproject.org/svn/msub/unicon.net/kaltura/trunk
+#qna https://source.sakaiproject.org/contrib/qna/trunk/
+#sms https://source.sakaiproject.org/contrib/longsight/sms/sms-sakai10.x-datepicker/
+
 #POM Changes
 #shell_command find blogwow/ -name pom.xml -exec sed -i 's/12-SNAPSHOT/11-SNAPSHOT/g' {} \;
+
+# Attendance
+#shell_command git clone https://github.com/UDayton/attendance.git

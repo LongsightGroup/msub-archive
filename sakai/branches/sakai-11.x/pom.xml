@@ -120,9 +120,6 @@
                 <module>blogwow</module>
                 <module>evaluation</module>
                 <module>attendance</module>
-                <module>kaltura</module>
-                <module>qna</module>
-                <module>sms</module>
             </modules>
         </profile>
         <!-- pack profiles for building release artifacts -->
