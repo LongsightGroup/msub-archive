@@ -97,3 +97,7 @@ evaluation https://github.com/sakaicontrib/evaluation/branches/11.x
 
 # Attendance
 #shell_command git clone https://github.com/UDayton/attendance.git
+
+#VeriCite
+#shell_command cd content-review
+#shell_command git clone -b 2.0 https://github.com/vericite/contentreview-impl-vericite.git
