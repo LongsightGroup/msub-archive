@@ -1977,4 +1977,15 @@ public interface ContentHostingService extends EntityProducer
 	public void expandZippedResource(String resourceId) throws Exception;
 
 	public URI getTheDirectLink(ContentResource resource);
+
+	/**
+	 * Expand macros in a URL
+	 *
+	 * @param url - string, a URL to be expanded
+	 *
+	 * @return URL with macro expansion
+	 */
+
+	public String expandMacros(String url);
+
 }

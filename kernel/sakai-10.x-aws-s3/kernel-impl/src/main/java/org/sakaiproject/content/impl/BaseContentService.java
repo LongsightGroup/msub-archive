@@ -14021,7 +14021,6 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 	private static final String MACRO_USER_EID            = "${USER_EID}";
 	private static final String MACRO_USER_FIRST_NAME     = "${USER_FIRST_NAME}";
 	private static final String MACRO_USER_LAST_NAME      = "${USER_LAST_NAME}";
-	private static final String MACRO_SESSION_ID          = "${SESSION_ID}";
 
 	private static final String MACRO_DEFAULT_ALLOWED = "${USER_ID},${USER_EID},${USER_FIRST_NAME},${USER_LAST_NAME}";
 
@@ -14038,7 +14037,7 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
      * 
      * See SAK-23587
      */
-    private String expandMacros(String url) {
+    public String expandMacros(String url) {
     	
     	if(M_log.isDebugEnabled()){
     		M_log.debug("Original url: " + url);
@@ -14085,10 +14084,6 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 			if (macroName.equals(MACRO_USER_LAST_NAME)) {
 				return userDirectoryService.getCurrentUser().getLastName();
 			}
-			if (macroName.equals(MACRO_SESSION_ID)) {
-				return sessionManager.getCurrentSession().getId();
-			}
-
 		}
 		catch (Exception e) {
 			M_log.error("Error resolving macro:" + macroName + ": " + e.getClass() + ": " + e.getCause());
