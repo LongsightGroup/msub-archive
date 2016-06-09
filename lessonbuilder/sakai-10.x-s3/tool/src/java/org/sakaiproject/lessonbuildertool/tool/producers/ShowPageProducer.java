@@ -4272,23 +4272,6 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 	
 	private static String getItemPath(SimplePageItem i)
 	{
-	    // users seem to want paths for the embedded items, so they can see what's going on
-	        if (i.getType() == SimplePageItem.MULTIMEDIA) {
-		    String mmDisplayType = i.getAttribute("multimediaDisplayType");
-		    if ("".equals(mmDisplayType) || "2".equals(mmDisplayType))
-			mmDisplayType = null;
-		    if ("1".equals(mmDisplayType)) {
-			// embed code
-			return FormattedText.escapeHtml(i.getAttribute("multimediaEmbedCode"),false);
-		    } else if ("3".equals(mmDisplayType)) {
-			// oembed
-			return FormattedText.escapeHtml(i.getAttribute("multimediaUrl"),false);
-		    } else if ("4".equals(mmDisplayType)) {
-			// iframe
-			return FormattedText.escapeHtml(i.getItemURL(simplePageBean.getCurrentSiteId(),simplePageBean.getCurrentPage().getOwner()),false);
-		    }
-		}		
-
 		String itemPath = "";
 		boolean isURL = false;
 		String pathId = i.getType() == SimplePageItem.MULTIMEDIA ? "path-url":"path-url";

@@ -48,14 +48,6 @@ function checkgroups(elt, groups) {
 var blankRubricTemplate, blankRubricRow;
 
 $(function() {
-       $("li.multimediaType iframe").each(function() {
-	var width = $(this).attr("width");
-	var height = $(this).attr("height");
-               if (typeof width !== 'undefined' && width !== '' &&
-                   (typeof height === 'undefined' || height ==''))
-                   $(this).height($(this).width() * 0.75);
-           });
-
 	// This is called in comments.js as well, however this may be faster.
 	//if(sakai.editor.editors.ckeditor==undefined) {
 //		$(".evolved-box :not(textarea)").hide();
