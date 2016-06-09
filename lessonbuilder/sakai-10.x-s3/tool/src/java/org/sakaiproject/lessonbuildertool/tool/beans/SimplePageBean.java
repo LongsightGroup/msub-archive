@@ -3155,7 +3155,7 @@ public class SimplePageBean {
 		   entity = forumEntity.getEntity(i.getSakaiId()); break;
 	       case SimplePageItem.MULTIMEDIA:
 		   String displayType = i.getAttribute("multimediaDisplayType");
-		   if ("1".equals(displayType) || "3".equals(displayType))
+		   if ("1".equals(displayType) || "3".equals(displayType) || i.getAttribute("multimediaUrl") != null)
 		       return getLBItemGroups(i); // for all native LB objects
 		   else
 		       return getResourceGroups(i, nocache);  // responsible for caching the result
@@ -3344,7 +3344,7 @@ public class SimplePageBean {
 	       lessonEntity = forumEntity.getEntity(i.getSakaiId()); break;
 	   case SimplePageItem.MULTIMEDIA:
 	       String displayType = i.getAttribute("multimediaDisplayType");
-	       if ("1".equals(displayType) || "3".equals(displayType))
+	       if ("1".equals(displayType) || "3".equals(displayType) || i.getAttribute("multimediaUrl") != null)
 		   return setLBItemGroups(i, groups);
 	       else
 		   return setResourceGroups (i, groups);
@@ -4459,7 +4459,7 @@ public class SimplePageBean {
 		    // check for inline types. No resource to check. Since this section is for student page, no groups either
 		    if (item.getType() == SimplePageItem.MULTIMEDIA) {
 			String displayType = item.getAttribute("multimediaDisplayType");
-			if ("1".equals(displayType) || "3".equals(displayType))
+			if ("1".equals(displayType) || "3".equals(displayType) || item.getAttribute("multimediaUrl") != null)
 			    return true;
 		    }
 
@@ -5110,6 +5110,11 @@ public class SimplePageBean {
 
 	public String getYoutubeKey(SimplePageItem i) {
 		String sakaiId = i.getSakaiId();
+		String URL = null;
+
+		URL = i.getAttribute("multimediaUrl");
+		if (URL != null)
+		    return getYoutubeKeyFromUrl(URL);
 
 		// this is called only from contexts where we know it's OK to get the data.
 		// indeed if I were doing it over I'd put it in the item, not resources
@@ -5146,7 +5151,6 @@ public class SimplePageBean {
 			}
 			
 			// 	get the actual URL
-			String URL = null;
 			try {
 				URL = new String(resource.getContent());
 			} catch (Exception ignore) {
