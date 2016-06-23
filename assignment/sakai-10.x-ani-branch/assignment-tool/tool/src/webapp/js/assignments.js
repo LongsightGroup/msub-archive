@@ -754,3 +754,89 @@ ASN.enableLinks = function()
         helpItems.className = "";
     }
 };
+
+
+
+function showOrHideSelectGroupsMessage() {
+    
+    // Get the elements
+    var groupMsg = document.getElementById("msgSelectGroups");
+    var groupsRadio = document.getElementById("groups");
+    var checkboxes = document.getElementsByName("selectedGroups");
+    
+    // Determine if groups are selected
+    var groupsSelected = false;
+    for (i = 0; i < checkboxes.length; i++) {
+        if (checkboxes[i].checked === true) {
+            groupsSelected = true;
+        }
+    }
+        
+    // Show/hide the groups message
+    if (groupsRadio.checked && !groupsSelected) {
+        groupMsg.style.display = "block";
+    } 
+    else {
+        groupMsg.style.display = "none";
+    }
+}
+
+function toggleGroups(clickedElement) {
+
+    // Get the elements
+    var parent = clickedElement.parentNode;
+    var childDivs = parent.getElementsByTagName("div");
+    
+    // Show/hide the groups panel
+    for (i = 0; i < childDivs.length; i++) {
+        if(childDivs[i].id === "groupsPanel") {
+            if (childDivs[i].style.display === "none") {
+                childDivs[i].style.display = "block";
+            } 
+            else {
+                childDivs[i].style.display = "none";
+            }
+            
+            // Change the triangle disclosure icon as appropriate
+            if (clickedElement.className === "collapse") {
+                clickedElement.className = "expand";
+            } 
+            else {
+                clickedElement.className = "collapse";
+            }
+        }
+    }
+}
+
+function highlightSelectedAttachment()
+{
+	endsWith = function(str, suffix)
+	{
+		return str.indexOf(suffix, str.length - suffix.length) !== -1;
+	}
+
+	var classSuffix = " assignmentAttachmentHighlight";
+	var radioButtons = document.getElementsByName("attachmentSelection");
+	for (i = 0; i < radioButtons.length; i++)
+	{
+		var parentDiv = radioButtons[i].parentNode;
+		if (radioButtons[i].checked)
+		{
+			if (!endsWith(parentDiv.className, classSuffix))
+			{
+				//add the highlight css class
+				parentDiv.className+=classSuffix;
+			}
+		}
+		else
+		{
+			if (endsWith(parentDiv.className, classSuffix))
+			{
+				//remove the highlight css class
+				var cn = parentDiv.className;
+				parentDiv.className=cn.substring(0, cn.length - classSuffix.length);
+			}
+		}
+	}
+}
+

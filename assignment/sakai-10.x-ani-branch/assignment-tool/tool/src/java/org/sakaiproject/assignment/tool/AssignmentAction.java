@@ -975,9 +975,14 @@ public class AssignmentAction extends PagedResourceActionII
 			String reviewServiceName = contentReviewService.getServiceName();
 			String reviewServiceTitle = rb.getFormattedMessage("review.title", new Object[]{reviewServiceName});
 			String reviewServiceUse = rb.getFormattedMessage("review.use", new Object[]{reviewServiceName});
-			context.put("reviewServiceName", reviewServiceTitle);
+			String reviewServiceNonElectronic1 = rb.getFormattedMessage("review.switch.ne.1", reviewServiceName);
+			String reviewServiceNonElectronic2 = rb.getFormattedMessage("review.switch.ne.2", reviewServiceName);
+			context.put("reviewServiceName", reviewServiceName);
+			context.put("reviewServiceTitle", reviewServiceTitle);
 			context.put("reviewServiceUse", reviewServiceUse);
 			context.put("reviewIndicator", rb.getFormattedMessage("review.contentReviewIndicator", new Object[]{reviewServiceName}));
+			context.put("reviewSwitchNe1", reviewServiceNonElectronic1);
+			context.put("reviewSwitchNe2", reviewServiceNonElectronic2);
 		}
 		
 		//Peer Assessment
@@ -1433,6 +1438,7 @@ public class AssignmentAction extends PagedResourceActionII
 		String currentAssignmentReference = (String) state.getAttribute(VIEW_SUBMISSION_ASSIGNMENT_REFERENCE);
 		Assignment assignment = getAssignment(currentAssignmentReference, "build_student_view_submission_context", state);
 		AssignmentSubmission s = null;
+		boolean newAttachments = false;
 		
 		if (assignment != null)
 		{
@@ -1446,6 +1452,11 @@ public class AssignmentAction extends PagedResourceActionII
             }else {
                 context.put("statusMsg", rb.getString("stuviewsubm.unavailable"));
             }
+	    // SAK-26322	--bbailla2
+	    if (assignment.getContent().getAllowReviewService())
+	    {
+	    	context.put("plagiarismNote", rb.getFormattedMessage("gen.yoursubwill", contentReviewService.getServiceName()));
+	    }
             if (assignment.getContent().getTypeOfSubmission() == Assignment.NON_ELECTRONIC_ASSIGNMENT_SUBMISSION)
 			{
 				context.put("nonElectronicType", Boolean.TRUE);
@@ -1456,6 +1467,7 @@ public class AssignmentAction extends PagedResourceActionII
                 submitter = user;
             }
             s = getSubmission(assignment.getReference(), submitter, "build_student_view_submission_context", state);
+			List currentAttachments = (List) state.getAttribute(ATTACHMENTS);
 
 			if (s != null)
 			{
@@ -1492,6 +1504,17 @@ public class AssignmentAction extends PagedResourceActionII
 				        }
 				    }
 				}
+
+				// figure out if attachments have been modified
+
+				// the attachments from the previous submission
+				List submittedAttachments = s.getSubmittedAttachments();
+				newAttachments = areAttachmentsNew(submittedAttachments, currentAttachments);
+			}
+			else
+			{
+				// There is no previous submission, attachments are modified if anything has been uploaded
+				newAttachments = currentAttachments != null && !currentAttachments.isEmpty();
 			}
 			
 			// put the resubmit information into context
@@ -1542,7 +1565,8 @@ public class AssignmentAction extends PagedResourceActionII
 		context.put("name_submission_honor_pledge_yes", VIEW_SUBMISSION_HONOR_PLEDGE_YES);
 		context.put("value_submission_honor_pledge_yes", state.getAttribute(VIEW_SUBMISSION_HONOR_PLEDGE_YES));
 		context.put("honor_pledge_text", ServerConfigurationService.getString("assignment.honor.pledge", rb.getString("gen.honple2")));
-		context.put("attachments", state.getAttribute(ATTACHMENTS));
+		context.put("attachments", stripInvisibleAttachments(state.getAttribute(ATTACHMENTS)));
+		context.put("new_attachments", newAttachments);
     		context.put("userDirectoryService", UserDirectoryService.getInstance());
 		
 		context.put("contentTypeImageService", state.getAttribute(STATE_CONTENT_TYPE_IMAGE_SERVICE));
@@ -1578,6 +1602,75 @@ public class AssignmentAction extends PagedResourceActionII
 		return template + TEMPLATE_STUDENT_VIEW_SUBMISSION;
 
 	} // build_student_view_submission_context
+
+	/**
+	 * Determines if there are new attachments
+	 * @return true if currentAttachments is not empty and isn't equal to oldAttachments
+	 */
+	private boolean areAttachmentsNew(List oldAttachments, List currentAttachments)
+	{
+		if (currentAttachments == null || currentAttachments.isEmpty())
+		{
+			//there are no current attachments
+			return false;
+		}
+		if (oldAttachments == null || oldAttachments.isEmpty())
+		{
+			//there are no old attachments (and there are new ones)
+			return true;
+		}
+
+		Set<String> ids1 = getIdsFromReferences(oldAttachments);
+		Set<String> ids2 = getIdsFromReferences(currentAttachments);
+
+		//.equals on Sets of Strings will compare .equals on the contained Strings
+		return !ids1.equals(ids2);
+	}
+
+	/**
+	 * Gets ids from a list of Reference objects. If the List contains any non-reference objects, they are skipped
+	 */
+	private Set<String> getIdsFromReferences(List references)
+	{
+		Set<String> ids = new HashSet<String>();
+		for (Object reference : references)
+		{
+			if (reference instanceof Reference)
+			{
+				Reference casted = (Reference) reference;
+				ids.add(casted.getId());
+			}
+		}
+
+		return ids;
+	}
+
+	/**
+	 * Returns a clone of the passed in List of attachments minus any attachments that should not be displayed in the UI
+	 */
+	private List stripInvisibleAttachments(Object attachments)
+	{
+		List stripped = new ArrayList();
+		if (attachments == null || !(attachments instanceof List))
+		{
+			return stripped;
+		}
+		Iterator itAttachments = ((List) attachments).iterator();
+		while (itAttachments.hasNext())
+		{
+			Object next = itAttachments.next();
+			if (next instanceof Reference)
+			{
+				Reference attachment = (Reference) next;
+				// inline submissions should not show up in the UI's lists of attachments
+				if (!"true".equals(attachment.getProperties().getProperty(AssignmentSubmission.PROP_INLINE_SUBMISSION)))
+				{
+					stripped.add(attachment);
+				}
+			}
+		}
+		return stripped;
+	}
 
 	/**
 	 * build the student view of showing a group assignment error with eligible groups
@@ -1756,7 +1849,7 @@ public class AssignmentAction extends PagedResourceActionII
 				List attachments = s.getSubmittedAttachments();
 				if (attachments != null && attachments.size()>0)
 				{
-					context.put("submit_attachments", s.getSubmittedAttachments());
+					context.put("submit_attachments", s.getVisibleSubmittedAttachments());
 				}
 				context.put("submit_text", StringUtils.trimToNull(s.getSubmittedText()));
 				context.put("email_confirmation", Boolean.valueOf(ServerConfigurationService.getBoolean("assignment.submission.confirmation.email", true)));
@@ -1876,7 +1969,7 @@ public class AssignmentAction extends PagedResourceActionII
 		context.put("text", state.getAttribute(PREVIEW_SUBMISSION_TEXT));
 		context.put("honor_pledge_yes", state.getAttribute(PREVIEW_SUBMISSION_HONOR_PLEDGE_YES));
 		context.put("honor_pledge_text", ServerConfigurationService.getString("assignment.honor.pledge", rb.getString("gen.honple2")));
-		context.put("attachments", state.getAttribute(PREVIEW_SUBMISSION_ATTACHMENTS));
+		context.put("attachments", stripInvisibleAttachments(state.getAttribute(PREVIEW_SUBMISSION_ATTACHMENTS)));
 		context.put("contentTypeImageService", state.getAttribute(STATE_CONTENT_TYPE_IMAGE_SERVICE));
 
 		String template = (String) getContext(data).get("template");
@@ -2371,8 +2464,10 @@ public class AssignmentAction extends PagedResourceActionII
 		// Keep the use review service setting
 		context.put("value_UseReviewService", state.getAttribute(NEW_ASSIGNMENT_USE_REVIEW_SERVICE));
 		context.put("turnitin_forceSingleAttachment", ServerConfigurationService.getBoolean("turnitin.forceSingleAttachment", false));
-		context.put("value_AllowStudentView", state.getAttribute(NEW_ASSIGNMENT_ALLOW_STUDENT_VIEW) == null ? Boolean.toString(ServerConfigurationService.getBoolean("turnitin.allowStudentView.default", false)) : state.getAttribute(NEW_ASSIGNMENT_ALLOW_STUDENT_VIEW));
-		
+		//Rely on the deprecated "turnitin.allowStudentView.default" setting if set, otherwise use "contentreview.allowStudentView.default"
+		boolean defaultAllowStudentView = ServerConfigurationService.getBoolean("turnitin.allowStudentView.default", ServerConfigurationService.getBoolean("contentreview.allowStudentView.default", Boolean.FALSE));
+		context.put("value_AllowStudentView", state.getAttribute(NEW_ASSIGNMENT_ALLOW_STUDENT_VIEW) == null ? Boolean.toString(defaultAllowStudentView) : state.getAttribute(NEW_ASSIGNMENT_ALLOW_STUDENT_VIEW));
+	
 		List<String> subOptions = getSubmissionRepositoryOptions();
 		String submitRadio = ServerConfigurationService.getString("turnitin.repository.setting.value",null) == null ? NEW_ASSIGNMENT_REVIEW_SERVICE_SUBMIT_NONE : ServerConfigurationService.getString("turnitin.repository.setting.value");
 		if(state.getAttribute(NEW_ASSIGNMENT_REVIEW_SERVICE_SUBMIT_RADIO) != null && subOptions.contains(state.getAttribute(NEW_ASSIGNMENT_REVIEW_SERVICE_SUBMIT_RADIO)))
@@ -2402,9 +2497,13 @@ public class AssignmentAction extends PagedResourceActionII
 		context.put("value_NEW_ASSIGNMENT_REVIEW_SERVICE_EXCLUDE_BIBLIOGRAPHIC", (state.getAttribute(NEW_ASSIGNMENT_REVIEW_SERVICE_EXCLUDE_BIBLIOGRAPHIC) == null) ? Boolean.toString(ServerConfigurationService.getBoolean("turnitin.option.exclude_bibliographic.default", ServerConfigurationService.getBoolean("turnitin.option.exclude_bibliographic", true) ? true : false)) : state.getAttribute(NEW_ASSIGNMENT_REVIEW_SERVICE_EXCLUDE_BIBLIOGRAPHIC));
 		
 		//exclude quoted materials
-		context.put("show_NEW_ASSIGNMENT_REVIEW_SERVICE_EXCLUDE_QUOTED", ServerConfigurationService.getBoolean("turnitin.option.exclude_quoted", true));
-		context.put("value_NEW_ASSIGNMENT_REVIEW_SERVICE_EXCLUDE_QUOTED", (state.getAttribute(NEW_ASSIGNMENT_REVIEW_SERVICE_EXCLUDE_QUOTED) == null) ? Boolean.toString(ServerConfigurationService.getBoolean("turnitin.option.exclude_quoted.default", ServerConfigurationService.getBoolean("turnitin.option.exclude_quoted", true) ? true : false)) : state.getAttribute(NEW_ASSIGNMENT_REVIEW_SERVICE_EXCLUDE_QUOTED));
-		
+		//Rely on the deprecated "turnitin.option.exclude_quoted" setting if set, otherwise use "contentreview.option.exclude_quoted"
+		boolean showExcludeQuoted = ServerConfigurationService.getBoolean("turnitin.option.exclude_quoted", ServerConfigurationService.getBoolean("contentreview.option.exclude_quoted", Boolean.TRUE));
+		context.put("show_NEW_ASSIGNMENT_REVIEW_SERVICE_EXCLUDE_QUOTED", showExcludeQuoted);
+		//Rely on the deprecated "turnitin.option.exclude_quoted.default" setting if set, otherwise use "contentreview.option.exclude_quoted.default"
+		boolean defaultExcludeQuoted = ServerConfigurationService.getBoolean("turnitin.option.exclude_quoted.default", ServerConfigurationService.getBoolean("contentreview.option.exclude_quoted.default", showExcludeQuoted));
+		context.put("value_NEW_ASSIGNMENT_REVIEW_SERVICE_EXCLUDE_QUOTED", (state.getAttribute(NEW_ASSIGNMENT_REVIEW_SERVICE_EXCLUDE_QUOTED) == null) ? Boolean.toString(defaultExcludeQuoted) : state.getAttribute(NEW_ASSIGNMENT_REVIEW_SERVICE_EXCLUDE_QUOTED));
+
 		//exclude quoted materials
 		boolean displayExcludeType = ServerConfigurationService.getBoolean("turnitin.option.exclude_smallmatches", true);
 		context.put("show_NEW_ASSIGNMENT_REVIEW_SERVICE_EXCLUDE_SMALL_MATCHES", displayExcludeType);
@@ -5948,8 +6047,8 @@ public class AssignmentAction extends PagedResourceActionII
 				// SAK-23817: return to the Assignments List by Student
 				state.setAttribute(FROM_VIEW, MODE_INSTRUCTOR_VIEW_STUDENTS_ASSIGNMENT);
 				try {
-					submitter = u;
 					u = UserDirectoryService.getUser(studentId);
+					submitter = u;
 				} catch (UserNotDefinedException ex1) {
 					M_log.warn("Unable to find user with ID [" + studentId + "]");
 					submitter = null;
@@ -6007,6 +6106,21 @@ public class AssignmentAction extends PagedResourceActionII
 						addAlert(state, rb.getString("youarenot18"));
 					}
 					state.setAttribute(VIEW_SUBMISSION_HONOR_PLEDGE_YES, honorPledgeYes);
+				}
+
+				// SAK-26322	--bbailla2
+				List nonInlineAttachments = getNonInlineAttachments(state, a);
+				int typeOfSubmission = a.getContent().getTypeOfSubmission();
+				if (typeOfSubmission == Assignment.SINGLE_ATTACHMENT_SUBMISSION && nonInlineAttachments.size() >1)
+				{
+					//Single uploaded file and there are multiple attachments
+					adjustAttachmentsToSingleUpload(data, state, a, nonInlineAttachments);
+				}
+
+				// clear text if submission type does not allow it
+				if (typeOfSubmission == Assignment.SINGLE_ATTACHMENT_SUBMISSION || typeOfSubmission == Assignment.ATTACHMENT_ONLY_ASSIGNMENT_SUBMISSION)
+				{
+					text = null;
 				}
 				
 				// get attachment input and generate alert message according to assignment submission type
@@ -6194,35 +6308,57 @@ public class AssignmentAction extends PagedResourceActionII
 						
 						sEdit.setAssignment(a);
 
+						// SAK-26322	--bbailla2
+						List nonInlineAttachments = getNonInlineAttachments(state, a);
+						if (nonInlineAttachments != null && a.getContent().getTypeOfSubmission() == 5)
+						{
+							//clear out inline attachments for content-review
+							//filter the attachment sin the state to exclude inline attachments (nonInlineAttachments, is a subset of what's currently in the state)
+							state.setAttribute(ATTACHMENTS, nonInlineAttachments);
+						}
+
 						// add attachments
 						List attachments = (List) state.getAttribute(ATTACHMENTS);
 						if (attachments != null)
 						{
-							
-							//Post the attachments before clearing so that we don't sumbit duplicate attachments
-							//Check if we need to post the attachments
-							if (a.getContent().getAllowReviewService()) {
-								if (!attachments.isEmpty()) { 
-									sEdit.postAttachment(attachments);
+							if (a.getContent().getTypeOfSubmission() == Assignment.TEXT_ONLY_ASSIGNMENT_SUBMISSION)
+							{
+								//inline only doesn't accept attachments
+								sEdit.clearSubmittedAttachments();
+							}
+							else
+							{
+								//Post the attachments before clearing so that we don't sumbit duplicate attachments
+								//Check if we need to post the attachments
+								if (a.getContent().getAllowReviewService()) {
+									if (!attachments.isEmpty()) { 
+										sEdit.postAttachment(attachments);
+									}
+								}
+																 
+								// clear the old attachments first
+								sEdit.clearSubmittedAttachments();
+
+								// add each new attachment
+								if (submitter != null) {
+									sPropertiesEdit.addProperty(AssignmentSubmission.SUBMITTER_USER_ID, submitter.getId());
+									state.setAttribute(STATE_SUBMITTER, u.getId());
+								} else {
+									sPropertiesEdit.removeProperty(AssignmentSubmission.SUBMITTER_USER_ID);
+								}
+								
+								Iterator it = attachments.iterator();
+								while (it.hasNext())
+								{
+									sEdit.addSubmittedAttachment((Reference) it.next());
 								}
 							}
-															 
-							// clear the old attachments first
-							sEdit.clearSubmittedAttachments();
+						}
 
-							// add each new attachment
-							if (submitter != null) {
-								sPropertiesEdit.addProperty(AssignmentSubmission.SUBMITTER_USER_ID, submitter.getId());
-								state.setAttribute(STATE_SUBMITTER, u.getId());
-							} else {
-								sPropertiesEdit.removeProperty(AssignmentSubmission.SUBMITTER_USER_ID);
-							}
-							
-							Iterator it = attachments.iterator();
-							while (it.hasNext())
-							{
-								sEdit.addSubmittedAttachment((Reference) it.next());
-							}
+						// SAK-26322 - add inline as an attachment for the content review service	--bbailla2
+						if (a.getContent().getAllowReviewService() && !isHtmlEmpty(text))
+						{
+							prepareInlineForContentReview(text, sEdit, state, submitter);
 						}
 
 						if (submitter != null) {
@@ -6270,6 +6406,13 @@ public class AssignmentAction extends PagedResourceActionII
 	
 							// add attachments
 							List attachments = (List) state.getAttribute(ATTACHMENTS);
+
+							// SAK-26322 - add inline as an attachment for the content review service	--bbailla2
+							if (a.getContent().getAllowReviewService() && !isHtmlEmpty(text))
+							{
+								prepareInlineForContentReview(text, edit, state, submitter);
+							}
+							
 							if (attachments != null)
 							{
 	 							// add each attachment
@@ -6335,9 +6478,210 @@ public class AssignmentAction extends PagedResourceActionII
 
 	} // post_save_submission
 
+	/**
+	 * Takes the inline submission, prepares it as an attachment to the submission and queues the attachment with the content review service
+	 * @author bbailla2
+	 */
+	private void prepareInlineForContentReview(String text, AssignmentSubmissionEdit edit, SessionState state, User submitter)
+	{
+		//We will be replacing the inline submission's attachment
+		//firstly, disconnect any existing attachments with AssignmentSubmission.PROP_INLINE_SUBMISSION set
+		List attachments = edit.getSubmittedAttachments();
+		List toRemove = new ArrayList();
+		Iterator itAttachments = attachments.iterator();
+		while (itAttachments.hasNext())
+		{
+			Reference attachment = (Reference) itAttachments.next();
+			ResourceProperties attachProps = attachment.getProperties();
+			if ("true".equals(attachProps.getProperty(AssignmentSubmission.PROP_INLINE_SUBMISSION)))
+			{
+				toRemove.add(attachment);
+			}
+		}
+		Iterator itToRemove = toRemove.iterator();
+		while (itToRemove.hasNext())
+		{
+			Reference attachment = (Reference) itToRemove.next();
+			edit.removeSubmittedAttachment(attachment);
+		}
+		
+		//now prepare the new resource
+		//provide lots of info for forensics - filename=InlineSubmission_siteId_assignmentId_userDisplayId_(on ehalf of)_date.html
+		String currentDisplayName = UserDirectoryService.getCurrentUser().getDisplayId();
+		String siteId = (String) state.getAttribute(STATE_CONTEXT_STRING);
+		SimpleDateFormat dform = ((SimpleDateFormat) DateFormat.getDateInstance());
+		//avoid semicolons in filenames, right?
+		dform.applyPattern("yyyy-MM-dd_HH-mm-ss");
+		StringBuilder sb_resourceId = new StringBuilder("InlineSub_");
+		String u = "_";
+		sb_resourceId.append(edit.getAssignmentId()).append(u).append(currentDisplayName).append(u);
+		if (submitter != null)
+		{
+			sb_resourceId.append("for_").append(submitter.getDisplayId()).append(u);
+		}
+		sb_resourceId.append(dform.format(new Date()));
+
+		String fileExtension = ".html";
+
+		/* 
+		 * TODO: add and use a method in ContentHostingService to get the length of the ID of an attachment collection
+		 * Attachment collections currently look like this:
+		 * /attachment/dc126c4a-a48f-42a6-bda0-cf7b9c4c5c16/Assignments/eac7212a-9597-4b7d-b958-89e1c47cdfa7/
+		 * See BaseContentService.addAttachmentResource for more information
+		 */
+		String toolName = "Assignments";
+		// TODO: add and use a method in IdManager to get the maxUuidLength
+		int maxUuidLength = 36;
+		int esl = Entity.SEPARATOR.length();
+		int attachmentCollectionLength = ContentHostingService.ATTACHMENTS_COLLECTION.length() + siteId.length() + esl + toolName.length() + esl + maxUuidLength + esl;
+		int maxChars = ContentHostingService.MAXIMUM_RESOURCE_ID_LENGTH - attachmentCollectionLength - fileExtension.length() - 1;
+		String resourceId = StringUtils.substring(sb_resourceId.toString(), 0, maxChars) + fileExtension;
+
+		ResourcePropertiesEdit inlineProps = m_contentHostingService.newResourceProperties();
+		inlineProps.addProperty(ResourceProperties.PROP_DISPLAY_NAME, rb.getString("submission.inline"));
+		inlineProps.addProperty(ResourceProperties.PROP_DESCRIPTION, resourceId);
+		inlineProps.addProperty(AssignmentSubmission.PROP_INLINE_SUBMISSION, "true");
+
+		//create a byte array input stream
+		//text is almost in html format, but it's missing the start and ending tags
+		//(Is this always the case? Does the content review service care?)
+		String toHtml = "<html><head></head><body>" + text + "</body></html>";
+		InputStream contentStream = new ByteArrayInputStream(toHtml.getBytes());
+
+		String contentType = "text/html";
+
+		//duplicating code from doAttachUpload. TODO: Consider refactoring into a method
+
+		SecurityAdvisor sa = new SecurityAdvisor()
+		{
+			public SecurityAdvice isAllowed(String userId, String function, String reference)
+			{
+				if(function.equals(m_contentHostingService.AUTH_RESOURCE_ADD)){
+					return SecurityAdvice.ALLOWED;
+				}else if(function.equals(m_contentHostingService.AUTH_RESOURCE_WRITE_ANY)){
+					return SecurityAdvice.ALLOWED;
+				}else{
+					return SecurityAdvice.PASS;
+				}
+			}
+		};
+		try
+		{
+			m_securityService.pushAdvisor(sa);
+			ContentResource attachment = m_contentHostingService.addAttachmentResource(resourceId, siteId, toolName, contentType, contentStream, inlineProps);
+			// TODO: need to put this file in some kind of list to improve performance with web service impls of content-review service	--bbailla2
+			String contentUserId = UserDirectoryService.getCurrentUser().getId();
+			if(submitter != null){
+				//this is a submission on behalf of a student, so grab that student's id instead
+				contentUserId = submitter.getId();
+			}
+			contentReviewService.queueContent(contentUserId, siteId, edit.getAssignment().getReference(), Arrays.asList(attachment));
+
+			try
+			{
+				Reference ref = EntityManager.newReference(m_contentHostingService.getReference(attachment.getId()));
+				edit.addSubmittedAttachment(ref);
+			}
+			catch (Exception e)
+			{
+				M_log.warn(this + "prepareInlineForContentReview() cannot find reference for " + attachment.getId() + e.getMessage());
+			}
+		}
+		catch (PermissionException e)
+		{
+			addAlert(state, rb.getString("notpermis4"));
+		}
+		catch (RuntimeException e)
+		{
+			if (m_contentHostingService.ID_LENGTH_EXCEPTION.equals(e.getMessage()))
+			{
+				addAlert(state, rb.getFormattedMessage("alert.toolong", new String[]{resourceId}));
+			}
+		}
+		catch (ServerOverloadException e)
+		{
+			M_log.debug(this + ".prepareInlineForContentReview() ***** DISK IO Exception ***** " + e.getMessage());
+			addAlert(state, rb.getString("failed.diskio"));
+		}
+		catch (Exception ignore)
+		{
+			M_log.debug(this + ".prepareInlineForContentReview() ***** Unknown Exception ***** " + ignore.getMessage());
+			addAlert(state, rb.getString("failed"));
+		}
+		finally
+		{
+			m_securityService.popAdvisor(sa);
+		}
+	}
+
+	/**
+	 * Used when students are selecting from a list of previous attachments for their single uploaded file
+	 * @author bbailla2
+	 */
+	private void adjustAttachmentsToSingleUpload(RunData data, SessionState state, Assignment a, List nonInlineAttachments)
+	{
+		if (a == null || a.getContent() == null || a.getContent().getTypeOfSubmission() != 5)
+		{
+			throw new IllegalArgumentException("adjustAttachmentsToSingleUpload called, but the assignment type is not Single Uploaded File");
+		}
+		if (nonInlineAttachments == null)
+		{
+			throw new IllegalArgumentException("adjustAttachmentsToSingleUpload called, but nonInlineAttachments is null");
+		}
+		
+		String selection = data.getParameters().get("attachmentSelection");
+		if ("newAttachment".equals(selection))
+		{
+			Reference attachment = (Reference) state.getAttribute("newSingleUploadedFile");
+			if (attachment != null)
+			{
+				List attachments = EntityManager.newReferenceList();
+				attachments.add(attachment);
+				state.setAttribute(ATTACHMENTS, attachments);
+				state.removeAttribute("newSingleUploadedFile");
+				state.removeAttribute(VIEW_SUBMISSION_TEXT);
+			}
+			// ^ if attachment is null, we don't care - checkSubmissionTextAttachmentInput() handles that for us
+		}
+		else
+		{
+			//they selected a previous attachment. selection represents an index in the nonInlineAttachments list
+			boolean error = false;
+			int index = -1;
+			try
+			{
+				//get the selected attachment
+				index = Integer.parseInt(selection);
+				if (nonInlineAttachments.size() <= index)
+				{
+					error = true;
+				}
+			}
+			catch (NumberFormatException nfe)
+			{
+				error = true;
+			}
+
+			if (error)
+			{
+				M_log.warn("adjustAttachmentsToSingleUpload() - couldn't parse the selected index as an integer, or the selected index wasn't in the range of attachment indices");
+				//checkSubmissionTextAttachmentInput() handles the alert message for us
+			}
+			else
+			{
+				Reference attachment = (Reference) nonInlineAttachments.get(index);
+				//remove all the attachments from the state and add the selected one back for resubmission
+				List attachments = (List) state.getAttribute(ATTACHMENTS);
+				attachments.clear();
+				attachments.add(attachment);
+			}
+		}
+	}
 
 	private void checkSubmissionTextAttachmentInput(RunData data,
 			SessionState state, Assignment a, String text) {
+		// SAK-26329 - determine if the submission has text	--bbailla2
+		boolean textIsEmpty = isHtmlEmpty(text);
 		if (a != null)
 		{
 			// check the submission inputs based on the submission type
@@ -6345,7 +6689,7 @@ public class AssignmentAction extends PagedResourceActionII
 			if (submissionType == Assignment.TEXT_ONLY_ASSIGNMENT_SUBMISSION)
 			{
 				// for the inline only submission
-				if (text.length() == 0)
+				if (textIsEmpty)
 				{
 					addAlert(state, rb.getString("youmust7"));
 				}
@@ -6353,7 +6697,7 @@ public class AssignmentAction extends PagedResourceActionII
 			else if (submissionType == Assignment.ATTACHMENT_ONLY_ASSIGNMENT_SUBMISSION)
 			{
 				// for the attachment only submission
-				List v = (List) state.getAttribute(ATTACHMENTS);
+				List v = getNonInlineAttachments(state, a);
 				if ((v == null) || (v.size() == 0))
 				{
 					addAlert(state, rb.getString("youmust1"));
@@ -6361,9 +6705,10 @@ public class AssignmentAction extends PagedResourceActionII
 			}
 			else if (submissionType == Assignment.TEXT_AND_ATTACHMENT_ASSIGNMENT_SUBMISSION)
 			{	
-				// for the inline and attachment submission
-				List v = (List) state.getAttribute(ATTACHMENTS);
-				if ((text.length() == 0 || "<br/>".equals(text)) && ((v == null) || (v.size() == 0)))
+				// for the inline and attachment submission / other submission types
+				// There must be at least one thing submitted: inline text or at least one attachment
+				List v = getNonInlineAttachments(state, a);
+				if (textIsEmpty && (v == null || v.size() == 0))
 				{
 					addAlert(state, rb.getString("youmust2"));
 				}
@@ -6380,7 +6725,45 @@ public class AssignmentAction extends PagedResourceActionII
 
 		}
 	}
-	
+
+	/**
+	 * When using content review, inline text gets turned into an attachment. This method returns all the attachments that do not represent inline text
+	 * @author bbailla2
+	 */
+	private List getNonInlineAttachments(SessionState state, Assignment a)
+	{
+		List attachments = (List) state.getAttribute(ATTACHMENTS);
+		List nonInlineAttachments = new ArrayList();
+		nonInlineAttachments.addAll(attachments);
+		if (a.getContent().getAllowReviewService())
+		{
+			Iterator itAttachments = attachments.iterator();
+			while (itAttachments.hasNext())
+			{
+				Object next = itAttachments.next();
+				if (next instanceof Reference)
+				{
+					Reference attachment = (Reference) next;
+					if ("true".equals(attachment.getProperties().getProperty(AssignmentSubmission.PROP_INLINE_SUBMISSION)))
+					{
+						nonInlineAttachments.remove(attachment);
+					}
+				}
+			}
+		}
+		return nonInlineAttachments;
+	}
+
+	// SAK-26329
+	/**
+	 * Parses html and determines whether it contains printable characters. 
+	 * @author bbailla2
+	 */
+	private boolean isHtmlEmpty(String html)
+	{
+		return html == null || "".equals(html.trim());
+	}
+
 	/**
 	 * Action is to confirm the submission and return to list view
 	 */
@@ -6645,7 +7028,15 @@ public class AssignmentAction extends PagedResourceActionII
 		r = params.getString(NEW_ASSIGNMENT_USE_REVIEW_SERVICE);
 		// set whether we use the review service or not
 		if (r == null) b = Boolean.FALSE.toString();
-		else b = Boolean.TRUE.toString();
+		else 
+		{
+			b = Boolean.TRUE.toString();
+			if (state.getAttribute(NEW_ASSIGNMENT_SUBMISSION_TYPE).equals(Assignment.NON_ELECTRONIC_ASSIGNMENT_SUBMISSION))
+			{
+				//can't use content-review with non-electronic submissions
+				addAlert(state, rb.getFormattedMessage("review.switch.ne.1", contentReviewService.getServiceName()));
+			}
+		}
 		state.setAttribute(NEW_ASSIGNMENT_USE_REVIEW_SERVICE, b);
 		
 		//set whether students can view the review service results
@@ -7509,8 +7900,6 @@ public class AssignmentAction extends PagedResourceActionII
 		String assignmentId = params.getString("assignmentId");
 		String assignmentContentId = params.getString("assignmentContentId");
 		
-		// whether this is an editing which changes non-electronic assignment to any other type?
-		boolean bool_change_from_non_electronic = false;
 		// whether this is an editing which changes non-point graded assignment to point graded assignment?
 		boolean bool_change_from_non_point = false;
 		// whether there is a change in the assignment resubmission choice
@@ -7520,7 +7909,6 @@ public class AssignmentAction extends PagedResourceActionII
 		{
 			// AssignmentContent object
 			AssignmentContentEdit ac = editAssignmentContent(assignmentContentId, "post_save_assignment", state, true);
-			bool_change_from_non_electronic = change_from_non_electronic(state, assignmentId, assignmentContentId, ac);
 			bool_change_from_non_point = change_from_non_point(state, assignmentId, assignmentContentId, ac);
 			
 			// Assignment
@@ -7579,11 +7967,9 @@ public class AssignmentAction extends PagedResourceActionII
 			String associateGradebookAssignment = (String) state.getAttribute(AssignmentService.PROP_ASSIGNMENT_ASSOCIATE_GRADEBOOK_ASSIGNMENT);
 			
 			String allowResubmitNumber = state.getAttribute(AssignmentSubmission.ALLOW_RESUBMIT_NUMBER) != null?(String) state.getAttribute(AssignmentSubmission.ALLOW_RESUBMIT_NUMBER):null;
-			if (ac != null && ac.getTypeOfSubmission() == Assignment.NON_ELECTRONIC_ASSIGNMENT_SUBMISSION)
-			{
-				// resubmit option is not allowed for non-electronic type
-				allowResubmitNumber = null;
-			}
+
+			// SAK-26319 - we no longer clear the resubmit number for non electronic submissions; the instructor may switch to another submission type in the future	--bbailla2
+
 
 			// SAK-17606
 			String checkAnonymousGrading = state.getAttribute(NEW_ASSIGNMENT_CHECK_ANONYMOUS_GRADING) != null? (String) state.getAttribute(NEW_ASSIGNMENT_CHECK_ANONYMOUS_GRADING):"";
@@ -7691,8 +8077,11 @@ public class AssignmentAction extends PagedResourceActionII
 				// old close time
 				oldCloseTime = a.getCloseTime();
 
+				//assume creating the assignment with the content review service will be successful
+				state.setAttribute("contentReviewSuccess", Boolean.TRUE);
+
 				// commit the changes to AssignmentContent object
-				commitAssignmentContentEdit(state, ac, title, submissionType,useReviewService,allowStudentViewReport, gradeType, gradePoints, description, checkAddHonorPledge, attachments, submitReviewRepo, generateOriginalityReport, checkTurnitin, checkInternet, checkPublications, checkInstitution, excludeBibliographic, excludeQuoted, excludeType, excludeValue, openTime, dueTime, closeTime, hideDueDate);
+				commitAssignmentContentEdit(state, ac, a.getReference(), title, submissionType,useReviewService,allowStudentViewReport, gradeType, gradePoints, description, checkAddHonorPledge, attachments, submitReviewRepo, generateOriginalityReport, checkTurnitin, checkInternet, checkPublications, checkInstitution, excludeBibliographic, excludeQuoted, excludeType, excludeValue, openTime, dueTime, closeTime, hideDueDate);
 				
 				// set the Assignment Properties object
 				ResourcePropertiesEdit aPropertiesEdit = a.getPropertiesEdit();
@@ -7726,7 +8115,7 @@ public class AssignmentAction extends PagedResourceActionII
 				if (post)
 				{
 					// we need to update the submission
-					if (bool_change_from_non_electronic || bool_change_from_non_point || bool_change_resubmit_option)
+					if (bool_change_from_non_point || bool_change_resubmit_option)
 					{
 						List submissions = AssignmentService.getSubmissions(a);
 						if (submissions != null && submissions.size() >0)
@@ -7739,12 +8128,7 @@ public class AssignmentAction extends PagedResourceActionII
 								if (sEdit != null)
 								{
 									ResourcePropertiesEdit sPropertiesEdit = sEdit.getPropertiesEdit();
-									if (bool_change_from_non_electronic)
-									{
-										sEdit.setSubmitted(false);
-										sEdit.setTimeSubmitted(null);
-									}
-									else if (bool_change_from_non_point)
+									if (bool_change_from_non_point)
 									{
 										// set the grade to be empty for now
 										sEdit.setGrade("");
@@ -8050,25 +8434,6 @@ public class AssignmentAction extends PagedResourceActionII
 		return sAttachments;
 	}
 
-	/**
-	 * 
-	 */
-	private boolean change_from_non_electronic(SessionState state, String assignmentId, String assignmentContentId, AssignmentContentEdit ac) 
-	{
-		// whether this is an editing which changes non-electronic assignment to any other type?
-		if (StringUtils.trimToNull(assignmentId) != null && StringUtils.trimToNull(assignmentContentId) != null)
-		{
-			// editing
-			if (ac.getTypeOfSubmission() == Assignment.NON_ELECTRONIC_ASSIGNMENT_SUBMISSION
-					&& ((Integer) state.getAttribute(NEW_ASSIGNMENT_SUBMISSION_TYPE)).intValue() != Assignment.NON_ELECTRONIC_ASSIGNMENT_SUBMISSION)
-			{
-				// changing from non-electronic type
-				return true;
-			}
-		}
-		return false;
-	}
-	
 	/**
 	 * 
 	 */
@@ -8641,6 +9006,17 @@ public class AssignmentAction extends PagedResourceActionII
 			}
 		}
 
+		if (Boolean.TRUE.equals(state.getAttribute("contentReviewSuccess")))
+		{
+			// post the assignment if appropriate
+			a.setDraft(!post);
+		}
+		else
+		{
+			// setup for content review failed, save as a draft
+			a.setDraft(true);
+		}
+
 		a.setAllowPeerAssessment(usePeerAssessment);
 		a.setPeerAssessmentPeriod(peerPeriodTime);
 		a.setPeerAssessmentAnonEval(peerAssessmentAnonEval);
@@ -8737,7 +9113,7 @@ public class AssignmentAction extends PagedResourceActionII
 		}
 	}
 
-	private void commitAssignmentContentEdit(SessionState state, AssignmentContentEdit ac, String title, int submissionType,boolean useReviewService, boolean allowStudentViewReport, int gradeType, String gradePoints, String description, String checkAddHonorPledge, List attachments, String submitReviewRepo, String generateOriginalityReport, boolean checkTurnitin, boolean checkInternet, boolean checkPublications, boolean checkInstitution, boolean excludeBibliographic, boolean excludeQuoted, int excludeType, int excludeValue, Time openTime, Time dueTime, Time closeTime, boolean hideDueDate) 
+	private void commitAssignmentContentEdit(SessionState state, AssignmentContentEdit ac, String assignmentRef, String title, int submissionType,boolean useReviewService, boolean allowStudentViewReport, int gradeType, String gradePoints, String description, String checkAddHonorPledge, List attachments, String submitReviewRepo, String generateOriginalityReport, boolean checkTurnitin, boolean checkInternet, boolean checkPublications, boolean checkInstitution, boolean excludeBibliographic, boolean excludeQuoted, int excludeType, int excludeValue, Time openTime, Time dueTime, Time closeTime, boolean hideDueDate) 
 	{
 		ac.setTitle(title);
 		ac.setInstructions(description);
@@ -8800,12 +9176,15 @@ public class AssignmentAction extends PagedResourceActionII
 		AssignmentService.commitEdit(ac);
 		
 		if(ac.getAllowReviewService()){
-			createTIIAssignment(ac, openTime, dueTime, closeTime, state);
+			if (!createTIIAssignment(ac, assignmentRef, openTime, dueTime, closeTime, state))
+			{
+				state.setAttribute("contentReviewSuccess", Boolean.FALSE);
+			}
 		}
 		
 	}
 	
-	public void createTIIAssignment(AssignmentContentEdit assign, Time openTime, Time dueTime, Time closeTime, SessionState state) {
+	public boolean createTIIAssignment(AssignmentContentEdit assign, String assignmentRef, Time openTime, Time dueTime, Time closeTime, SessionState state) {
         Map opts = new HashMap();
         
         opts.put("submit_papers_to", assign.getSubmitReviewRepo());
@@ -8836,12 +9215,25 @@ public class AssignmentAction extends PagedResourceActionII
         opts.put("dtstart", dform.format(openTime.getTime()));
         opts.put("dtdue", dform.format(dueTime.getTime()));
         //opts.put("dtpost", dform.format(closeTime.getTime()));
+        opts.put("title", assign.getTitle());
+        opts.put("instructions", assign.getInstructions());
+        if(assign.getAttachments() != null && assign.getAttachments().size() > 0){
+        	List<String> attachments = new ArrayList<String>();
+        	for(Reference ref : assign.getAttachments()){
+        		attachments.add(ref.getReference());
+        	}
+        	opts.put("attachments", attachments);
+        }
         try {
-            contentReviewService.createAssignment(assign.getContext(), assign.getReference(), opts);
+            contentReviewService.createAssignment(assign.getContext(), assignmentRef, opts);
+			return true;
         } catch (Exception e) {
             M_log.error(e);
-            state.setAttribute("alertMessage", rb.getString("content_review.error.createAssignment"));
+			String uiService = ServerConfigurationService.getString("ui.service", "Sakai");
+			String[] args = new String[]{contentReviewService.getServiceName(), uiService};
+            state.setAttribute("alertMessage", rb.getFormattedMessage("content_review.error.createAssignment", args));
         }
+		return false;
     }
 	
 
@@ -9074,6 +9466,7 @@ public class AssignmentAction extends PagedResourceActionII
 
 	} // doView_assignment_as_student
 
+	// TODO: investigate if this method can be removed	--bbailla2
 	public void doView_submissionReviews(RunData data){
 		String submissionId = data.getParameters().getString("submissionId");
 		SessionState state = ((JetspeedRunData) data).getPortletSessionState(((JetspeedRunData) data).getJs_peid());
@@ -9100,6 +9493,7 @@ public class AssignmentAction extends PagedResourceActionII
 		}
 	}
 	
+	// TODO: investigate if this method can be removed	--bbailla2
 	public void doEdit_review(RunData data){
 		SessionState state = ((JetspeedRunData) data).getPortletSessionState(((JetspeedRunData) data).getJs_peid());
 		ParameterParser params = data.getParameters();
@@ -14195,6 +14589,10 @@ public class AssignmentAction extends PagedResourceActionII
 			// remove selected attachment
 			doRemove_attachment(data);
 		}
+		else if ("removeNewSingleUploadedFile".equals(option))
+		{
+			doRemove_newSingleUploadedFile(data);
+		}
 		else if ("upload".equals(option))
 		{
 			// upload local file
@@ -14237,6 +14635,13 @@ public class AssignmentAction extends PagedResourceActionII
 		}
 		
 	}
+
+	public void doRemove_newSingleUploadedFile(RunData data)
+	{
+		SessionState state = ((JetspeedRunData)data).getPortletSessionState(((JetspeedRunData)data).getJs_peid());
+		state.removeAttribute("newSingleUploadedFile");
+	}
+
 	/**
 	 * return returns all groups in a site
 	 * @param contextString
@@ -16154,7 +16559,15 @@ public class AssignmentAction extends PagedResourceActionII
 						try
 						{
 							Reference ref = EntityManager.newReference(m_contentHostingService.getReference(attachment.getId()));
-							attachments.add(ref);
+							if (singleFileUpload && attachments.size() > 1)
+							{
+								//SAK-26319	- the assignment type is 'single file upload' and the user has existing attachments, so they must be uploading a 'newSingleUploadedFile'	--bbailla2
+								state.setAttribute("newSingleUploadedFile", ref);
+							}
+							else
+							{
+								attachments.add(ref);
+							}
 						}
 						catch(Exception ee)
 						{

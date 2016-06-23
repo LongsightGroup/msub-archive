@@ -5,3 +5,10 @@ Branched from r319491 of rsmart assignment branches 10.4.x
      * svn merge -c 319067,319588,320133 ^/assignment/branches/sakai-10.x
    * SAK-29752 assignments / download all - upload all - release grade links broken
      * svn merge -c320334
+
+SAK-26318 Content Review Improvements
+SAK-27812 Content Review scores are stored in the Assignment Submission causing stale data
+SAK-27748 Inline Files are named too long
+SAK-27863 Send over assignment instructions and attachments to content review
+SAK-29749 Group ID is passed over to Content Review for group assignments
+SAK-29997 Add VeriCite option to set whether to exclude quotes for an assignment
