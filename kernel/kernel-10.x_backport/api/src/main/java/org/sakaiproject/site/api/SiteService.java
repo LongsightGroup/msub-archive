@@ -193,11 +193,6 @@ public interface SiteService extends EntityProducer
 	 */
 	static final String EVENT_SITE_IMPORT_END = "site.import.end";
 
-        /**
-        *      * An event for tracking roster remove
-        */
-        static final String EVENT_SITE_ROSTER_REMOVE = "site.roster.remove";
-
 	/**
 	 * An event tracking roster add
 	 */
