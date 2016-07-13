@@ -6,3 +6,6 @@ KNL-1268 allow cloud-content
 KNL-1436 auto-restart the ClusterEventTracking thread
    * https://patch-diff.githubusercontent.com/raw/sakaiproject/sakai/pull/2607.patch
 KNL-1252 "Hard" Delete
+SAK-23555 Create new events that differentiate the site.upd event
+
+LS-188 crazy corruption of some private meleteDoc assets so re-read using IOUtils

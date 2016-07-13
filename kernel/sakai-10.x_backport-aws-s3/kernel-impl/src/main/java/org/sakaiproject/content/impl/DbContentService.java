@@ -2192,6 +2192,7 @@ public class DbContentService extends BaseContentService
 		   int totalBytes = 0;
 		   int bytesRead = 0;
 		   InputStream in = null;
+		   InputStream i2 = null;
 
 		   try {
 			   in = streamResourceBody(resource);
@@ -2200,16 +2201,26 @@ public class DbContentService extends BaseContentService
 				   Arrays.fill(body, (byte)' '); // fill body with spaces
 				   return body;
 			   } else {
+
+		// LS-188 UIndy Longsight custom code
+		try {
 				   while ((bytesRead = in.read(buffer)) != -1 && totalBytes < contentLength) {
 					   System.arraycopy(buffer, 0, body, totalBytes, bytesRead);
 					   totalBytes += bytesRead;
 				   }
+		} 
+		catch (java.lang.ArrayIndexOutOfBoundsException longsight) {
+			i2 = streamResourceBodyFilesystem(m_bodyPath, resource);
+			body = org.apache.commons.io.IOUtils.toByteArray(i2);
+			M_log.warn("getResourceBody corrupt content: " + resource.getId() + ":" + body.length);
+		}
+		
 			   }
 		   } 
 		   catch (IOException ioe) 
 		   {
 			   // If we have a non-zero body length and reading failed, it is an error worth of note
-			   M_log.warn(": failed to read resource: " + resource.getId() + " len: " + contentLength + " : " + ioe);
+			   M_log.warn(": failed to read resource: " + resource.getId() + " len: " + contentLength + " : " + ioe, ioe);
 			   throw new ServerOverloadException("failed to read resource");
 			   // return null;
 		   }
@@ -2220,6 +2231,8 @@ public class DbContentService extends BaseContentService
 					   M_log.warn(": failed to close file stream: ");
 				   }
 			   }
+
+			   if (i2 != null) try { i2.close(); } catch (IOException ignoreme) { }
 		   }
 		   return body;
 	   }
