@@ -1917,6 +1917,11 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 
 			  String studentId = gradeDef.getStudentUid();
 
+              // use the grader ID from the definition if it is not null, otherwise use the current user ID
+              String graderUid = gradeDef.getGraderUid() != null ? gradeDef.getGraderUid() : graderId;
+              // use the grade date from the definition if it is not null, otherwise use the current date
+              Date gradedDate = gradeDef.getDateRecorded() != null ? gradeDef.getDateRecorded() : now;
+
 			  // check specific grading privileges if user does not have
 			  // grade all perm
 			  if (!userHasGradeAllPerm) {
@@ -1940,14 +1945,14 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 								  !convertedGrade.equals(gradeRec.getPointsEarned()))) {
 					  
 					  gradeRec.setPointsEarned(convertedGrade);
-					  gradeRec.setGraderId(graderId);
-					  gradeRec.setDateRecorded(now);
+					  gradeRec.setGraderId(graderUid);
+					  gradeRec.setDateRecorded(gradedDate);
 
 					  agrToUpdate.add(gradeRec);
 
 					  // we also need to add a GradingEvent
 					  // the event stores the actual input grade, not the converted one
-					  GradingEvent event = new GradingEvent(assignment, graderId, studentId, gradeDef.getGrade());
+					  GradingEvent event = new GradingEvent(assignment, graderUid, studentId, gradeDef.getGrade());
 					  eventsToAdd.add(event);
 				  }
 			  } else {
@@ -1955,14 +1960,14 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 				  if (gradeDef.getGrade() != null && !gradeDef.getGrade().trim().equals("")) {
 					  gradeRec =  new AssignmentGradeRecord(assignment, studentId, convertedGrade);
 					  gradeRec.setPointsEarned(convertedGrade);
-					  gradeRec.setGraderId(graderId);
-					  gradeRec.setDateRecorded(now);
+					  gradeRec.setGraderId(graderUid);
+					  gradeRec.setDateRecorded(gradedDate);
 
 					  agrToUpdate.add(gradeRec);
 
 					  // we also need to add a GradingEvent
 					  // the event stores the actual input grade, not the converted one
-					  GradingEvent event = new GradingEvent(assignment, graderId, studentId, gradeDef.getGrade());
+					  GradingEvent event = new GradingEvent(assignment, graderUid, studentId, gradeDef.getGrade());
 					  eventsToAdd.add(event);
 				  }
 			  }
@@ -1979,8 +1984,8 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 								  !gradeDef.getGradeComment().equals(comment.getCommentText()))) {
 					  // update this comment
 					  comment.setCommentText(gradeDef.getGradeComment());
-					  comment.setGraderId(graderId);
-					  comment.setDateRecorded(now);
+					  comment.setGraderId(graderUid);
+					  comment.setDateRecorded(gradedDate);
 
 					  commentsToUpdate.add(comment);
 				  }
@@ -1988,8 +1993,8 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 				  // if there is a comment, add it
 				  if (gradeDef.getGradeComment() != null && !gradeDef.getGradeComment().trim().equals("")) {
 					  comment = new Comment(studentId, gradeDef.getGradeComment(), assignment);
-					  comment.setGraderId(graderId);
-					  comment.setDateRecorded(now);
+					  comment.setGraderId(graderUid);
+					  comment.setDateRecorded(gradedDate);
 
 					  commentsToUpdate.add(comment);
 				  }
