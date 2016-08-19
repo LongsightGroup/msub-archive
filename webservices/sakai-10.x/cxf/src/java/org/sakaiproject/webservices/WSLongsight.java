@@ -122,7 +122,7 @@ public class WSLongsight extends AbstractWebService {
 	private static final String STUDENT_OPEN_DATE = "sections_student_open_date";
 
 	@WebMethod
-	@Path("/addNewUser")
+	@Path("/longsightSiteExists")
 	@Produces("text/plain")
 	@GET
 	public String longsightSiteExists(
@@ -140,7 +140,7 @@ public class WSLongsight extends AbstractWebService {
 	}
 
 	@WebMethod
-	@Path("/addNewUser")
+	@Path("/longsightGetTitle")
 	@Produces("text/plain")
 	@GET
 	public String longsightGetTitle(
@@ -160,7 +160,7 @@ public class WSLongsight extends AbstractWebService {
 	}
 
 	@WebMethod
-	@Path("/addNewUser")
+	@Path("/longsightGetIdFromTitle")
 	@Produces("text/plain")
 	@GET
 	public String longsightGetIdFromTitle(
@@ -792,7 +792,7 @@ public class WSLongsight extends AbstractWebService {
 
 		}
 		catch (Exception e) {
-			LOG.warn("WS addNewUser(): " + e.getClass().getName() + " : " + e.getMessage());
+			LOG.warn("WS longsightAddNewUser(): " + e.getClass().getName() + " : " + e.getMessage());
 			return e.getClass().getName() + " : " + e.getMessage();
 		}
 		return "success";
@@ -3894,7 +3894,7 @@ public class WSLongsight extends AbstractWebService {
 	}
 
 	@WebMethod
-	@Path("/addNewUser")
+	@Path("/updateMembershipWithProvider")
 	@Produces("text/plain")
 	@GET
 	public String updateMembershipWithProvider (
