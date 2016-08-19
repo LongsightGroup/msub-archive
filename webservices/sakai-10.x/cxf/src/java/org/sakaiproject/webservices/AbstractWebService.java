@@ -29,6 +29,7 @@ import org.sakaiproject.user.api.UserDirectoryService;
 import org.sakaiproject.shortenedurl.api.ShortenedUrlService;
 import org.sakaiproject.tool.assessment.samlite.api.SamLiteService;
 import org.sakaiproject.id.api.IdManager;
+import org.sakaiproject.lessonbuildertool.LessonBuilderAccessAPI;
 import org.sakaiproject.archive.api.ArchiveService;
 import org.sakaiproject.user.api.PreferencesService;
 import org.sakaiproject.memory.api.MemoryService;
@@ -71,6 +72,7 @@ public class AbstractWebService {
     protected ShortenedUrlService shortenedUrlService;
     protected SamLiteService samLiteService;
     protected IdManager idManager;
+    protected LessonBuilderAccessAPI lessonBuilderAccessAPI;
     protected ArchiveService archiveService;
     protected PreferencesService preferencesService;
     protected MemoryService memoryService;
@@ -232,6 +234,11 @@ public class AbstractWebService {
         this.idManager = idManager;
     }
     
+    @WebMethod(exclude = true)
+    public void setLessonBuilderAccessAPI(LessonBuilderAccessAPI lessonBuilderAccessAPI) {
+        this.lessonBuilderAccessAPI = lessonBuilderAccessAPI;
+    }
+
     @WebMethod(exclude = true)
     public void setArchiveService(ArchiveService archiveService) {
         this.archiveService = archiveService;
