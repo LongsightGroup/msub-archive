@@ -80,6 +80,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.net.URI;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.text.DateFormat;
@@ -217,6 +218,7 @@ public class SimplePageBean {
 	private String description;
 	private String name;
 	private boolean required;
+	private boolean replacefile = false; // version 11 new feature
 	private boolean subrequirement;
 	private boolean prerequisite;
 	private boolean newWindow;
@@ -267,7 +269,7 @@ public class SimplePageBean {
 
     // almost ISO format. real thing can't be done until Java 7. uses -0400 rather than -04:00
     //        SimpleDateFormat isoDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
-        SimpleDateFormat isoDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+	SimpleDateFormat isoDateFormat = getIsoDateFormat();
 	
 	public void setPeerEval(boolean peerEval) {
 		this.peerEval = peerEval;
@@ -362,10 +364,11 @@ public class SimplePageBean {
 	private Map<Long, List<SimplePageItem>> itemsCache = new HashMap<Long, List<SimplePageItem>> ();
 	private Map<String, SimplePageLogEntry> logCache = new HashMap<String, SimplePageLogEntry>();
 	private Map<Long, Boolean> completeCache = new HashMap<Long, Boolean>();
-    private Map<Long, Boolean> visibleCache = new HashMap<Long, Boolean>();
-    // this one needs to be global
-	private static Cache groupCache = null;   // itemId => grouplist
-	private static Cache resourceCache = null;
+	private Map<Long, Boolean> visibleCache = new HashMap<Long, Boolean>();
+	// this one needs to be global
+	static MemoryService memoryService = (MemoryService)org.sakaiproject.component.cover.ComponentManager.get("org.sakaiproject.memory.api.MemoryService");
+	private static Cache groupCache = memoryService.newCache("org.sakaiproject.lessonbuildertool.tool.beans.SimplePageBean.groupCache");  // itemId => grouplist
+	private static Cache resourceCache = memoryService.newCache("org.sakaiproject.lessonbuildertool.tool.beans.SimplePageBean.resourceCache");
 	protected static final int DEFAULT_EXPIRATION = 10 * 60;
 
 	public static class PathEntry {
@@ -534,10 +537,6 @@ public class SimplePageBean {
 	    return messageLocator;
 	}
 
-	static MemoryService memoryService = null;
-	public void setMemoryService(MemoryService m) {
-	    memoryService = m;
-	}
 
         private HttpServletResponse httpServletResponse;
 	public void setHttpServletResponse(HttpServletResponse httpServletResponse) {
@@ -573,18 +572,16 @@ public class SimplePageBean {
 	    }
 	}
 
+	SimpleDateFormat getIsoDateFormat() {
+	    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+	    TimeZone tz = TimeService.getLocalTimeZone();
+	    format.setTimeZone(tz);
+	    return format;
+	}
 
+
+    // Don't put things here. It isn't always called.
 	public void init () {	
-		TimeZone tz = TimeService.getLocalTimeZone();
-		isoDateFormat.setTimeZone(tz);
-
-		if (groupCache == null) {
-			groupCache = memoryService.newCache("org.sakaiproject.lessonbuildertool.tool.beans.SimplePageBean.groupCache");
-		}
-		
-		if (resourceCache == null) {
-			resourceCache = memoryService.newCache("org.sakaiproject.lessonbuildertool.tool.beans.SimplePageBean.resourceCache");
-		}
 	}
 
 	static PagePickerProducer pagePickerProducer = null;
@@ -1540,6 +1537,11 @@ public class SimplePageBean {
 			return "failure";
 		}
 
+		return deleteItem(i);
+	}
+
+	public String deleteItem(SimplePageItem i) {
+
 		int seq = i.getSequence();
 
 		boolean b = false;
@@ -1768,26 +1770,10 @@ public class SimplePageBean {
 	    		// if the user has passed.
 	    		if (!isItemAvailable(nextItem, nextItem.getPageId()))
 	    			view.setRecheck("true");
-			String URL = nextItem.getItemURL(getCurrentSiteId(), getCurrentPage().getOwner());
-			if (lessonBuilderAccessService.needsCopyright(nextItem.getSakaiId()))
-			    URL = "/access/require?ref=" + URLEncoder.encode("/content" + nextItem.getSakaiId()) + "&url=" + URLEncoder.encode(URL.substring(7));
-	    		view.setSource(URL);
 	    		view.viewID = ShowItemProducer.VIEW_ID;
 	    	} else {
 	    		view.setSendingPage(Long.valueOf(item.getPageId()));
-	    		LessonEntity lessonEntity = null;
-	    		switch (nextItem.getType()) {
-	    			case SimplePageItem.ASSIGNMENT:
-	    				lessonEntity = assignmentEntity.getEntity(nextItem.getSakaiId()); break;
-	    			case SimplePageItem.ASSESSMENT:
-	    				view.setClearAttr("LESSONBUILDER_RETURNURL_SAMIGO");
-	    				lessonEntity = quizEntity.getEntity(nextItem.getSakaiId(),this); break;
-	    			case SimplePageItem.FORUM:
-	    				lessonEntity = forumEntity.getEntity(nextItem.getSakaiId()); break;
-	    			case SimplePageItem.BLTI:
-				        if (bltiEntity != null)
-					    lessonEntity = bltiEntity.getEntity(nextItem.getSakaiId()); break;
-	    		}
+
 	    		// normally we won't send someone to an item that
 	    		// isn't available. But if the current item is a test, etc, we can't
 	    		// know whether the user will pass it, so we have to ask ShowItem to
@@ -1795,7 +1781,6 @@ public class SimplePageBean {
 	    		// if the user has passed.
 	    		if (!isItemAvailable(nextItem, nextItem.getPageId()))
 	    			view.setRecheck("true");
-	    			view.setSource((lessonEntity==null)?"dummy":lessonEntity.getUrl());
 	    			if (item.getType() == SimplePageItem.PAGE)
 	    				view.setPath("pop");  // now on a have, have to pop it off
 	    			view.viewID = ShowItemProducer.VIEW_ID;
@@ -1816,7 +1801,6 @@ public class SimplePageBean {
 	public void addPrevLink(UIContainer tofill, SimplePageItem item) {
 		List<PathEntry> backPath = (List<PathEntry>)sessionManager.getCurrentToolSession().getAttribute(LESSONBUILDER_BACKPATH);
 		List<PathEntry> path = (List<PathEntry>)sessionManager.getCurrentToolSession().getAttribute(LESSONBUILDER_PATH);
-
 		// current item is last on path, so need one before that
 		if (backPath == null || backPath.size() < 2)
 			return;
@@ -1845,12 +1829,6 @@ public class SimplePageBean {
 				view.setPath("push");  // item to page, have to push the page
 		} else if (itemType == SimplePageItem.RESOURCE) { // must be a samepage resource
 			view.setSendingPage(Long.valueOf(item.getPageId()));
-			String URL = prevItem.getItemURL(getCurrentSiteId(),getCurrentPage().getOwner());
-			// this is unlikely but possible. If you don't accept the copyright, go on and
-			// then go back, this will trigger
-			if (lessonBuilderAccessService.needsCopyright(prevItem.getSakaiId()))
-			    URL = "/access/require?ref=" + URLEncoder.encode("/content" + prevItem.getSakaiId()) + "&url=" + URLEncoder.encode(URL.substring(7));
-			view.setSource(URL);
 			view.viewID = ShowItemProducer.VIEW_ID;
 		}else if(itemType == SimplePageItem.STUDENT_CONTENT) {
 			view.setSendingPage(prevEntry.pageId);
@@ -1864,20 +1842,6 @@ public class SimplePageBean {
 			}
 		} else {
 			view.setSendingPage(Long.valueOf(item.getPageId()));
-			LessonEntity lessonEntity = null;
-			switch (prevItem.getType()) {
-			case SimplePageItem.ASSIGNMENT:
-				lessonEntity = assignmentEntity.getEntity(prevItem.getSakaiId()); break;
-			case SimplePageItem.ASSESSMENT:
-				view.setClearAttr("LESSONBUILDER_RETURNURL_SAMIGO");
-				lessonEntity = quizEntity.getEntity(prevItem.getSakaiId(),this); break;
-			case SimplePageItem.FORUM:
-				lessonEntity = forumEntity.getEntity(prevItem.getSakaiId()); break;
-			case SimplePageItem.BLTI:
-				if (bltiEntity != null)
-				    lessonEntity = bltiEntity.getEntity(prevItem.getSakaiId()); break;
-			}
-			view.setSource((lessonEntity==null)?"dummy":lessonEntity.getUrl());
 			if (item.getType() == SimplePageItem.PAGE)
 				view.setPath("pop");  // now on a page, have to pop it off
 			view.viewID = ShowItemProducer.VIEW_ID;
@@ -2403,13 +2367,17 @@ public class SimplePageBean {
 		return "success";
 	}
 
-
+	//This will be called from the UI
 	public String deleteOrphanPages() {
 	    if (getEditPrivs() != 0)
 	    	return "permission-failed";
 	    if (!checkCsrf())
-		return "permission-failed";
+	    	return "permission-failed";
+	    return deleteOrphanPagesInternal();
+	}
 
+	//This is an internal call that expects you will check permissions before calling it
+	public String deleteOrphanPagesInternal() {
 	    // code is mostly from PagePickerProducer
 	    // list we're going to display
 	    List<PagePickerProducer.PageEntry> entries = new ArrayList<PagePickerProducer.PageEntry> ();
@@ -2419,6 +2387,9 @@ public class SimplePageBean {
 
 	    // all pages
 	    List<SimplePage> pages = simplePageToolDao.getSitePages(getCurrentSiteId());
+	    if (pages==null) {
+	    	return "no-pages-in-site";
+	    }
 	    for (SimplePage p: pages)
 		pageMap.put(p.getPageId(), p);
 
@@ -2430,7 +2401,7 @@ public class SimplePageBean {
 	    // this adds everything you can find from top level pages to entries
 	    for (SimplePageItem sitePageItem : sitePages) {
 		// System.out.println("findallpages " + sitePageItem.getName() + " " + true);
-		pagePickerProducer().findAllPages(sitePageItem, entries, pageMap, topLevelPages, sharedPages, 0, true);
+		pagePickerProducer().findAllPages(sitePageItem, entries, pageMap, topLevelPages, sharedPages, 0, true, true);
 	    }
 		    
 	    // everything we didn't find should be deleted. It's items remaining in pagemap
@@ -2457,7 +2428,7 @@ public class SimplePageBean {
 		return "permission-failed";
 
 	    String siteId = getCurrentSiteId();
-
+	    log.debug("Found "+ selectedEntities.length + " pages to delete");
 	    for (int i = 0; i < selectedEntities.length; i++) {
 		deletePage(siteId, Long.valueOf(selectedEntities[i]));
 		if ((i % 10) == 0) {
@@ -3155,11 +3126,13 @@ public class SimplePageBean {
 		   entity = forumEntity.getEntity(i.getSakaiId()); break;
 	       case SimplePageItem.MULTIMEDIA:
 		   String displayType = i.getAttribute("multimediaDisplayType");
-		   if ("1".equals(displayType) || "3".equals(displayType))
+		   if ("1".equals(displayType) || "3".equals(displayType) || i.getAttribute("multimediaUrl") != null)
 		       return getLBItemGroups(i); // for all native LB objects
 		   else
 		       return getResourceGroups(i, nocache);  // responsible for caching the result
 	       case SimplePageItem.RESOURCE:
+		   if (i.getAttribute("multimediaUrl") != null)
+		       return getLBItemGroups(i); // for all native LB objects
 		   return getResourceGroups(i, nocache);  // responsible for caching the result
 		   // throws IdUnusedException if necessary
 	       case SimplePageItem.BLTI:
@@ -3344,11 +3317,13 @@ public class SimplePageBean {
 	       lessonEntity = forumEntity.getEntity(i.getSakaiId()); break;
 	   case SimplePageItem.MULTIMEDIA:
 	       String displayType = i.getAttribute("multimediaDisplayType");
-	       if ("1".equals(displayType) || "3".equals(displayType))
+	       if ("1".equals(displayType) || "3".equals(displayType) || i.getAttribute("multimediaUrl") != null)
 		   return setLBItemGroups(i, groups);
 	       else
 		   return setResourceGroups (i, groups);
 	   case SimplePageItem.RESOURCE:
+	       if (i.getAttribute("multimediaUrl") != null)
+		   return setLBItemGroups(i, groups);
 	       return setResourceGroups (i, groups);
 	   case SimplePageItem.TEXT:
 	   case SimplePageItem.PAGE:
@@ -3594,14 +3569,13 @@ public class SimplePageBean {
 		linkUrl = url;
 	}
 
-    // doesn't seem to be used at the moment
-	public String createLink() {
-		if (linkUrl == null || linkUrl.equals("")) {
-			return "cancel";
-		}
-
-		String url = linkUrl;
+	public String normUrl (String url) {
+		// these should never happen, but I like making methods robust
+		if (url == null)
+		    return null;
 		url = url.trim();
+		if (url.equals(""))
+		    return url;
 
 		// the intent is to handle something like www.cnn.com or www.cnn.com/foo
 		// Note that the result has no protocol. That means it will use the protocol
@@ -3620,6 +3594,18 @@ public class SimplePageBean {
 			    url = "http://" + url;
 		    }
 		}
+
+		return url;
+	}
+
+    // doesn't seem to be used at the moment
+	public String createLink() {
+		if (linkUrl == null || linkUrl.equals("")) {
+			return "cancel";
+		}
+
+		String url = linkUrl;
+		url = normUrl(url);
 
 		appendItem(url, url, SimplePageItem.URL);
 
@@ -3919,7 +3905,7 @@ public class SimplePageBean {
 				}
 			}
 			
-			//String collectionId = getCollectionId(false);
+			//String collectionId = getCollectionIdfalse);
 			// 	user specified a file, create it
 			name = file.getOriginalFilename();
 			if (name == null || name.length() == 0)
@@ -3939,8 +3925,8 @@ public class SimplePageBean {
 			mimeType = file.getContentType();
 			try {
 				ContentResourceEdit res = contentHostingService.addResource(collectionId, 
-						  	Validator.escapeResourceName(base),
-						  	Validator.escapeResourceName(extension),
+						        fixFileName(collectionId, Validator.escapeResourceName(base), Validator.escapeResourceName(extension)),
+							"",
 						  	MAXIMUM_ATTEMPTS_FOR_UNIQUENESS);
 				res.setContentType(mimeType);
 				res.setContent(file.getInputStream());
@@ -4266,7 +4252,7 @@ public class SimplePageBean {
 		// now kill all items on the page we didn't see in the new order
 		for (int i = 0; i < items.size(); i++) {
 		    if (!keep.contains((Integer)i))
-			simplePageToolDao.deleteItem(items.get(i));
+			deleteItem(items.get(i));
 		}
 
 		itemsCache.remove(getCurrentPage().getPageId());
@@ -4455,6 +4441,17 @@ public class SimplePageBean {
 		    if (itemPage.getReleaseDate() != null && itemPage.getReleaseDate().after(new Date()))
 			return false;
 		} else if (page != null && page.getOwner() != null && (item.getType() == SimplePageItem.RESOURCE || item.getType() == SimplePageItem.MULTIMEDIA)) {
+
+		    // check for inline types. No resource to check. Since this section is for student page, no groups either
+		    if (item.getType() == SimplePageItem.MULTIMEDIA) {
+			String displayType = item.getAttribute("multimediaDisplayType");
+			if ("1".equals(displayType) || "3".equals(displayType) || item.getAttribute("multimediaUrl") != null)
+			    return true;
+		    }
+		    // resource stored as a direct URL
+		    if (item.getType() == SimplePageItem.RESOURCE && item.getAttribute("multimediaUrl") != null)
+			return true;
+
 		    // This code is taken from LessonBuilderAccessService, mostly
 
 		    // for student pages, we give people access to files in the owner's worksite
@@ -4484,6 +4481,9 @@ public class SimplePageBean {
 			if (usersite != null && itemcreator != null && !usersite.equals(itemcreator))
 			    usersite = null;
 		    }
+		    // resource stored as a direct URL
+		    if (item.getType() == SimplePageItem.RESOURCE && item.getAttribute("multimediaUrl") != null)
+			return true;
 
 		    if (owner != null && usersite != null && AuthzGroupService.getUserRole(usersite, group) != null) {
 			return true;
@@ -5102,10 +5102,17 @@ public class SimplePageBean {
 
 	public String getYoutubeKey(SimplePageItem i) {
 		String sakaiId = i.getSakaiId();
+		String URL = null;
 
+		URL = i.getAttribute("multimediaUrl");
+		if (URL != null)
+		    return getYoutubeKeyFromUrl(URL);
+
+		// this is called only from contexts where we know it's OK to get the data.
+		// indeed if I were doing it over I'd put it in the item, not resources
 		SecurityAdvisor advisor = null;
 		try {
-			if(getCurrentPage().getOwner() != null) {
+			// if(getCurrentPage().getOwner() != null) {
 				// Need to allow access into owner's home directory
 				advisor = new SecurityAdvisor() {
 					public SecurityAdvice isAllowed(String userId, String function, String reference) {
@@ -5117,7 +5124,7 @@ public class SimplePageBean {
 					}
 				};
 				securityService.pushAdvisor(advisor);
-			}
+			// }
 			// find the resource
 			ContentResource resource = null;
 			try {
@@ -5136,7 +5143,6 @@ public class SimplePageBean {
 			}
 			
 			// 	get the actual URL
-			String URL = null;
 			try {
 				URL = new String(resource.getContent());
 			} catch (Exception ignore) {
@@ -5296,6 +5302,22 @@ public class SimplePageBean {
 		this.multipartMap = multipartMap;
 	}
 
+	public String fixFileName(String collectionId, String name, String extension) {
+	    if(extension.equals("") || extension.startsWith(".")) {
+		// do nothing                                                                                               
+	    } else {
+		extension = "." + extension;
+	    }
+	    name = Validator.escapeResourceName(name.trim()) + Validator.escapeResourceName(extension);
+	    // allow for possible addition of -NN for uniqueness
+	    int maxname = 250 - collectionId.length() - 3;
+	    if (name.length() > maxname)
+		name = org.apache.commons.lang.StringUtils.abbreviateMiddle(name, "_", maxname);
+	    return name;
+	}
+
+
+
 // for group-owned student pages, put it in the worksite of the current user
 	public String getCollectionId(boolean urls) {
 		String siteId = getCurrentPage().getSiteId();
@@ -5303,6 +5325,7 @@ public class SimplePageBean {
 		boolean hiddenDir = ServerConfigurationService.getBoolean("lessonbuilder.folder.hidden",false);
 		String pageOwner = getCurrentPage().getOwner();
 		String collectionId;
+		String folder = null;
 		if (pageOwner == null) {
 			collectionId = contentHostingService.getSiteCollection(siteId);
 			if (baseDir != null) {
@@ -5328,12 +5351,52 @@ public class SimplePageBean {
 				}
 			    }
 			}
+			// actual folder. Use hierarchy of files
+			SimplePage page = getCurrentPage();
+			String folderString = page.getFolder();
+			if (folderString != null) {
+			    folder = collectionId + folderString; 
+			} else {
+			    Path path = getPagePath(page, new HashSet<Long>());
+			    String title = path.title;
+
+			    // there's a limit of 255 to resource names. Leave 30 chars for the file.
+			    // getPagePath limits folder names in the hiearchy to 30, but in weird situations
+			    // we could a very deep hierarchy and the whole thing could get too long. If that
+			    // happens, just use the page name. We assume the collection ID will be /group/UUID, 
+			    // so it will always be reasonable. In theory we could have to do yet another test
+			    // on collection ID.
+
+			    // 33 is a name of length 30 and -NN for duplicates
+			    // actual length is 255, but I worry about weird characters I don't understand
+			    if (title.length() > (250 - collectionId.length() - 33)) {
+				title = Validator.escapeResourceName(org.apache.commons.lang.StringUtils.abbreviateMiddle(getPageTitle(),"_",30)) + "/";
+			    }
+			    
+			    // make sure folder names are unique
+			    if (simplePageToolDao.doesPageFolderExist(getCurrentSiteId(), title)) {
+				String base = title.substring(0, title.length() - 1);
+				for (int suffix = 1; suffix < 100; suffix++) {
+				    String trial = base + "-" + suffix + "/";
+				    if (!simplePageToolDao.doesPageFolderExist(getCurrentSiteId(), trial)) {
+					title = trial;
+					break;
+				    }
+				}
+			    }
+
+			    folder = collectionId + title;
+			    page.setFolder(title);			    
+			    simplePageToolDao.quickUpdate(page);
+			}
+			// folder = collectionId + Validator.escapeResourceName(getPageTitle()) + "/";
 		}else {
 			collectionId = "/user/" + getCurrentUserId() + "/stuff4/";
+			// actual folder -- just use page name for student content
+			folder = collectionId + Validator.escapeResourceName(getPageTitle()) + "/";
 		}
 
 	    // folder we really want
-		String folder = collectionId + Validator.escapeResourceName(getPageTitle()) + "/";
 		if (urls)
 			folder = folder + "urls/";
 
@@ -5380,6 +5443,46 @@ public class SimplePageBean {
 
 	    // didn't. do the best we can
 		return collectionId;
+	}
+
+	public class Path {
+	    public int level;
+	    public String title;
+	    public Path(int level, String title) {
+		this.level = level;
+		this.title = title;
+	    }
+	}
+
+    // not implemented for student pages
+	public Path getPagePath(SimplePage page, Set<Long>seen) {
+	    seen.add(page.getPageId());
+	    List<SimplePageItem> items = simplePageToolDao.findPageItemsBySakaiId(Long.toString(page.getPageId()));
+	    if (items == null || items.size() == 0) {
+		return new Path(0, Validator.escapeResourceName(org.apache.commons.lang.StringUtils.abbreviateMiddle(page.getTitle(),"_",30)) + "/");
+	    }
+	    else {
+		int minlevel = 9999;
+		String bestPath = "";
+		for (SimplePageItem i: items) {
+		    SimplePage p = simplePageToolDao.getPage(i.getPageId());
+		    if (p == null)
+			continue;
+		    if (p.getOwner() != null)  // probably can't happen
+			continue;
+		    if (seen.contains(p.getPageId()))  // already seen this page, we're in a loop
+			continue;
+		    Path path = getPagePath(p, seen);
+		    // there can be loops in the network
+		    if (path.level < minlevel) {
+			minlevel = path.level;
+			bestPath = path.title;
+		    }
+		}
+		if (bestPath.equals(""))
+		    return new Path(0, Validator.escapeResourceName(org.apache.commons.lang.StringUtils.abbreviateMiddle(page.getTitle(),"_",30)) + "/");
+		return new Path(minlevel + 1, bestPath + Validator.escapeResourceName(org.apache.commons.lang.StringUtils.abbreviateMiddle(page.getTitle(),"_",30)) + "/");
+	    }
 	}
 
 	public boolean isHtml(SimplePageItem i) {
@@ -5452,20 +5555,33 @@ public class SimplePageBean {
 			if (!checkCsrf())
 			    return;
 
-			
-			String name = null;
-			String sakaiId = null;
-			String mimeType = null;
-			MultipartFile file = null;
-			
 			if (multipartMap.size() > 0) {
 				// 	user specified a file, create it
-				file = multipartMap.values().iterator().next();
-				// zero length is valid. We get that if it's not a file upload
-				if (file.isEmpty())
-				    file = null;
-
+				boolean first = true;
+				for(MultipartFile file : multipartMap.values()){
+					if (file.isEmpty())
+						file = null;
+					addMultimediaFile(file, first);
+					first = false;
+				}
 			}
+		} catch (Exception exception) {
+			exception.printStackTrace();
+		} finally {
+			if(advisor != null) securityService.popAdvisor();
+		}
+		
+	}
+
+	public void addMultimediaFile(MultipartFile file, boolean first){
+		try{
+			
+			String sakaiId = null;
+			String mimeType = null;
+			// urlResource is for an item that's going to be type RESOURCE
+			// but is a URL. We used to create URL resource objects, but we
+			// no longer do. Now it's an attribute.
+			String urlResource = null;
 			
 			if (file != null) {
 				if (!uploadSizeOk(file))
@@ -5473,26 +5589,35 @@ public class SimplePageBean {
 
 				String collectionId = getCollectionId(false);
 				// 	user specified a file, create it
-				name = file.getOriginalFilename();
-				if (name == null || name.length() == 0)
-					name = file.getName();
-				int i = name.lastIndexOf("/");
+				String fname = file.getOriginalFilename();
+				if (fname == null || fname.length() == 0)
+					fname = file.getName();
+				int i = fname.lastIndexOf("/");
 				if (i >= 0)
-					name = name.substring(i+1);
-				String base = name;
+					fname = fname.substring(i+1);
+				String base = fname;
 				String extension = "";
-				i = name.lastIndexOf(".");
+				i = fname.lastIndexOf(".");
 				if (i > 0) {
-					base = name.substring(0, i);
-					extension = name.substring(i+1);
+					base = fname.substring(0, i);
+					extension = fname.substring(i+1);
 				}
 				
 				mimeType = file.getContentType();
 				try {
-					ContentResourceEdit res = contentHostingService.addResource(collectionId, 
-							  	Validator.escapeResourceName(base),
-							  	Validator.escapeResourceName(extension),
+					ContentResourceEdit res = null;
+					if (itemId != -1 && replacefile) {
+					    // upload new version -- get existing file
+					    SimplePageItem item = findItem(itemId);
+					    String resId = item.getSakaiId();
+					    res = contentHostingService.editResource(resId);
+					} else {
+					    // otherwise create a new file
+					    res = contentHostingService.addResource(collectionId, 
+						                fixFileName(collectionId, Validator.escapeResourceName(base), Validator.escapeResourceName(extension)),
+								"",
 							  	MAXIMUM_ATTEMPTS_FOR_UNIQUENESS);
+					}
 					if (isCaption)
 					    res.setContentType("text/vtt");
 					else
@@ -5528,73 +5653,44 @@ public class SimplePageBean {
 					log.error("addMultimedia error 1 " + e);
 					return;
 				};
+				// if user supplied name use it, else the filename
+				// if multiple files, the user supplied name is for first only, or we'd
+				// have several links with the same name
+				if (!first || name == null || name.trim().equals(""))
+				    name = fname;
 			} else if (mmUrl != null && !mmUrl.trim().equals("") && multimediaDisplayType != 1 && multimediaDisplayType != 3) {
 				// 	user specified a URL, create the item
-				String url = mmUrl.trim();
-				// if user gives a plain hostname, make it a URL.
-				// ui add https if page is displayed with https. I'm reluctant to use protocol-relative
-				// urls, because I don't know whether all the players understand it.
-				if (!url.startsWith("http:") && !url.startsWith("https:") && !url.startsWith("/")) {
-				    String atom = url;
-				    int i = atom.indexOf("/");
-				    if (i >= 0)
-					atom = atom.substring(0, i);
-				    // first atom is hostname
-				    if (atom.indexOf(".") >= 0) {
-					String server= ServerConfigurationService.getServerUrl();
-					if (server.startsWith("https:"))
-					    url = "https://" + url;
-					else
-					    url = "http://" + url;
-				    }
-				}
+				String url = normUrl(mmUrl);
 				
-				name = url;
-				String basename = url;
-				// SAK-11816 method for creating resource ID
-				String extension = ".url";
-				if (basename != null && basename.length() > 32) {
-				    // lose the http first                              
-				    if (basename.startsWith("http:")) {
-					basename = basename.substring(7);
-				    } else if (basename.startsWith("https:")) {
-					basename = basename.substring(8);
-				    }
-				    if (basename.length() > 32) {
-					// max of 18 chars from the URL itself                      
-					basename = basename.substring(0, 18);
-					// add a timestamp to differentiate it (+14 chars)          
-					Format f= new SimpleDateFormat("yyyyMMddHHmmss");
-					basename += f.format(new Date());
-					// total new length of 32 chars                             
+				// generate name if user didn't supply one
+				if (!first || name == null || name.trim().equals("")) {
+				    URI uri = new URI(url);
+				    String host = uri.getHost();
+
+				    if (host != null && !host.equals(""))
+					name = host;
+				    String path = uri.getPath();
+				    if (path != null && !path.equals("")) {
+					if (name == null)
+					    name = path;
+					else
+					    name = name + path;
 				    }
 				}
 
-				String collectionId;
-				SimplePage page = getCurrentPage();
-				
-				collectionId = getCollectionId(true);
-				
-				try {
-					// 	urls aren't something people normally think of as resources. Let's hide them
-					ContentResourceEdit res = contentHostingService.addResource(collectionId, 
-							Validator.escapeResourceName(basename),
-							Validator.escapeResourceName(extension),
-							MAXIMUM_ATTEMPTS_FOR_UNIQUENESS);
-					res.setContentType("text/url");
-					res.setResourceType("org.sakaiproject.content.types.urlResource");
-					res.setContent(url.getBytes());
-					contentHostingService.commitResource(res, NotificationService.NOTI_NONE);
-					sakaiId = res.getId();
-				} catch (org.sakaiproject.exception.OverQuotaException ignore) {
-					setErrMessage(messageLocator.getMessage("simplepage.overquota"));
-					return;
-				} catch (Exception e) {
-					setErrMessage(messageLocator.getMessage("simplepage.resourceerror").replace("{}", e.toString()));
-					log.error("addMultimedia error 2 " + e);
-					return;
-				}
-				// 	connect to url and get mime type
+				// default name should be "web page". But this is late enough that I don't
+				// want to add strings, so it's going to be "Web ". Hopefully this will never
+				// happen. It's hard to see how there could be a URL with no hostname or path
+				if (name == null)
+				    name = messageLocator.getMessage("simplepage.web_content").replace("{}","");
+
+				// don't let names get too long
+				if (name.length() > 80)
+				    name = name.substring(0,39) + "..." + name.substring(name.length()-39);
+				// as far as I can see, this is used only to find the extension, so this is OK
+				sakaiId = "/url/" + name;
+
+				urlResource = url;
 				// new dialog passes the mime type
 				if (multimediaMimeType != null && ! "".equals(multimediaMimeType))
 				    mimeType = multimediaMimeType;
@@ -5616,15 +5712,9 @@ public class SimplePageBean {
 			
 			SimplePageItem item = null;
 			if (itemId == -1 && isMultimedia) {
-				int seq = getItemsOnPage(getCurrentPageId()).size() + 1;
-				item = simplePageToolDao.makeItem(getCurrentPageId(), seq, SimplePageItem.MULTIMEDIA, sakaiId, name);
-			} else if(itemId == -1 && isWebsite) {
-			    String websiteName = name.substring(0,name.indexOf("."));
-			    int seq = getItemsOnPage(getCurrentPageId()).size() + 1;
-			    item = simplePageToolDao.makeItem(getCurrentPageId(), seq, SimplePageItem.RESOURCE, sakaiId, websiteName);
+			    item = appendItem(sakaiId, name, SimplePageItem.MULTIMEDIA);
 			} else if (itemId == -1) {
-				int seq = getItemsOnPage(getCurrentPageId()).size() + 1;
-				item = simplePageToolDao.makeItem(getCurrentPageId(), seq, SimplePageItem.RESOURCE, sakaiId, name);
+			    item = appendItem(sakaiId, name, SimplePageItem.RESOURCE);
 			} else if (isCaption) {
 				item = findItem(itemId);
 				if (item == null)
@@ -5637,13 +5727,10 @@ public class SimplePageBean {
 				if (item == null)
 					return;
 				
-				// editing an existing item which might have customized properties
-				// retrieve original resource and check for customizations
-				ResourceHelper resHelp = new ResourceHelper(getContentResource(item.getSakaiId()));
-				boolean hasCustomName = resHelp.isNameCustom(item.getName());
-				
 				item.setSakaiId(sakaiId);
-				if (!hasCustomName)
+				// the UI shows the existing name and lets the user change it, so we
+				// can always use the name from the UI
+				if (name != null && !name.trim().equals(""))
 				{
 					item.setName(name);
 				}
@@ -5662,15 +5749,24 @@ public class SimplePageBean {
 				item.setHtml(null);
 			}
 			
+			if (urlResource != null) { // link to item, where item is a URL
+			    String nurl = urlResource;
+			    item.setAttribute("multimediaUrl", nurl);
+			    item.setSakaiId(sakaiIdFromUrl(nurl, item));
+			}
 			if (mmUrl != null && !mmUrl.trim().equals("") && isMultimedia) {
+			    // embed item, where item is a URL or embed code
 			    if (multimediaDisplayType == 1)
 				// the code is filtered by the UI, so the user can see the effect.
 				// This protects against someone handcrafting a post.
 				// The code is similar to that in submit, but currently doesn't
 				// have folder-specific override (because there are no folders involved)
 				item.setAttribute("multimediaEmbedCode", AjaxServer.filterHtml(mmUrl.trim()));
-			    else if (multimediaDisplayType == 3)
-				item.setAttribute("multimediaUrl", mmUrl.trim());
+			    else if (multimediaDisplayType == 3) {
+				String nurl = normUrl(mmUrl);
+				item.setAttribute("multimediaUrl", nurl);
+				item.setSakaiId(sakaiIdFromUrl(nurl, item));
+			    }
 			    item.setAttribute("multimediaDisplayType", Integer.toString(multimediaDisplayType));
 			}
 			// 	if this is an existing item and a resource, leave it alone
@@ -5680,19 +5776,27 @@ public class SimplePageBean {
 			
 			clearImageSize(item);
 			try {
-				if (itemId == -1)
-					saveItem(item);
-				else
+			    //		if (itemId == -1)
+			    //		saveItem(item);
+			    //		  else
 					update(item);
 			} catch (Exception e) {
-			    System.out.println("save error " + e);
+			    log.info("save error " + e);
 				// 	saveItem and update produce the errors
 			}
 		}catch(Exception ex) {
 			ex.printStackTrace();
-		} finally {
-		    if(advisor != null) securityService.popAdvisor();
 		}
+	}
+
+	// for types where we save the URL directly we need a unique Sakai id. It
+	// has to be unique, not too long, and it has to end in the right extension.
+	// has to be unique because this is sometimes used as a key for caching
+	// The item ID is to make it unique
+	public String sakaiIdFromUrl(String url, SimplePageItem item) {
+	    if (url.length() > 80)
+		url = url.substring(url.length()-80);
+	    return "/url/" + item.getId() + "/" + url;
 	}
 
 	public boolean deleteRecursive(File path) throws FileNotFoundException{
@@ -5818,36 +5922,11 @@ public class SimplePageBean {
 		// if there's a new youtube URL, and it's different from
 		// the old one, update the URL if they are different
 		if (key != null && !key.equals(oldkey)) {
-		    String url = "http://www.youtube.com/watch#!v=" + key;
-		    String siteId = getCurrentPage().getSiteId();
-		    String collectionId = getCollectionId(true);
-
-		    SecurityAdvisor advisor = null;
-		    try {
-		    	if(getCurrentPage().getOwner() != null) {
-					advisor = new SecurityAdvisor() {
-						public SecurityAdvice isAllowed(String userId, String function, String reference) {
-							return SecurityAdvice.ALLOWED;
-						}
-					};
-					securityService.pushAdvisor(advisor);
-				}
-		    	
-		    	ContentResourceEdit res = contentHostingService.addResource(collectionId,Validator.escapeResourceName("Youtube video " + key),Validator.escapeResourceName("swf"),MAXIMUM_ATTEMPTS_FOR_UNIQUENESS);
-		    	res.setContentType("text/url");
-		    	res.setResourceType("org.sakaiproject.content.types.urlResource");
-		    	res.setContent(url.getBytes());
-		    	contentHostingService.commitResource(res, NotificationService.NOTI_NONE);
-		    	item.setSakaiId(res.getId());
-		    	
-		    } catch (org.sakaiproject.exception.OverQuotaException ignore) {
-		    	setErrMessage(messageLocator.getMessage("simplepage.overquota"));
-		    } catch (Exception e) {
-		    	setErrMessage(messageLocator.getMessage("simplepage.resourceerror").replace("{}", e.toString()));
-		    	log.error("addMultimedia error 3 " + e);
-		    }finally {
-		    	if(advisor != null) securityService.popAdvisor();
-		    }
+		    String url = "https://youtu.be/" + key;
+		    item.setName("youtub.be/" + key);
+		    item.setSakaiId(sakaiIdFromUrl(url, item));
+		    item.setAttribute("multimediaUrl", url);
+		    item.setAttribute("multimediaDisplayType", "2");
 		}
 
 		// even if there's some oddity with URLs, we do these updates

@@ -170,6 +170,8 @@ public interface SimplePageToolDao {
 	public boolean quickSaveItem(Object o);
 
     // see saveItem for details and caveats, same function except delete instead of save
+    // this is a low-level function. Deleting pages and items from pages need additional cleanup,
+    // so normally this should be done using appropriate functions from SimplePageBean.
 	public boolean deleteItem(Object o);
 
     // see saveItem for details and caveats, same function except update instead of save
@@ -283,5 +285,6 @@ public interface SimplePageToolDao {
     // returns map of old to new sakaiid's after a site copy or import
     public Map<String,String> getObjectMap(String siteId);
 
+    public boolean doesPageFolderExist(final String siteId, final String folder);
 
 }

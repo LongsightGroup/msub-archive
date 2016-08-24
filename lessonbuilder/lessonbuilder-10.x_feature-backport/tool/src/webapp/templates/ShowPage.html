@@ -398,7 +398,7 @@ function resizeiframe(id) {
                     <div rsf:id="youtubeSpan"  id="youtubeSpan"  class="hideOnDialog right-col"><div>
                         <div rsf:id="item-group-titles4" class="item-group-titles"></div>
                         
-                        <iframe rsf:id="youtubeIFrame" frameborder="0"></iframe>
+                        <iframe rsf:id="youtubeIFrame" frameborder="0" allowfullscreen="allowfullscreen"></iframe>
                       </div>
                       <div style="display:none" rsf:id="youtubeId" class="youtube-id"></div>
                       <div style="display:none" rsf:id="currentYoutubeURL" class="youtube-url"></div>
@@ -957,6 +957,13 @@ function resizeiframe(id) {
                     </div>
 
                     <div class="border2 controlsPanel">                 
+		        <div id="mm-name-section">
+                          <p class="shorttext required">
+                            <label rsf:id="msg=simplepage.name_label" for="mm-name"></label>
+                            <input type="text" name="mm-name" rsf:id="mm-name" id="mm-name" size="30" maxlength="99" class="edit-form-input" />
+                          </p>
+			  <hr />
+			</div>
                         <p class="required">
                             <label rsf:id="msg=simplepage.upload_label" for="mm-file">File</label>
                             <input type="file" name="mm-file" id="mm-file" style="width:95%" class="edit-multimedia-input" />

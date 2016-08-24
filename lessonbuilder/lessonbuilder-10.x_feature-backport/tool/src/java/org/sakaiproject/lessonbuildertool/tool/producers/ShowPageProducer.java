@@ -200,9 +200,9 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
     // mp4 means it plays with the flash player if HTML5 doesn't work.
     // flv is also played with the flash player, but it doesn't get a backup <OBJECT> inside the player
     // Strobe claims to handle MOV files as well, but I feel safer passing them to quicktime, though that requires Quicktime installation
-        private static final String DEFAULT_MP4_TYPES = "video/mp4,video/m4v,audio/mpeg,audio/mp3";
+        private static final String DEFAULT_MP4_TYPES = "video/mp4,video/m4v,audio/mpeg,audio/mp3,video/x-m4v";
         private static String[] mp4Types = null;
-        private static final String DEFAULT_HTML5_TYPES = "video/mp4,video/m4v,video/webm,video/ogg,audio/mpeg,audio/ogg,audio/wav,audio/x-wav,audio/webm,audio/ogg,audio/mp4,audio/aac,audio/mp3";
+        private static final String DEFAULT_HTML5_TYPES = "video/mp4,video/m4v,video/webm,video/ogg,audio/mpeg,audio/ogg,audio/wav,audio/x-wav,audio/webm,audio/ogg,audio/mp4,audio/aac,audio/mp3,video/x-m4v";
     // jw can also handle audio: audio/mp4,audio/mpeg,audio/ogg
         private static String[] html5Types = null;
     // almost ISO. Full ISO isn't available until Java 7. this uses -0400 where ISO uses -04:00
@@ -2821,17 +2821,16 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 				if (i.getType() == SimplePageItem.RESOURCE && i.isSameWindow()) {
 					GeneralViewParameters params = new GeneralViewParameters(ShowItemProducer.VIEW_ID);
 					params.setSendingPage(currentPage.getPageId());
-					if (lessonBuilderAccessService.needsCopyright(i.getSakaiId()))
-					    params.setSource("/access/require?ref=" + URLEncoder.encode("/content" + i.getSakaiId()) + "&url=" + URLEncoder.encode(i.getItemURL(simplePageBean.getCurrentSiteId(),currentPage.getOwner()).substring(7)));
-					else
-					    params.setSource(i.getItemURL(simplePageBean.getCurrentSiteId(),currentPage.getOwner()));
 					params.setItemId(i.getId());
 					UILink link = UIInternalLink.make(container, "link", params);
 					link.decorate(new UIFreeAttributeDecorator("lessonbuilderitem", itemString));
 					
 				}
 				else {
-				    URL = i.getItemURL(simplePageBean.getCurrentSiteId(),currentPage.getOwner());
+				    if (i.getAttribute("multimediaUrl") != null) // resource where we've stored the URL ourselves
+					URL = i.getAttribute("multimediaUrl");
+				    else
+					URL = i.getItemURL(simplePageBean.getCurrentSiteId(),currentPage.getOwner());
 				    UILink link = UILink.make(container, ID, URL);
 				    link.decorate(new UIFreeAttributeDecorator("target", "_blank"));
 				    if (notDone)
@@ -2907,7 +2906,6 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 
 				GeneralViewParameters params = new GeneralViewParameters(ShowItemProducer.VIEW_ID);
 				params.setSendingPage(currentPage.getPageId());
-				params.setSource((lessonEntity == null) ? "dummy" : lessonEntity.getUrl());
 				params.setItemId(i.getId());
 				UILink link = UIInternalLink.make(container, "link", params);
 				link.decorate(new UIFreeAttributeDecorator("lessonbuilderitem", itemString));
@@ -2933,7 +2931,6 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 				GeneralViewParameters view = new GeneralViewParameters(ShowItemProducer.VIEW_ID);
 				view.setSendingPage(currentPage.getPageId());
 				view.setClearAttr("LESSONBUILDER_RETURNURL_SAMIGO");
-				view.setSource((lessonEntity == null) ? "dummy" : lessonEntity.getUrl());
 				view.setItemId(i.getId());
 				UILink link = UIInternalLink.make(container, "link", view);
 				link.decorate(new UIFreeAttributeDecorator("lessonbuilderitem", itemString));
@@ -2956,7 +2953,6 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 				GeneralViewParameters view = new GeneralViewParameters(ShowItemProducer.VIEW_ID);
 				view.setSendingPage(currentPage.getPageId());
 				view.setItemId(i.getId());
-				view.setSource((lessonEntity == null) ? "dummy" : lessonEntity.getUrl());
 				UILink link = UIInternalLink.make(container, "link", view);
 				link.decorate(new UIFreeAttributeDecorator("lessonbuilderitem", itemString));
 			} else {
@@ -2996,7 +2992,6 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 				GeneralViewParameters view = new GeneralViewParameters(ShowItemProducer.VIEW_ID);
 				view.setSendingPage(currentPage.getPageId());
 				view.setItemId(i.getId());
-				view.setSource((lessonEntity==null)?"dummy":lessonEntity.getUrl());
 				UIComponent link = UIInternalLink.make(container, "link", view)
 				    .decorate(new UIFreeAttributeDecorator("lessonbuilderitem", itemString));
 			} else {
@@ -3360,20 +3355,20 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 
 		params = new GeneralViewParameters();
 		params.setSendingPage(currentPage.getPageId());
-		params.setItemId(pageItem.getId());
+		params.setId(Long.toString(pageItem.getId()));
 		params.setReturnView(VIEW_ID);
 		params.setTitle(messageLocator.getMessage("simplepage.return_from_edit"));
-		params.setSource("SRC");
+		params.setSource("EDIT");
 		params.viewID = ShowItemProducer.VIEW_ID;
 		UIInternalLink.make(form, "edit-item-object", params);
 		UIOutput.make(form, "edit-item-text");
 
 		params = new GeneralViewParameters();
 		params.setSendingPage(currentPage.getPageId());
-		params.setItemId(pageItem.getId());
+		params.setId(Long.toString(pageItem.getId()));
 		params.setReturnView(VIEW_ID);
 		params.setTitle(messageLocator.getMessage("simplepage.return_from_edit"));
-		params.setSource("SRC");
+		params.setSource("SETTINGS");
 		params.viewID = ShowItemProducer.VIEW_ID;
 		UIInternalLink.make(form, "edit-item-settings", params);
 		UIOutput.make(form, "edit-item-settings-text");
@@ -3466,6 +3461,7 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 		UIForm form = UIForm.make(tofill, "add-multimedia-form");
 		makeCsrf(form, "csrf9");
 
+		UIInput.make(form, "mm-name", "#{simplePageBean.name}");
 		UIOutput.make(form, "mm-file-label", messageLocator.getMessage("simplepage.upload_label"));
 
 		UIOutput.make(form, "mm-url-label", messageLocator.getMessage("simplepage.addLink_label"));
@@ -4270,8 +4266,25 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 		}
 	}
 	
-	private static String getItemPath(SimplePageItem i)
+	private String getItemPath(SimplePageItem i)
 	{
+	    // users seem to want paths for the embedded items, so they can see what's going on
+	        if (i.getType() == SimplePageItem.MULTIMEDIA) {
+		    String mmDisplayType = i.getAttribute("multimediaDisplayType");
+		    if ("".equals(mmDisplayType) || "2".equals(mmDisplayType))
+			mmDisplayType = null;
+		    if ("1".equals(mmDisplayType)) {
+			// embed code
+			return FormattedText.escapeHtml(i.getAttribute("multimediaEmbedCode"),false);
+		    } else if ("3".equals(mmDisplayType)) {
+			// oembed
+			return FormattedText.escapeHtml(i.getAttribute("multimediaUrl"),false);
+		    } else if ("4".equals(mmDisplayType)) {
+			// iframe
+			return FormattedText.escapeHtml(i.getItemURL(simplePageBean.getCurrentSiteId(),simplePageBean.getCurrentPage().getOwner()),false);
+		    }
+		}		
+
 		String itemPath = "";
 		boolean isURL = false;
 		String pathId = i.getType() == SimplePageItem.MULTIMEDIA ? "path-url":"path-url";

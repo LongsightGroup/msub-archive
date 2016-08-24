@@ -48,6 +48,14 @@ function checkgroups(elt, groups) {
 var blankRubricTemplate, blankRubricRow;
 
 $(function() {
+       $("li.multimediaType iframe").each(function() {
+	var width = $(this).attr("width");
+	var height = $(this).attr("height");
+               if (typeof width !== 'undefined' && width !== '' &&
+                   (typeof height === 'undefined' || height ==''))
+                   $(this).height($(this).width() * 0.75);
+           });
+
 	// This is called in comments.js as well, however this may be faster.
 	//if(sakai.editor.editors.ckeditor==undefined) {
 //		$(".evolved-box :not(textarea)").hide();
@@ -1173,6 +1181,8 @@ $(function() {
 		$('.change-resource-movie').click(function(){
 			closeMovieDialog();
 			mm_test_reset();
+			$("#mm-name-section").hide();
+			$("#mm-prerequisite").prop('checked',$("#movie-prerequisites").prop('checked'));
 			$("#addLink_label").text(msg("simplepage.addLink_label_add_or"));
 
 			$("#mm-item-id").val($("#movieEditId").val());
@@ -1329,11 +1339,11 @@ $(function() {
 					$("#require-label").text(msg("simplepage.require_submit_assessment"));
 					$("#edit-item-object-p").show();
 					$("#edit-item-object").attr("href", 
-						$("#edit-item-object").attr("href").replace(/(source=).*?(&)/, '$1' + escape(editurl) + '$2'));
+						$("#edit-item-object").attr("href").replace(/(itemId=).*?(&)/, '$1' + itemid + '$2'));
 					$("#edit-item-text").text(msg("simplepage.edit_quiz"));
 					$("#edit-item-settings-p").show();
 					$("#edit-item-settings").attr("href", 
-						$("#edit-item-settings").attr("href").replace(/(source=).*?(&)/, '$1' + escape(editsettingsurl) + '$2'));
+						$("#edit-item-settings").attr("href").replace(/(itemId=).*?(&)/, '$1' + itemid + '$2'));
 					$("#edit-item-settings-text").text(msg("simplepage.edit_quiz_settings"));
 
 				}else if (type == 8){
@@ -1343,7 +1353,7 @@ $(function() {
 					$("#require-label").text(msg("simplepage.require_submit_forum"));
 					$("#edit-item-object-p").show();
 					$("#edit-item-object").attr("href", 
-						$("#edit-item-object").attr("href").replace(/(source=).*?(&)/, '$1' + escape(editurl) + '$2'));
+						$("#edit-item-object").attr("href").replace(/(itemId=).*?(&)/, '$1' + itemid + '$2'));
 					$("#edit-item-text").text(msg("simplepage.edit_topic"));
 
 				}else if (type == 'b'){
@@ -1369,7 +1379,7 @@ $(function() {
 					$("#require-label").text(msg("simplepage.require_submit_assignment"));
 					$("#edit-item-object-p").show();
 					$("#edit-item-object").attr("href", 
-						$("#edit-item-object").attr("href").replace(/(source=).*?(&)/, '$1' + escape(editurl) + '$2'));
+						$("#edit-item-object").attr("href").replace(/(itemId=).*?(&)/, '$1' + itemid + '$2'));
 					$("#edit-item-text").text(msg("simplepage.edit_assignment"));
 
 				}
@@ -1507,6 +1517,9 @@ $(function() {
 		$('#change-resource').click(function(){
 			closeEditItemDialog();
 			mm_test_reset();
+			$("#mm-name-section").show();
+			$("#mm-name").val($("#name").val());
+			$("#mm-prerequisite").prop('checked',$("#item-prerequisites").prop('checked'));
 			$("#addLink_label").text(msg("simplepage.addLink_label_add"));
 
 			$("#mm-item-id").val($("#item-id").val());
@@ -1537,6 +1550,9 @@ $(function() {
 			closeDropdowns();
 
 			mm_test_reset();
+			$("#mm-name-section").hide();
+			$("#mm-name").val('');
+			$("#mm-prerequisite").prop('checked',false);
 			$("#addLink_label").text(msg("simplepage.addLink_label_add_or"));
 
 			$("#mm-item-id").val(-1);
@@ -1569,6 +1585,9 @@ $(function() {
 
 		$(".add-resource").click(function(){
 			closeDropdowns();
+ 			$("#mm-name-section").show();
+ 			$("#mm-name").val('');
+ 			$("#mm-prerequisite").prop('checked',false);
 			mm_test_reset();
 			$("#addLink_label").text(msg("simplepage.addLink_label_add"));
 
@@ -1601,6 +1620,9 @@ $(function() {
 		$(".add-website").click(function(){
 			closeDropdowns();
 			mm_test_reset();
+			$("#mm-name-section").show();
+			$("#mm-name").val('');
+			$("#mm-prerequisite").prop('checked',false);
 			$("#addLink_label").text(msg("simplepage.addLink_label_add"));
 
 			$("#mm-item-id").val(-1);
@@ -1730,6 +1752,8 @@ $(function() {
 		$('#change-resource-mm').click(function(){
 			closeMultimediaEditDialog();
 			mm_test_reset();
+			$("#mm-name-section").hide();
+			$("#mm-prerequisite").prop('checked',$("#multi-prerequisite").prop('checked'));
 			$("#addLink_label").text(msg("simplepage.addLink_label_add_or"));
 
 			$("#mm-item-id").val($("#multimedia-item-id").val());
