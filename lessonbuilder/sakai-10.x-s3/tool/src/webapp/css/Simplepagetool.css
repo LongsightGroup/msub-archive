@@ -227,7 +227,9 @@ a.edit-link:link, a.edit-link:visited, a.itemLink:link, a.itemLink:visited, a.mu
 	width: 95%;
 	margin-bottom: 0.5em;
 }
-
+.listHier .forumTopic {
+   margin-left: 2em;
+}
 .mainList {
     margin: 0;
     padding:0;
