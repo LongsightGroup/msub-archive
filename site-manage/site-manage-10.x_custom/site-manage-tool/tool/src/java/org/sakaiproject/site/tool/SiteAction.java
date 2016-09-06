@@ -1441,7 +1441,7 @@ public class SiteAction extends PagedResourceActionII {
 		context.put(STATE_SITE_ADD_PROJECT, SiteService.allowAddProjectSite());
 		
 		// can the user user create sites from archives?
-		context.put(STATE_SITE_IMPORT_ARCHIVE, SiteService.allowImportArchiveSite());
+		context.put(STATE_SITE_IMPORT_ARCHIVE, false);
 		
 
 		
