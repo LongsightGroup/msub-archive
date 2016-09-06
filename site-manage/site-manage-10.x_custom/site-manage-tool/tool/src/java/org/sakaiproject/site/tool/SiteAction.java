@@ -54,6 +54,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.validator.routines.EmailValidator;
@@ -756,6 +757,14 @@ public class SiteAction extends PagedResourceActionII {
 	private final static String SAK_PROP_SKIP_COURSE_SECTION_SELECTION = "wsetup.skipCourseSectionSelection";
 	private static final String SAK_PROP_FILTER_TERMS = "worksitesetup.filtertermdropdowns";
 
+    //SAK-22432 Template descriptions are not copied
+    private final static String SAK_PROP_COPY_TEMPLATE_DESCRIPTION = "site.setup.copy.template.description";
+
+	//Setup property to require (or not require) authorizer
+	private static final String SAK_PROP_REQUIRE_AUTHORIZER = "wsetup.requireAuthorizer";
+	//Setup property to email authorizer (default to true)
+	private static final String SAK_PROP_EMAIL_AUTHORIZER = "wsetup.emailAuthorizer";
+
 	private List prefLocales = new ArrayList();
 	
 	private static final String VM_ALLOWED_ROLES_DROP_DOWN 	= "allowedRoles";
@@ -787,6 +796,12 @@ public class SiteAction extends PagedResourceActionII {
 	private static UserAuditService userAuditService = (UserAuditService) ComponentManager.get(UserAuditService.class);
 	
 	private PrivacyManager privacyManager = (PrivacyManager) ComponentManager.get(PrivacyManager.class);
+	
+	// SAK-28990 - enable/disable continue with no roster
+	private static final String VM_CONT_NO_ROSTER_ENABLED = "contNoRosterEnabled";
+	private static final String SAK_PROP_CONT_NO_ROSTER_ENABLED = "sitemanage.continueWithNoRoster";
+	
+	private static final String VM_ADD_ROSTER_AUTH_REQUIRED = "authorizationRequired";
 
 	/**
 	 * what are the tool ids within Home page?
@@ -1469,6 +1484,11 @@ public class SiteAction extends PagedResourceActionII {
 			// default view
 			if (state.getAttribute(STATE_VIEW_SELECTED) == null) {
 				state.setAttribute(STATE_VIEW_SELECTED, SiteConstants.SITE_TYPE_ALL);
+			}
+
+			if (ServerConfigurationService.getBoolean("sitesetup.show.unpublished", false) && !SecurityService.isSuperUser()) {
+				views.put(SiteConstants.SITE_ACTIVE, rb.getString("java.myActive"));
+				views.put(SiteConstants.SITE_INACTIVE, rb.getString("java.myInactive"));
 			}
 			
 			// sort the keys in the views lookup
@@ -3050,6 +3070,10 @@ public class SiteAction extends PagedResourceActionII {
 			context.put("termCourseList", state
 					.getAttribute(STATE_TERM_COURSE_LIST));
 
+			// SAK-29000
+			Boolean isAuthorizationRequired = ServerConfigurationService.getBoolean( SAK_PROP_REQUIRE_AUTHORIZER, Boolean.TRUE );
+			context.put( VM_ADD_ROSTER_AUTH_REQUIRED, isAuthorizationRequired );
+
 			// added for 2.4 -daisyf
 			context.put("campusDirectory", getCampusDirectory());
 			context.put("userId", state.getAttribute(STATE_INSTRUCTOR_SELECTED) != null ? (String) state.getAttribute(STATE_INSTRUCTOR_SELECTED) : UserDirectoryService.getCurrentUser().getId());
@@ -3069,6 +3093,16 @@ public class SiteAction extends PagedResourceActionII {
 					ServerConfigurationService.getBoolean( SAK_PROP_SKIP_MANUAL_COURSE_CREATION, Boolean.FALSE ) );
 			
 			context.put("siteType", state.getAttribute(STATE_TYPE_SELECTED));
+			
+			// SAK-28990 remove continue with no roster
+			if( "true".equalsIgnoreCase( ServerConfigurationService.getString( SAK_PROP_CONT_NO_ROSTER_ENABLED, "true" ) ) )
+			{
+				context.put( VM_CONT_NO_ROSTER_ENABLED, Boolean.TRUE );
+			}
+			else
+			{
+				context.put( VM_CONT_NO_ROSTER_ENABLED, Boolean.FALSE);
+			}
 			
 			return (String) getContext(data).get("template") + TEMPLATE[36];
 		case 37:
@@ -3134,7 +3168,7 @@ public class SiteAction extends PagedResourceActionII {
 			
 			context.put("basedOnTemplate",  state.getAttribute(STATE_TEMPLATE_SITE) != null ? Boolean.TRUE:Boolean.FALSE);
 			
-			context.put("requireAuthorizer", ServerConfigurationService.getString("wsetup.requireAuthorizer", "true").equals("true")?Boolean.TRUE:Boolean.FALSE);
+			context.put("requireAuthorizer", ServerConfigurationService.getString(SAK_PROP_REQUIRE_AUTHORIZER, "true").equals("true")?Boolean.TRUE:Boolean.FALSE);
 			
 			// bjones86 - SAK-21706/SAK-23255
 			context.put( CONTEXT_IS_ADMIN, SecurityService.isSuperUser() );
@@ -3387,6 +3421,7 @@ public class SiteAction extends PagedResourceActionII {
 			}
 			context.put("value_uniqname", state.getAttribute(STATE_SITE_QUEST_UNIQNAME));
 			context.put("basedOnTemplate",  state.getAttribute(STATE_TEMPLATE_SITE) != null ? Boolean.TRUE:Boolean.FALSE);
+			context.put("requireAuthorizer", ServerConfigurationService.getString(SAK_PROP_REQUIRE_AUTHORIZER, "true").equals("true")?Boolean.TRUE:Boolean.FALSE);
 			
 			// bjones86 - SAK-21706/SAK-23255
 			context.put( CONTEXT_IS_ADMIN, SecurityService.isSuperUser() );
@@ -3484,10 +3519,15 @@ public class SiteAction extends PagedResourceActionII {
 	 */
 	private void buildLTIToolContextForTemplate(Context context,
 			SessionState state, Site site, boolean updateToolRegistration) {
-		List<Map<String, Object>> tools;
-		// get the list of available external lti tools
-		tools = m_ltiService.getTools(null,null,0,0);
-		if (tools != null && !tools.isEmpty())
+		List<Map<String, Object>> visibleTools, allTools;
+		// get the visible and all (including stealthed) list of lti tools
+		visibleTools = m_ltiService.getTools(null,null,0,0);
+		if (site == null)
+			allTools = visibleTools;
+		else
+			allTools = m_ltiService.getToolsDao(null,null,0,0,site.getId());
+      
+		if (visibleTools != null && !visibleTools.isEmpty())
 		{
 			HashMap<String, Map<String, Object>> ltiTools = new HashMap<String, Map<String, Object>>();
 			// get invoke count for all lti tools
@@ -3517,26 +3557,31 @@ public class SiteAction extends PagedResourceActionII {
 					}
 				}
 			}
-			for (Map<String, Object> toolMap : tools ) {
+         
+         // First search list of visibleTools for those not selected (excluding stealthed tools)
+			for (Map<String, Object> toolMap : visibleTools ) {
 				String ltiToolId = toolMap.get("id").toString();
 				String siteId = StringUtils.trimToNull((String) toolMap.get(m_ltiService.LTI_SITE_ID));
 				toolMap.put("selected", linkedLtiContents.containsKey(ltiToolId));
-				if (siteId == null)
+				if ( siteId == null || siteId.equals(site.getId()) )
 				{
-					// only show the system-range lti tools
+					// only show the system-range lti tools or tools for current site
 					ltiTools.put(ltiToolId, toolMap);
 				}
-				else
-				{
-					// show the site-range lti tools only if 
-					// 1. this is in Site Info editing existing site, 
-					// and 2. the lti tool site_id equals to current site
-					if (site != null && siteId.equals(site.getId()))
-					{
-						ltiTools.put(ltiToolId, toolMap);
-					}
-				}
 			}
+         
+         // Second search list of allTools for those already selected (including stealthed)
+			for (Map<String, Object> toolMap : allTools ) {
+				String ltiToolId = toolMap.get("id").toString();
+				boolean selected = linkedLtiContents.containsKey(ltiToolId);
+				toolMap.put( "selected", selected);
+				if ( selected && ltiTools.get(ltiToolId)==null )
+            {
+               ltiTools.put(ltiToolId, toolMap);
+            }
+			}
+         
+         
 			state.setAttribute(STATE_LTITOOL_LIST, ltiTools);
 			state.setAttribute(STATE_LTITOOL_EXISTING_SELECTED_LIST, linkedLtiContents);
 			context.put("ltiTools", ltiTools);
@@ -4443,6 +4488,14 @@ public class SiteAction extends PagedResourceActionII {
 
 				String view = (String) state.getAttribute(STATE_VIEW_SELECTED);
 				if (view != null) {
+
+					org.sakaiproject.site.api.SiteService.SelectionType selectionType;
+					if (ServerConfigurationService.getBoolean("sitesetup.show.unpublished", false)) {
+						selectionType = org.sakaiproject.site.api.SiteService.SelectionType.MEMBER;
+					} else {
+						selectionType = org.sakaiproject.site.api.SiteService.SelectionType.ACCESS;
+					}
+
 					if (view.equals(SiteConstants.SITE_TYPE_ALL)) {
 						view = null;
 						// add my workspace if any
@@ -4457,7 +4510,7 @@ public class SiteAction extends PagedResourceActionII {
 						}
 						size += SiteService
 								.countSites(
-										org.sakaiproject.site.api.SiteService.SelectionType.ACCESS,
+										selectionType,
 										null, search, termProp);
 					} else if (view.equals(SiteConstants.SITE_TYPE_MYWORKSPACE)) {
 						// get the current user MyWorkspace site
@@ -4467,11 +4520,20 @@ public class SiteAction extends PagedResourceActionII {
 							size++;
 						} catch (IdUnusedException e) {
 						}
+					} else if (view.equals(SiteConstants.SITE_ACTIVE)) {
+						view = null;
+						size += SiteService.countSites(
+							org.sakaiproject.site.api.SiteService.SelectionType.PUBVIEW,
+								view, search, termProp);
+					} else if (view.equals(SiteConstants.SITE_INACTIVE)) {
+						view = null;
+						size += SiteService.countSites(
+										org.sakaiproject.site.api.SiteService.SelectionType.INACTIVE_ONLY,
+										null, search, termProp);
 					} else {
 						// search for specific type of sites
-						size += SiteService
-								.countSites(
-										org.sakaiproject.site.api.SiteService.SelectionType.ACCESS,
+						size += SiteService.countSites(
+										selectionType,
 										view, search, termProp);
 					}
 				}
@@ -4573,6 +4635,15 @@ public class SiteAction extends PagedResourceActionII {
 				}
 				String view = (String) state.getAttribute(STATE_VIEW_SELECTED);
 				if (view != null) {
+
+					org.sakaiproject.site.api.SiteService.SelectionType selectionType;
+
+					if (ServerConfigurationService.getBoolean("sitesetup.show.unpublished", false)) {
+						selectionType = org.sakaiproject.site.api.SiteService.SelectionType.MEMBER;
+					} else {
+						selectionType = org.sakaiproject.site.api.SiteService.SelectionType.ACCESS;
+					}
+
 					if (view.equals(SiteConstants.SITE_TYPE_ALL)) {
 						view = null;
 						// add my workspace if any
@@ -4588,7 +4659,7 @@ public class SiteAction extends PagedResourceActionII {
 						rv
 								.addAll(SiteService
 										.getSites(
-												org.sakaiproject.site.api.SiteService.SelectionType.ACCESS,
+												selectionType,
 												null, search, termProp, sortType,
 												new PagingPosition(first, last)));
 					}
@@ -4598,10 +4669,18 @@ public class SiteAction extends PagedResourceActionII {
 							rv.add(SiteService.getSite(SiteService.getUserSiteId(userId)));
 						} catch (IdUnusedException e) {
 						}
+ 					} else if (view.equals(SiteConstants.SITE_ACTIVE)) {
+ 						rv.addAll(SiteService.getSites(org.sakaiproject.site.api.SiteService.SelectionType.PUBVIEW,
+ 								null, search, termProp, sortType,
+ 								new PagingPosition(first, last)));
+ 					} else if (view.equals(SiteConstants.SITE_INACTIVE)) {
+ 						rv.addAll(SiteService.getSites(org.sakaiproject.site.api.SiteService.SelectionType.INACTIVE_ONLY,
+ 								null, search, termProp, sortType,
+ 								new PagingPosition(first, last)));
 					} else {
 						rv.addAll(SiteService
 										.getSites(
-												org.sakaiproject.site.api.SiteService.SelectionType.ACCESS,
+												selectionType,
 												view, search, termProp, sortType,
 												new PagingPosition(first, last)));
 					}
@@ -5889,19 +5968,26 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 	private List getLtiToolGroup(String groupName, File moreInfoDir, Site site) {
 		List ltiSelectedTools = selectedLTITools(site);
 		List ltiTools = new ArrayList();
-		List<Map<String, Object>> allTools = m_ltiService.getTools(null, null,
-				0, 0);
+		List<Map<String, Object>> allTools;
+		if ( site == null )
+			allTools = m_ltiService.getTools(null,null,0,0);
+		else
+			allTools = m_ltiService.getToolsDao(null,null,0,0,site.getId());
+      
 		if (allTools != null && !allTools.isEmpty()) {
 			for (Map<String, Object> tool : allTools) {
 				Set keySet = tool.keySet();
-				String toolIdString = tool.get(m_ltiService.LTI_ID).toString();
+				String toolIdString = ObjectUtils.toString(tool.get(m_ltiService.LTI_ID));
+				boolean toolStealthed = "1".equals(ObjectUtils.toString(tool.get(m_ltiService.LTI_VISIBLE)));
+				boolean ltiToolSelected = ltiSelectedTools.contains(toolIdString); 
+
 				try
 				{
 					// in Oracle, the lti tool id is returned as BigDecimal, which cannot be casted into Integer directly
 					Integer ltiId = Integer.valueOf(toolIdString);
 					if (ltiId != null) {
 						String ltiToolId = ltiId.toString(); 
-						if (ltiToolId != null) {
+						if (ltiToolId != null && (!toolStealthed || ltiToolSelected) ) {
 							String relativeWebPath = null;
 							MyTool newTool = new MyTool();
 							newTool.title = tool.get("title").toString();
@@ -5914,7 +6000,7 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 							}
 							// SAK16600 should this be a property or specified in  toolOrder.xml?
 							newTool.required = false; 
-							newTool.selected = ltiSelectedTools.contains(ltiToolId); 
+							newTool.selected = ltiToolSelected;
 							ltiTools.add(newTool);
 						}
 					}
@@ -6707,7 +6793,8 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 		User cUser = UserDirectoryService.getCurrentUser();
 		String sendEmailToRequestee = null;
 		StringBuilder buf = new StringBuilder();
-		boolean requireAuthorizer = ServerConfigurationService.getString("wsetup.requireAuthorizer", "true").equals("true")?true:false;
+		boolean requireAuthorizer = ServerConfigurationService.getString(SAK_PROP_REQUIRE_AUTHORIZER, "true").equals("true")?true:false;
+		String emailAuthorizer = ServerConfigurationService.getString(SAK_PROP_EMAIL_AUTHORIZER, "");
 
 		// get the request email from configuration
 		String requestEmail = getSetupRequestEmailAddress();
@@ -6803,7 +6890,11 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 				for (Iterator iInstructors = authorizerList.iterator(); iInstructors.hasNext();)
 				{
 					String instructorId = (String) iInstructors.next();
-					if (requireAuthorizer)
+					//If emailAuthorizer is defined to be true  or if requireAuthorizer is set
+					
+					//If emailAuthrozier is true always send email, if it's unset send if requireAuthrozier is set
+					//Otherwise don't send
+					if (("".equals(emailAuthorizer) && requireAuthorizer) || "true".equals(emailAuthorizer))
 					{
 						// 1. email to course site authorizer
 						boolean result = userNotificationProvider.notifyCourseRequestAuthorizer(instructorId, requestEmail, requestReplyToEmail, term != null? term.getTitle():"", requestSectionInfo, title, id, additional, productionSiteName);
@@ -7599,6 +7690,9 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 			Site.setTitle(siteInfo.title);
 		}
 
+		//Process description so it doesn't give an error on home
+		siteInfo.description = FormattedText.processFormattedText(siteInfo.description, new StringBuilder());
+		
 		Site.setDescription(siteInfo.description);
 		Site.setShortDescription(siteInfo.short_description);
 
@@ -8092,6 +8186,10 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 	 * 
 	 */
 	public void doUpdate_participant(RunData data) {
+		if (!"POST".equals(data.getRequest().getMethod())) {
+			M_log.warn("Ignoring non-POST request to update site access.");
+			return;
+		}
 		SessionState state = ((JetspeedRunData) data)
 				.getPortletSessionState(((JetspeedRunData) data).getJs_peid());
 		ParameterParser params = data.getParameters();
@@ -8414,6 +8512,9 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 		
 		boolean publishUnpublish = state.getAttribute(STATE_SITE_ACCESS_PUBLISH) != null ? ((Boolean) state.getAttribute(STATE_SITE_ACCESS_PUBLISH)).booleanValue() : false;
 		
+		// the site publish status before update
+		boolean currentSitePublished = sEdit != null ? sEdit.isPublished():false;
+		
 		boolean include = state.getAttribute(STATE_SITE_ACCESS_INCLUDE) != null ? ((Boolean) state.getAttribute(STATE_SITE_ACCESS_INCLUDE)).booleanValue() : false;
 
 		if (sEdit != null) {
@@ -8438,6 +8539,16 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 
 			if (state.getAttribute(STATE_MESSAGE) == null) {
 				commitSite(sEdit);
+				if (currentSitePublished && !publishUnpublish)
+				{
+					// unpublishing a published site
+					EventTrackingService.post(EventTrackingService.newEvent(SiteService.EVENT_SITE_UNPUBLISH, sEdit.getReference(), true));
+				}
+				else if (!currentSitePublished && publishUnpublish)
+				{
+					// publishing a published site
+					EventTrackingService.post(EventTrackingService.newEvent(SiteService.EVENT_SITE_PUBLISH, sEdit.getReference(), true));
+				}
 				state.setAttribute(STATE_TEMPLATE_INDEX, "12");
 
 				// TODO: hard coding this frame id is fragile, portal dependent,
@@ -14358,8 +14469,12 @@ private Map<String,List> getTools(SessionState state, String type, Site site) {
 			siteInfo.title = StringUtils.trimToNull(params.getString("siteTitleField"));
 			siteInfo.term = StringUtils.trimToNull(params.getString("selectTermTemplate"));
 			siteInfo.iconUrl = templateSite.getIconUrl();
-			// description is site-specific. Shouldn't come from template
-			// siteInfo.description = templateSite.getDescription();
+			
+			Boolean copyTemplateDescription = ServerConfigurationService.getBoolean(SAK_PROP_COPY_TEMPLATE_DESCRIPTION, Boolean.TRUE);
+			if(copyTemplateDescription.booleanValue()){
+				siteInfo.description = templateSite.getDescription();
+			}
+			
 			siteInfo.short_description = templateSite.getShortDescription();
 			siteInfo.joinable = templateSite.isJoinable();
 			siteInfo.joinerRole = templateSite.getJoinerRole();
