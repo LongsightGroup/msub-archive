@@ -130,6 +130,7 @@ document.links[newindex].onclick();
       <h:commandLink  title="#{commonMessages.action_preview}" action="beginAssessment" rendered="#{assessmentBean.assessmentId > 0}">
         <h:outputText value="#{commonMessages.action_preview}"/>
         <f:param name="assessmentId" value="#{assessmentBean.assessmentId}"/>
+        <f:param name="publishedId" value="#{author.editPublishedAssessmentID}"/>
         <f:param name="actionString" value="previewAssessment" />
         <f:param name="fromEdit" value="true" />
         <f:param name="isFromPrint" value="false" />
@@ -143,6 +144,7 @@ document.links[newindex].onclick();
 	</h:commandLink>
 	<h:commandLink action="#{pdfAssessment.prepPDF}" rendered="#{assessmentBean.showPrintLink eq 'true' && assessmentBean.showPrintAssessment eq 'true'}">
 		<f:param name="assessmentId" value="#{assessmentBean.assessmentId}"/>
+		<f:param name="publishedId" value="#{author.editPublishedAssessmentID}"/>
 		<f:param name="actionString" value="editAssessment"/>
 		<f:param name="isFromPrint" value="true" />
 		<h:outputText value="#{printMessages.print}" escape="false" />

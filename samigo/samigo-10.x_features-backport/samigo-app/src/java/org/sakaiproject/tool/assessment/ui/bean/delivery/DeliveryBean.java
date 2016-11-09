@@ -44,6 +44,7 @@ import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.lang.StringUtils;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -2082,22 +2083,31 @@ public class DeliveryBean
     log.debug("**** setting username=" + getSettings().getUsername());
     log.debug("**** setting password=" + getSettings().getPassword());
     
-    if (password == null || username == null)
+    if (StringUtils.isBlank(password) && StringUtils.isBlank(username))
     {
     	return "passwordAccessError";
     }
-    if (password.equals(getSettings().getPassword()) &&
-        username.equals(getSettings().getUsername()))
+    if(StringUtils.isNotBlank(getSettings().getUsername()))
     {
-      // in post 2.1, clicking at Begin Assessment takes users to the
-      // 1st question.
-      return "takeAssessment";
+    	if (!StringUtils.equals(StringUtils.trim(username), StringUtils.trim(getSettings().getUsername())))
+    	{
+    		return "passwordAccessError";
+    	}
     }
-    else
+    if(StringUtils.isNotBlank(getSettings().getPassword()))
     {
-    	return "passwordAccessError";
+    	if (!StringUtils.equals(StringUtils.trim(password), StringUtils.trim(getSettings().getPassword())))
+    	{
+    		return "passwordAccessError";
+    	}
     }
+
+	// in post 2.1, clicking at Begin Assessment takes users to the
+	// 1st question.
+	return "takeAssessment";
+
   }
+
 
   public String validateIP()
   {
@@ -2135,7 +2145,7 @@ public class DeliveryBean
       EventLogData eventLogData = new EventLogData();
       
       // #1. check password
-      if (!getSettings().getUsername().equals(""))
+      if (!getSettings().getUsername().equals("") || !getSettings().getPassword().equals(""))
       {
         results = validatePassword();
         log.debug("*** checked password="+results);
@@ -2998,6 +3008,9 @@ public class DeliveryBean
   }
 
   private void removeTimedAssessmentFromQueue(){
+    if (adata==null) {
+      return;
+    }
     TimedAssessmentQueue queue = TimedAssessmentQueue.getInstance();
     TimedAssessmentGradingModel timedAG = (TimedAssessmentGradingModel)queue.
                                              get(adata.getAssessmentGradingId());
@@ -3009,6 +3022,12 @@ public class DeliveryBean
 
   public void syncTimeElapsedWithServer(){
 	    if (("takeAssessment").equals(actionString) || ("takeAssessmentViaUrl").equals(actionString)){
+	      if (adata==null) {
+	         if (log.isDebugEnabled()) {
+	            log.debug("aData is null for actionString"+actionString);
+	         }
+	         return;
+	      }
 	      TimedAssessmentQueue queue = TimedAssessmentQueue.getInstance();
 	      TimedAssessmentGradingModel timedAG = queue.get(adata.getAssessmentGradingId());
 	      if (timedAG != null){
@@ -3028,6 +3047,12 @@ public class DeliveryBean
 	  
 	  public void syncTimeElapsedWithServerLinear(){
 		    if (("takeAssessment").equals(actionString) || ("takeAssessmentViaUrl").equals(actionString)){
+		      if (adata==null) {
+		          if (log.isDebugEnabled()) {
+		              log.debug("aData is null for actionString"+actionString);
+		          }
+		          return;
+		      }
 		      TimedAssessmentQueue queue = TimedAssessmentQueue.getInstance();
 		      TimedAssessmentGradingModel timedAG = queue.get(adata.getAssessmentGradingId());
 		      if (timedAG != null){
@@ -3787,6 +3812,11 @@ public class DeliveryBean
 		  setRedrawAnchorName(tmpAnchorName.toString());
 		  
 		  return "takeAssessment";
+	  }
+	  
+	  public String cleanAndSaveRadioButton(){
+		  cleanRadioButton();
+		  return save_work();
 	  }
 
 	  /**

@@ -33,6 +33,7 @@ import javax.faces.event.AbortProcessingException;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.ActionListener;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.component.cover.ServerConfigurationService;
@@ -173,8 +174,11 @@ public class ConfirmPublishAssessmentListener
     // if late submissions not allowed and retract date is null, set retract date to due date
     if (assessmentSettings.getLateHandling() != null && AssessmentAccessControlIfc.NOT_ACCEPT_LATE_SUBMISSION.toString().equals(assessmentSettings.getLateHandling()) &&
     		retractDate == null && dueDate != null && assessmentSettings.getAutoSubmit()) {
-    	retractDate = dueDate;
-    	assessmentSettings.setRetractDate(dueDate);
+    	boolean autoSubmitEnabled = ServerConfigurationService.getBoolean("samigo.autoSubmit.enabled", false);
+    	if (autoSubmitEnabled) {
+    		retractDate = dueDate;
+    		assessmentSettings.setRetractDate(dueDate);
+    	}
     }
     // if auto-submit is enabled, make sure retract date is set
     if (assessmentSettings.getAutoSubmit() && retractDate == null) {
@@ -336,8 +340,8 @@ public class ConfirmPublishAssessmentListener
     	assessmentSettings.setKeywords(FormattedText.convertFormattedTextToPlaintext(assessmentSettings.getKeywords()));
     	assessmentSettings.setObjectives(FormattedText.convertFormattedTextToPlaintext(assessmentSettings.getObjectives()));
     	assessmentSettings.setRubrics(FormattedText.convertFormattedTextToPlaintext(assessmentSettings.getRubrics()));
-    	assessmentSettings.setUsername(FormattedText.convertFormattedTextToPlaintext(assessmentSettings.getUsername()));
-    	assessmentSettings.setPassword(FormattedText.convertFormattedTextToPlaintext(assessmentSettings.getPassword()));
+    	assessmentSettings.setUsername(FormattedText.convertFormattedTextToPlaintext(StringUtils.trim(assessmentSettings.getUsername())));
+    	assessmentSettings.setPassword(FormattedText.convertFormattedTextToPlaintext(StringUtils.trim(assessmentSettings.getPassword())));
     }
     
     if (error){

@@ -3098,21 +3098,23 @@ public class AssessmentGradingFacadeQueries extends HibernateDaoSupport implemen
 	}
 	
 	public void autoSubmitAssessments() {
-		java.util.Date currentTime = new java.util.Date();
-		Object [] values = {currentTime, currentTime};
 
-		List list = getHibernateTemplate()
-				.find("select new AssessmentGradingData(a.assessmentGradingId, a.publishedAssessmentId, " +
-						" a.agentId, a.submittedDate, a.isLate, a.forGrade, a.totalAutoScore, a.totalOverrideScore, " +
-						" a.finalScore, a.comments, a.status, a.gradedBy, a.gradedDate, a.attemptDate, a.timeElapsed) " +
-						" from AssessmentGradingData a, PublishedAccessControl c " +
-						" where a.publishedAssessmentId = c.assessment.publishedAssessmentId " +
-						" and c.retractDate <= ?" +
-						" and a.status not in (5) and (a.hasAutoSubmissionRun = 0 or a.hasAutoSubmissionRun is null) and c.autoSubmit = 1 " +
-						" and a.attemptDate is not null " +
-						" and (a.attemptDate <= c.retractDate or (c.dueDate <= ? and c.lateHandling = 2)) " +
-						" order by a.publishedAssessmentId, a.agentId, a.forGrade desc, a.assessmentGradingId", values);
-		
+        String hql = "select new AssessmentGradingData(a.assessmentGradingId, a.publishedAssessmentId, " +
+                "a.agentId, a.submittedDate, a.isLate, a.forGrade, a.totalAutoScore, a.totalOverrideScore, " +
+                "a.finalScore, a.comments, a.status, a.gradedBy, a.gradedDate, a.attemptDate, a.timeElapsed) " +
+                "from AssessmentGradingData a, PublishedAccessControl c " +
+                "where a.publishedAssessmentId = c.assessment.publishedAssessmentId " +
+                "and c.retractDate <= :now " +
+                "and a.status != 5 and (a.hasAutoSubmissionRun = 0 or a.hasAutoSubmissionRun is null) and c.autoSubmit = 1 " +
+                "and a.submittedDate is not null " +
+                "and a.attemptDate <= c.retractDate " +
+                "order by a.publishedAssessmentId, a.agentId, a.forGrade desc, a.assessmentGradingId";
+
+        Session session = getHibernateTemplate().getSessionFactory().getCurrentSession();
+
+        List<AssessmentGradingData> list = session.createQuery(hql).setTimestamp("now", new Date()).list();
+        log.info("AutoSubmit found " + list.size() + " submissions to process");
+
 	    Iterator iter = list.iterator();
 	    String lastAgentId = "";
 	    Long lastPublishedAssessmentId = Long.valueOf(0);

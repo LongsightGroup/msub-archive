@@ -145,7 +145,7 @@ public class ItemModifyListener implements ActionListener
       ItemFacade itemfacade = delegate.getItem(itemId);
 
       // Check permissions: if sequence is null, the item is *not* in a pool then the poolId would be null
-      if (itemauthorbean.getQpoolId() == null) {
+      if (isEditPendingAssessmentFlow || itemauthorbean.getQpoolId() == null) {
         AuthorizationBean authzBean = (AuthorizationBean) ContextUtil.lookupBean("authorization");
         // the way to get assessment ID is completely different for published and core
         // you'd think a slight variant of the published would work for core, but it generates an error
@@ -166,9 +166,7 @@ public class ItemModifyListener implements ActionListener
           String err=(String)ContextUtil.getLocalizedString("org.sakaiproject.tool.assessment.bundle.AuthorMessages", "denied_edit_assessment_error");
           context.addMessage(null,new FacesMessage(err));
           itemauthorbean.setOutcome("author");
-          if (log.isDebugEnabled()) {
-            log.debug("itemID " + itemId + " for assignment " + assessmentId.toString() + " is being returned null from populateItemBean because it fails isUSerAllowedToEditAssessment for " + createdBy);
-          }
+          log.warn("itemID " + itemId + " for assignment " + assessmentId.toString() + " is being returned null from populateItemBean because it fails isUserAllowedToEditAssessment for " + createdBy);
           return false;
         }
       }
@@ -193,9 +191,7 @@ public class ItemModifyListener implements ActionListener
               String err=(String)ContextUtil.getLocalizedString("org.sakaiproject.tool.assessment.bundle.AuthorMessages", "denied_edit_assessment_error");
               context.addMessage(null,new FacesMessage(err));
               itemauthorbean.setOutcome("author");
-              if (log.isDebugEnabled()) {
-                  log.debug("itemID " + itemId + " in pool is being returned null from populateItemBean because it fails isUSerAllowedToEditAssessment for user " + currentUserId);
-              }
+              log.warn("itemID " + itemId + " in pool is being returned null from populateItemBean because it fails isUserAllowedToEditAssessment for user " + currentUserId);
               return false;
           }
       }

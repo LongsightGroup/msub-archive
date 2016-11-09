@@ -36,6 +36,7 @@ import javax.faces.event.AbortProcessingException;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.ActionListener;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.component.cover.ServerConfigurationService;
@@ -288,7 +289,10 @@ implements ActionListener
 	    // if late submissions not allowed and retract date is null, set retract date to due date
 	    if (assessmentSettings.getLateHandling() != null && AssessmentAccessControlIfc.NOT_ACCEPT_LATE_SUBMISSION.equals(assessmentSettings.getLateHandling()) &&
 	    		retractDate == null && dueDate != null && assessmentSettings.getAutoSubmit()) {
-	    	assessmentSettings.setRetractDate(dueDate);
+	    	boolean autoSubmitEnabled = ServerConfigurationService.getBoolean("samigo.autoSubmit.enabled", false);
+	    	if (autoSubmitEnabled) {
+	    		assessmentSettings.setRetractDate(dueDate);
+	    	}
 	    }
 
 	    // if auto-submit is enabled, make sure retract date is set
@@ -511,9 +515,9 @@ implements ActionListener
 		// e. set Submission Messages
 	    control.setSubmissionMessage(assessmentSettings.getSubmissionMessage());
 	    // f. set username
-	    control.setUsername(TextFormat.convertPlaintextToFormattedTextNoHighUnicode(log, assessmentSettings.getUsername()));
+	    control.setUsername(TextFormat.convertPlaintextToFormattedTextNoHighUnicode(log, StringUtils.trim(assessmentSettings.getUsername())));
 	    // g. set password
-	    control.setPassword(TextFormat.convertPlaintextToFormattedTextNoHighUnicode(log, assessmentSettings.getPassword()));
+	    control.setPassword(TextFormat.convertPlaintextToFormattedTextNoHighUnicode(log, StringUtils.trim(assessmentSettings.getPassword())));
 	    // h. set finalPageUrl
 	    String finalPageUrl = "";
 	    if (assessmentSettings.getFinalPageUrl() != null) {
