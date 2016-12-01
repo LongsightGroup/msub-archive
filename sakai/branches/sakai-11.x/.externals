@@ -90,13 +90,10 @@ evaluation https://github.com/sakaicontrib/evaluation/branches/11.x
 #kaltura -r 313603 https://source.sakaiproject.org/svn/msub/unicon.net/kaltura/trunk
 #qna https://source.sakaiproject.org/contrib/qna/trunk/
 #sms https://source.sakaiproject.org/contrib/longsight/sms/sms-sakai10.x-datepicker/
+vericite  https://github.com/vericite/contentreview-impl-vericite/branches/2.0
 
 #POM Changes
 #shell_command find blogwow/ -name pom.xml -exec sed -i 's/12-SNAPSHOT/11-SNAPSHOT/g' {} \;
 
 # Attendance
 #shell_command git clone https://github.com/UDayton/attendance.git
-
-#VeriCite
-#shell_command cd content-review
-#shell_command git clone -b 2.0 https://github.com/vericite/contentreview-impl-vericite.git
