@@ -94,8 +94,6 @@
 		<dependency>
 	      	<groupId>org.sakaiproject.shortenedurl</groupId>
 	      	<artifactId>shortenedurl-api</artifactId>
-	      	<version>${project.version}</version>
-            <scope>provided</scope>
 	    </dependency>
         <dependency>
             <groupId>org.sakaiproject.assignment</groupId>
@@ -108,11 +106,14 @@
     <dependency>
       <groupId>org.sakaiproject.edu-services.gradebook</groupId>
       <artifactId>gradebook-service-hibernate</artifactId>
-      <scope>provided</scope>
     </dependency>
         <dependency>
             <groupId>org.sakaiproject.msgcntr</groupId>
             <artifactId>messageforums-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.sakaiproject.lessonbuilder</groupId>
+            <artifactId>lessonbuilder-api</artifactId>
         </dependency>
         <dependency>
           <groupId>org.sakaiproject.samigo</groupId>
@@ -129,19 +130,8 @@
         <dependency>
           <groupId>org.quartz-scheduler</groupId>
           <artifactId>quartz</artifactId>
-          <version>${sakai.quartz.version}</version>
-          <scope>provided</scope>
         </dependency> 
         <!--  external dependencies -->
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.16</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-        </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
