@@ -3175,11 +3175,7 @@ public class WSLongsight extends AbstractWebService {
 		}
 	}
 
-	@WebMethod
-	@Path("/transferCopyEntities")
-	@Produces("text/plain")
-	@GET
-	public Map transferCopyEntities(String toolId, String fromContext, String toContext) {
+	protected Map transferCopyEntities(String toolId, String fromContext, String toContext) {
 
 		Map transversalMap = new HashMap();
 
