@@ -3209,11 +3209,7 @@ public class WSLongsight extends AbstractWebService {
 		return transversalMap;
 	}
 
-	@WebMethod
-	@Path("/updateEntityReferences")
-	@Produces("text/plain")
-	@GET
-	public void updateEntityReferences(String toolId, String toContext, Map transversalMap, Site newSite) {
+	protected void updateEntityReferences(String toolId, String toContext, Map transversalMap, Site newSite) {
 		for (Iterator i = EntityManager.getEntityProducers().iterator(); i.hasNext();) {
 			EntityProducer ep = (EntityProducer) i.next();
 			if (ep instanceof EntityTransferrerRefMigrator && ep instanceof EntityTransferrer) {
@@ -3227,7 +3223,7 @@ public class WSLongsight extends AbstractWebService {
 					}
 				} catch (Throwable t) {
 					LOG.warn(
-							"Error encountered while asking EntityTransfer to updateEntityRefere     nces at site: "
+							"Error encountered while asking EntityTransfer to updateEntityReferences at site: "
 									+ toContext, t);
 				}
 			}
