@@ -888,6 +888,17 @@ public interface AssignmentService extends EntityProducer
 	 */
 	public List<String> getSubmitterIdList(String searchFilterOnly, String allOrOneGroup, String search, String aRef, String contextString);	
 
+	/**
+	 * Alternative to getSubmittedIdList which returns full user and submissions, since submitterIdList retrieves them anyway
+	 * @param searchFilterOnly If true, return only those ids that matches the group filter and search criteria
+	 * @param allOrOneGroup "all" or specific group reference
+	 * @param aRef Assignment Reference
+	 * @param search The search string
+	 * @param contextString Site id
+	 * @return
+	 */
+	public Map<User, AssignmentSubmission> getSubmitterMap(String searchFilterOnly, String allOrOneGroup, String search, String aRef, String contextString);
+
 	public String escapeInvalidCharsEntry(String accentedString);
 	
 	/*
@@ -898,4 +909,13 @@ public interface AssignmentService extends EntityProducer
 	 * Params: AssignmentSubmission s
 	 */
 	public boolean assignmentUsesAnonymousGrading(Assignment a);
+	
+	/*
+	 * This method allows you to know if there are submissions submitted
+	 *
+	 * SAK-30062
+	 *
+	 * Params: AssignmentSubmission s
+	 */
+	public boolean hasBeenSubmitted(AssignmentSubmission s);
 }
