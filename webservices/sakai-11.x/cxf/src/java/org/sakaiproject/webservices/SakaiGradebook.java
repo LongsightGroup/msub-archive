@@ -17,15 +17,21 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
-
-
+import org.sakaiproject.service.gradebook.shared.GradebookExternalAssessmentService;
 import org.sakaiproject.service.gradebook.shared.GradebookFrameworkService;
+import org.sakaiproject.service.gradebook.shared.GradebookService;
+import org.sakaiproject.authz.api.AuthzGroup;
+import org.sakaiproject.service.gradebook.shared.Assignment;
 
 import org.sakaiproject.tool.gradebook.GradingScale;
+import org.sakaiproject.user.api.User;
+import org.sakaiproject.user.api.UserNotDefinedException;
 import org.sakaiproject.tool.gradebook.GradeMapping;
 import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.site.api.SiteService.SelectionType;
@@ -172,6 +178,326 @@ public class SakaiGradebook extends AbstractWebService {
         }
         return "success";
     }
+
+    @WebMethod
+    @Path("/addExternalAssessment")
+    @Produces("text/plain")
+    @GET
+	public String addExternalAssessment(
+			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+			@WebParam(name = "gradebookUid", partName = "gradebookUid") @QueryParam("gradebookUid") String gradebookUid,
+			@WebParam(name = "externalId", partName = "externalId") @QueryParam("externalId") String externalId,
+			@WebParam(name = "externalUrl", partName = "externalUrl") @QueryParam("externalUrl") String externalUrl,
+			@WebParam(name = "assignmentName", partName = "assignmentName") @QueryParam("assignmentName") String assignmentName,
+			@WebParam(name = "longVarValue", partName = "longVarValue") @QueryParam("longVarValue") String longVarValue,
+			@WebParam(name = "toolName", partName = "toolName") @QueryParam("toolName") String toolName) {
+
+		Session s = establishSession(sessionid);
+
+		try {
+			Calendar calVar = Calendar.getInstance();
+			Date currentTimeVar = calVar.getTime();
+			long longVar = Long.parseLong(longVarValue);
+
+			gradebookExternalAssessmentService.addExternalAssessment(gradebookUid, externalId, externalUrl, assignmentName, longVar, currentTimeVar, toolName);
+		} catch (Exception e) {
+			return e.getClass().getName() + " : " + e.getMessage();
+		}
+		return "success";
+	}
+
+    @WebMethod
+    @Path("/updateExternalAssessment")
+    @Produces("text/plain")
+    @GET
+	public String updateExternalAssessment(
+			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+			@WebParam(name = "gradebookUid", partName = "gradebookUid") @QueryParam("gradebookUid") String gradebookUid,
+			@WebParam(name = "externalId", partName = "externalId") @QueryParam("externalId") String externalId,
+			@WebParam(name = "externalUrl", partName = "externalUrl") @QueryParam("externalUrl") String externalUrl,
+			@WebParam(name = "assignmentName", partName = "assignmentName") @QueryParam("assignmentName") String assignmentName,
+			@WebParam(name = "longVarValue", partName = "longVarValue") @QueryParam("longVarValue") String longVarValue) {
+
+		Session s = establishSession(sessionid);
+
+		try {
+			Calendar calVar = Calendar.getInstance();
+			Date currentTimeVar = calVar.getTime();
+			long longVar = Long.parseLong(longVarValue);
+
+			gradebookExternalAssessmentService.updateExternalAssessment(gradebookUid, externalId, externalUrl, assignmentName, longVar, currentTimeVar);
+
+		} catch (Exception e) {
+			return e.getClass().getName() + " : " + e.getMessage();
+		}
+		return "success";
+	}
+
+    @WebMethod
+    @Path("/isGradeBookDefined")
+    @Produces("text/plain")
+    @GET
+	public String isGradeBookDefined(
+			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+			@WebParam(name = "gradebookUid", partName = "gradebookUid") @QueryParam("gradebookUid") String gradebookUid) {
+
+		Session s = establishSession(sessionid);
+
+		try {
+			if (gradebookExternalAssessmentService.isGradebookDefined(gradebookUid)) {
+				return "true";
+			} else {
+				return "false";
+			}
+
+		} catch (Exception e) {
+			return e.getClass().getName() + " : " + e.getMessage();
+		}
+	}
+
+    @WebMethod
+    @Path("/updateExternalAssessment")
+    @Produces("text/plain")
+    @GET
+	public String updateExternalAssessment(
+			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+			@WebParam(name = "gradebookUid", partName = "gradebookUid") @QueryParam("gradebookUid") String gradebookUid,
+			@WebParam(name = "externalId", partName = "externalId") @QueryParam("externalId") String externalId,
+			@WebParam(name = "studentList", partName = "studentList") @QueryParam("studentList") String studentList,
+			@WebParam(name = "scoreList", partName = "scoreList") @QueryParam("scoreList") String scoreList) {
+
+		Session s = establishSession(sessionid);
+
+		String errlist = "";
+
+		try {
+			long externalIdLong = new Long(externalId).longValue();
+
+			String[] inputtedLoginNameArray = studentList.split(",");
+			String[] inputtedGradeArray = scoreList.split(",");
+			for (int x = 0; x < inputtedLoginNameArray.length; x++) {
+				String studentID = inputtedLoginNameArray[x];
+				String pointsStringVar = inputtedGradeArray[x];
+				Double points = new Double(pointsStringVar);
+				LOG.warn("trying to submit grade for" + studentID);
+
+				if (gradebookService.isUserAbleToGradeItemForStudent(gradebookUid, externalIdLong, studentID)) {
+					LOG.warn("submit grade for" + studentID + ":" + points);
+					gradebookExternalAssessmentService.updateExternalAssessmentScore(gradebookUid, externalId,
+							studentID, pointsStringVar);
+				} else
+					errlist = errlist + "," + studentID;
+			}
+
+		} catch (Exception e) {
+			return e.getClass().getName() + " : " + e.getMessage();
+		}
+
+		if (errlist.length() == 0) {
+			return "success";
+		}
+		else {
+			return "Permission defined for students " + errlist.substring(1);
+		}
+	}
+
+    @WebMethod
+    @Path("/updateExternalAssessmentScores")
+    @Produces("text/plain")
+    @GET
+	public String updateExternalAssessmentScores(
+			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+			@WebParam(name = "gradebookUid", partName = "gradebookUid") @QueryParam("gradebookUid") String gradebookUid,
+			@WebParam(name = "externalId", partName = "externalId") @QueryParam("externalId") String externalId,
+			@WebParam(name = "scores", partName = "scores") @QueryParam("scores") Map scores) {
+
+		Session s = establishSession(sessionid);
+		LOG.warn("trying to submit grade for" + gradebookUid);
+
+		HashMap newScores = new HashMap();
+		Set scoreEids = scores.keySet();
+
+		try {
+			for (Iterator i = scoreEids.iterator(); i.hasNext();) {
+				String eid = (String) i.next();
+				String uid = userDirectoryService.getUserByEid(eid).getId();
+				if (scores.get(eid) instanceof String && "".equals((String) scores.get(eid))) {
+					newScores.put(uid, null);
+				} else {
+					newScores.put(uid, scores.get(eid));
+				}
+			}
+
+			gradebookExternalAssessmentService.updateExternalAssessmentScores(gradebookUid, externalId, newScores);
+		} catch (Exception e) {
+			LOG.warn("oops", e);
+			return e.getClass().getName() + " : " + e.getMessage();
+		}
+		return "success";
+	}
+
+    @WebMethod
+    @Path("/removeExternalAssessment")
+    @Produces("text/plain")
+    @GET
+	public String removeExternalAssessment(
+			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+			@WebParam(name = "gradebookUid", partName = "gradebookUid") @QueryParam("gradebookUid") String gradebookUid,
+			@WebParam(name = "externalId", partName = "externalId") @QueryParam("externalId") String externalId) {
+
+		Session s = establishSession(sessionid);
+
+		try {
+			gradebookExternalAssessmentService.removeExternalAssessment(gradebookUid, externalId);
+		} catch (Exception e) {
+			return e.getClass().getName() + " : " + e.getMessage();
+		}
+
+		return "success";
+	}
+
+    @WebMethod
+    @Path("/getAssignments")
+    @Produces("text/plain")
+    @GET
+	public String getAssignments(
+			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+			@WebParam(name = "gradebookUid", partName = "gradebookUid") @QueryParam("gradebookUid") String gradebookUid,
+			@WebParam(name = "delim", partName = "delim") @QueryParam("delim") String delim) {
+
+		Session s = establishSession(sessionid);
+		String retval = "";
+
+		try {
+			List Assignments = gradebookService.getAssignments(gradebookUid);
+			for (Iterator iAssignment = Assignments.iterator(); iAssignment.hasNext();) {
+				Assignment a = (Assignment) iAssignment.next();
+
+				retval = retval + delim + a.getName();
+			}
+
+		} catch (Exception e) {
+			return e.getClass().getName() + " : " + e.getMessage();
+		}
+
+		if (retval.length() == 0)
+			return retval;
+		else
+			return retval.substring(1);
+	}
+
+    @WebMethod
+    @Path("/getAssignmentScores")
+    @Produces("text/plain")
+    @GET
+	public Map getAssignmentScores(
+			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+			@WebParam(name = "gradebookUid", partName = "gradebookUid") @QueryParam("gradebookUid") String gradebookUid) {
+
+		Session s = establishSession(sessionid);
+		String retval = "";
+
+		try {
+
+			HashMap return_data = new HashMap();
+			HashMap assignments = new HashMap();
+
+			List Assignments = gradebookService.getAssignments(gradebookUid);
+
+			AuthzGroup realm = authzGroupService.getAuthzGroup("/site/" + gradebookUid);
+			ArrayList azGroups = new ArrayList();
+			azGroups.add("/site/" + gradebookUid);
+			Set students = authzGroupService.getUsersIsAllowed("section.role.student", azGroups);
+
+			ArrayList studentIds = new ArrayList();
+			for (Iterator m = students.iterator(); m.hasNext();) {
+				String uid = null;
+				try {
+					User u = userDirectoryService.getUser((String) m.next());
+					String eid = u.getEid();
+					studentIds.add(eid);
+				} catch (UserNotDefinedException ignore) {
+				}
+			}
+
+			return_data.put("students", studentIds);
+
+			for (Iterator iAssignment = Assignments.iterator(); iAssignment.hasNext();) {
+				Assignment a = (Assignment) iAssignment.next();
+				HashMap assignment = new HashMap();
+				assignment.put("name", a.getName());
+				assignment.put("points", a.getPoints());
+				ArrayList assignment_scores = new ArrayList();
+				for (Iterator m = students.iterator(); m.hasNext();) {
+					Double score = null;
+					try {
+						User u = userDirectoryService.getUser((String) m.next());
+						String eid = u.getEid();
+						// assignment_scores.put(eid,gradebookService.getAssignmentScore(gradebookUid,a.getName(),u.getId()));
+						assignment_scores
+								.add(gradebookService.getAssignmentScoreString(gradebookUid, a.getName(), u.getId()));
+					} catch (UserNotDefinedException ignore) {
+					}
+				}
+				assignment.put("scores", assignment_scores);
+				assignments.put(a.getName(), assignment);
+			}
+			return_data.put("assignments", assignments);
+
+			return return_data;
+
+		} catch (Exception e) {
+			HashMap e_data = new HashMap();
+			e_data.put("error", e.getClass().getName() + " : " + e.getMessage());
+			return e_data;
+		}
+	}
+
+    @WebMethod
+    @Path("/getCourseGrades")
+    @Produces("text/plain")
+    @GET
+	public Map getCourseGrades(
+			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+			@WebParam(name = "gradebookUid", partName = "gradebookUid") @QueryParam("gradebookUid") String gradebookUid) {
+
+		Session s = establishSession(sessionid);
+
+		Map calculatedGrades = gradebookService.getImportCourseGrade(gradebookUid);
+		Map overrides = gradebookService.getEnteredCourseGrade(gradebookUid);
+		Iterator it = overrides.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry pairs = (Map.Entry) it.next();
+			calculatedGrades.put(pairs.getKey(), pairs.getValue());
+		}
+		return calculatedGrades;
+
+	}
+
+    @WebMethod
+    @Path("/isUserAbleToGradeStudent")
+    @Produces("text/plain")
+    @GET
+	public String isUserAbleToGradeStudent(
+			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+			@WebParam(name = "gradebookUid", partName = "gradebookUid") @QueryParam("gradebookUid") String gradebookUid,
+			@WebParam(name = "studentUid", partName = "studentUid") @QueryParam("studentUid") String studentUid) {
+
+		Session s = establishSession(sessionid);
+		boolean retval;
+
+		try {
+			retval = gradebookService.isUserAbleToGradeItemForStudent(gradebookUid, null, studentUid);
+		} catch (Exception e) {
+			return e.getClass().getName() + " : " + e.getMessage();
+		}
+
+		if (retval) {
+			return "true";
+		} else {
+			return "false";
+		}
+	}
 
     private boolean mapsAreEqual(Map<String, Double> mapA, Map<String, Double> mapB) {
 
