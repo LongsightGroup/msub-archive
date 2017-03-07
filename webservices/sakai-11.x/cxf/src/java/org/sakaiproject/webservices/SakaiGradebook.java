@@ -256,10 +256,10 @@ public class SakaiGradebook extends AbstractWebService {
 	}
 
     @WebMethod
-    @Path("/updateExternalAssessment")
+    @Path("/updateExternalAssessmentWithScoreList")
     @Produces("text/plain")
     @GET
-	public String updateExternalAssessment(
+	public String updateExternalAssessmentWithScoreList(
 			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
 			@WebParam(name = "gradebookUid", partName = "gradebookUid") @QueryParam("gradebookUid") String gradebookUid,
 			@WebParam(name = "externalId", partName = "externalId") @QueryParam("externalId") String externalId,
