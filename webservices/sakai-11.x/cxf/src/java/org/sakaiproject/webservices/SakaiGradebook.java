@@ -2,6 +2,9 @@ package org.sakaiproject.webservices;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.sakaiproject.service.gradebook.shared.GradingScaleDefinition;
 import org.sakaiproject.tool.api.Session;
 
@@ -14,6 +17,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Arrays;
@@ -23,15 +27,14 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
-import org.sakaiproject.service.gradebook.shared.GradebookExternalAssessmentService;
 import org.sakaiproject.service.gradebook.shared.GradebookFrameworkService;
-import org.sakaiproject.service.gradebook.shared.GradebookService;
 import org.sakaiproject.authz.api.AuthzGroup;
 import org.sakaiproject.service.gradebook.shared.Assignment;
-
+import org.sakaiproject.service.gradebook.shared.GradeDefinition;
 import org.sakaiproject.tool.gradebook.GradingScale;
 import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserNotDefinedException;
+import org.sakaiproject.util.Xml;
 import org.sakaiproject.tool.gradebook.GradeMapping;
 import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.site.api.SiteService.SelectionType;
@@ -390,74 +393,58 @@ public class SakaiGradebook extends AbstractWebService {
     @Path("/getAssignmentScores")
     @Produces("text/plain")
     @GET
-	public Map getAssignmentScores(
+	public String getAssignmentScores(
 			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
 			@WebParam(name = "gradebookUid", partName = "gradebookUid") @QueryParam("gradebookUid") String gradebookUid) {
 
 		Session s = establishSession(sessionid);
-		String retval = "";
+
+		Document dom = Xml.createDocument();
+		Node all = dom.createElement("Assignments");
+		dom.appendChild(all);
 
 		try {
-
-			HashMap return_data = new HashMap();
-			HashMap assignments = new HashMap();
-
-			List Assignments = gradebookService.getAssignments(gradebookUid);
-
-			AuthzGroup realm = authzGroupService.getAuthzGroup("/site/" + gradebookUid);
-			ArrayList azGroups = new ArrayList();
+			ArrayList<String> azGroups = new ArrayList<String>();
 			azGroups.add("/site/" + gradebookUid);
-			Set students = authzGroupService.getUsersIsAllowed("section.role.student", azGroups);
 
-			ArrayList studentIds = new ArrayList();
-			for (Iterator m = students.iterator(); m.hasNext();) {
-				String uid = null;
-				try {
-					User u = userDirectoryService.getUser((String) m.next());
-					String eid = u.getEid();
-					studentIds.add(eid);
-				} catch (UserNotDefinedException ignore) {
-				}
+			Set<String> students = authzGroupService.getUsersIsAllowed("section.role.student", azGroups);
+			List<User> users = userDirectoryService.getUsers(students);
+
+			Map<String, String> validStudents = new HashMap<String, String>();
+			List<String> validStudentUids = new ArrayList<String>();
+			for (User u : users) {
+				validStudents.put(u.getId(), u.getEid());
+				validStudentUids.add(u.getId());
 			}
 
-			return_data.put("students", studentIds);
+			List<Assignment> assignmentList = gradebookService.getAssignments(gradebookUid);
+			for (Assignment a : assignmentList) {
+				Element uElement = dom.createElement("Assignment");
+				uElement.setAttribute("id", a.getId().toString());
+				uElement.setAttribute("name", a.getName());
+				uElement.setAttribute("points", a.getPoints().toString());
 
-			for (Iterator iAssignment = Assignments.iterator(); iAssignment.hasNext();) {
-				Assignment a = (Assignment) iAssignment.next();
-				HashMap assignment = new HashMap();
-				assignment.put("name", a.getName());
-				assignment.put("points", a.getPoints());
-				ArrayList assignment_scores = new ArrayList();
-				for (Iterator m = students.iterator(); m.hasNext();) {
-					Double score = null;
-					try {
-						User u = userDirectoryService.getUser((String) m.next());
-						String eid = u.getEid();
-						// assignment_scores.put(eid,gradebookService.getAssignmentScore(gradebookUid,a.getName(),u.getId()));
-						assignment_scores
-								.add(gradebookService.getAssignmentScoreString(gradebookUid, a.getName(), u.getId()));
-					} catch (UserNotDefinedException ignore) {
-					}
+				List<GradeDefinition> defs = gradebookService.getGradesForStudentsForItem(gradebookUid, a.getId(), validStudentUids);
+				for (GradeDefinition gd : defs) {
+					Element sElement = dom.createElement("Score");
+					sElement.setAttribute("studentUid", gd.getStudentUid());
+					sElement.setAttribute("studentEid", validStudents.get(gd.getStudentUid()));
+					sElement.setAttribute("grade", gd.getGrade());
+					// sElement.setAttribute("comment", gd.getGradeComment());
+					uElement.appendChild(sElement);
 				}
-				assignment.put("scores", assignment_scores);
-				assignments.put(a.getName(), assignment);
+				all.appendChild(uElement);
 			}
-			return_data.put("assignments", assignments);
-
-			return return_data;
+			return Xml.writeDocumentToString(dom);
 
 		} catch (Exception e) {
-			HashMap e_data = new HashMap();
-			e_data.put("error", e.getClass().getName() + " : " + e.getMessage());
-			return e_data;
+			LOG.warn("getAssignmentScores failure", e);
+			return "failure: " + e.getMessage();
 		}
 	}
 
-    @WebMethod
-    @Path("/getCourseGrades")
-    @Produces("text/plain")
-    @GET
-	public Map getCourseGrades(
+    // TODO: Can't return a Map using CXF
+	private Map getCourseGrades(
 			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
 			@WebParam(name = "gradebookUid", partName = "gradebookUid") @QueryParam("gradebookUid") String gradebookUid) {
 
