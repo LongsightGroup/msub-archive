@@ -304,11 +304,8 @@ public class SakaiGradebook extends AbstractWebService {
 		}
 	}
 
-    @WebMethod
-    @Path("/updateExternalAssessmentScores")
-    @Produces("text/plain")
-    @GET
-	public String updateExternalAssessmentScores(
+    // TODO: CXF and Map need to be changed
+	private String updateExternalAssessmentScores(
 			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
 			@WebParam(name = "gradebookUid", partName = "gradebookUid") @QueryParam("gradebookUid") String gradebookUid,
 			@WebParam(name = "externalId", partName = "externalId") @QueryParam("externalId") String externalId,
