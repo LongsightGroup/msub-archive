@@ -3156,18 +3156,21 @@ public class WSLongsight extends AbstractWebService {
 						LOG.info("Cache cleared because of eid update: " + ID_EID_CACHE + ":" + clearedCache);
 
 						// EST-3 clear out jldap_immutable table if it exists
-						int jldap = dbUpdate("DELETE IGNORE FROM jldap_immutable WHERE eid=? OR eid=?", new String[]{currentEid,newEid});
-						LOG.info("Deleted from jldap_immutable where eid=" + currentEid + " or eid=" + newEid + " : " + jldap);
+						try {
+							int jldap = dbUpdate("DELETE IGNORE FROM jldap_immutable WHERE eid=? OR eid=?", new String[]{currentEid,newEid});
+							LOG.info("Deleted from jldap_immutable where eid=" + currentEid + " or eid=" + newEid + " : " + jldap);
+						} catch (Exception eee) {
+							LOG.error("changeUserEidForce: No table jldap_immutable " + eee.getMessage());
+						}
 
 						return "Successfully updated eid: " + currentEid + " to eid: " + newEid + ";cacheCleared=" + clearedCache;
 					}
-                                        else {
+					else {
 						return "Update failed for changing from eid: " + currentEid + " to eid: " + newEid;
 					}
 				}
-
 			} 
-                        else {
+			else {
 				return "FAILURE: Access to changeUserEidForce is restricted to super admins";
 			}
 		}catch(Exception e){
@@ -3896,7 +3899,7 @@ public class WSLongsight extends AbstractWebService {
 
 
                     ArrayList scores = publishedAssessmentService.getBasicInfoOfLastOrHighestOrAverageSubmittedAssessmentsByScoringOption(userid, siteid, true);
-                    System.out.println(userid+" "+scores.size());
+                    LOG.info("getScoresForSiteForUser() " + userid+" "+scores.size());
 
                     for (int i = 0; i < scores.size(); i++) {
                             AssessmentGradingData agd = (AssessmentGradingData) scores.get(i);
@@ -4054,9 +4057,11 @@ public class WSLongsight extends AbstractWebService {
 				ps.setString(i, param);
 				i++;
 			}
-			return ps.executeUpdate();
+			int returnVal = ps.executeUpdate();
+			connection.commit();
+			return returnVal;
 		}catch(Exception e){
-			e.printStackTrace();
+			LOG.error("Could not dbUpdate", e);
 		}finally{
 			if(ps != null){
 				try{
