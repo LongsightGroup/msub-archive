@@ -288,7 +288,6 @@ public class ShowItemProducer implements ViewComponentProducer, NavigationCaseRe
 	    if (sendingPage != -1 && breadcrumbs != null && breadcrumbs.size() > 0) {
 		SimplePageBean.PathEntry entry = breadcrumbs.get(breadcrumbs.size()-1);
 
-
 		if (item != null && item.getType() == SimplePageItem.RESOURCE) {
 		    int index = 0;
 		    for (SimplePageBean.PathEntry e : breadcrumbs) {
@@ -308,7 +307,6 @@ public class ShowItemProducer implements ViewComponentProducer, NavigationCaseRe
 			index++;
 		    }
 		} else {
-
 		    if (returnView == null || returnView.equals("")) {
 			GeneralViewParameters view = new GeneralViewParameters(ShowPageProducer.VIEW_ID);
 			view.setSendingPage(entry.pageId);
@@ -319,7 +317,11 @@ public class ShowItemProducer implements ViewComponentProducer, NavigationCaseRe
 		    } else {
 			GeneralViewParameters view = new GeneralViewParameters(returnView);
 			view.setSendingPage(sendingPage);;
-			view.setItemId(new Long(((GeneralViewParameters) params).getId()));
+			String id = ((GeneralViewParameters) params).getId();
+			if (id == null || id.equals(""))
+			    view.setItemId(null);
+			else
+			    view.setItemId(new Long(((GeneralViewParameters) params).getId()));
 			UIInternalLink.make(tofill, "return", ((GeneralViewParameters) params).getTitle() , view);
 			UIOutput.make(tofill, "returnwarning", messageLocator.getMessage("simplepage.return.warning"));
 		    }
@@ -355,6 +357,12 @@ public class ShowItemProducer implements ViewComponentProducer, NavigationCaseRe
 		    List<UrlItem> createLinks = forumEntity.createNewUrls(simplePageBean);
 		    Integer i = new Integer(source.substring("CREATE/FORUM/".length()));
 		    source = createLinks.get(i).Url;
+		} else if (source.startsWith("CREATE/BLTI/")) {
+		    if (bltiEntity != null) {
+			List<UrlItem> createLinks = bltiEntity.createNewUrls(simplePageBean);
+			Integer i = new Integer(source.substring("CREATE/BLTI/".length()));
+			source = createLinks.get(i).Url;
+		    }
 		}
 	    } else if (item.getAttribute("multimediaUrl") != null)
 		source = item.getAttribute("multimediaUrl");

@@ -2373,10 +2373,12 @@ public class SimplePageBean {
 	    	return "permission-failed";
 	    if (!checkCsrf())
 	    	return "permission-failed";
-	    return deleteOrphanPagesInternal();
+	    deleteOrphanPagesInternal();
+	    return deletePages();
 	}
 
 	//This is an internal call that expects you will check permissions before calling it
+	//Public because it's accessed from entity producer
 	public String deleteOrphanPagesInternal() {
 	    // code is mostly from PagePickerProducer
 	    // list we're going to display
@@ -2400,7 +2402,7 @@ public class SimplePageBean {
 
 	    // this adds everything you can find from top level pages to entries
 	    for (SimplePageItem sitePageItem : sitePages) {
-		// System.out.println("findallpages " + sitePageItem.getName() + " " + true);
+		log.debug("findallpages " + sitePageItem.getName() + " " + true);
 		pagePickerProducer().findAllPages(sitePageItem, entries, pageMap, topLevelPages, sharedPages, 0, true, true);
 	    }
 		    
@@ -2416,17 +2418,22 @@ public class SimplePageBean {
 		// do the deletetion
 		// selectedEntities is the argument for deletePages
 		selectedEntities = orphans.toArray(selectedEntities);
-		deletePages();
+		deletePagesInternal();
 	    }	    
 	    return "success";
 	}
 
+	//External method for deleting pages for the tool CSRF protected
 	public String deletePages() {
-	    if (getEditPrivs() != 0)
-	    	return "permission-failed";
-	    if (!checkCsrf())
-		return "permission-failed";
-
+		if (getEditPrivs() != 0)
+			return "permission-failed";
+		if (!checkCsrf())
+			return "permission-failed";
+		return deletePagesInternal();
+	}
+	
+	//Service method for deleting pages
+	protected String deletePagesInternal() {
 	    String siteId = getCurrentSiteId();
 	    log.debug("Found "+ selectedEntities.length + " pages to delete");
 	    for (int i = 0; i < selectedEntities.length; i++) {
@@ -3911,23 +3918,10 @@ public class SimplePageBean {
 			if (name == null || name.length() == 0)
 				name = file.getName();
 			
-			int i = name.lastIndexOf("/");
-			if (i >= 0)
-				name = name.substring(i+1);
-			String base = name;
-			String extension = "";
-			i = name.lastIndexOf(".");
-			if (i > 0) {
-				base = name.substring(0, i);
-				extension = name.substring(i+1);
-			}
-			
 			mimeType = file.getContentType();
 			try {
-				ContentResourceEdit res = contentHostingService.addResource(collectionId, 
-						        fixFileName(collectionId, Validator.escapeResourceName(base), Validator.escapeResourceName(extension)),
-							"",
-						  	MAXIMUM_ATTEMPTS_FOR_UNIQUENESS);
+				String[] names = fixFileName(collectionId, name);
+				ContentResourceEdit res = contentHostingService.addResource(collectionId, names[0], names[1], MAXIMUM_ATTEMPTS_FOR_UNIQUENESS);
 				res.setContentType(mimeType);
 				res.setContent(file.getInputStream());
 				try {
@@ -5302,21 +5296,79 @@ public class SimplePageBean {
 		this.multipartMap = multipartMap;
 	}
 
-	public String fixFileName(String collectionId, String name, String extension) {
-	    if(extension.equals("") || extension.startsWith(".")) {
-		// do nothing                                                                                               
-	    } else {
-		extension = "." + extension;
-	    }
-	    name = Validator.escapeResourceName(name.trim()) + Validator.escapeResourceName(extension);
-	    // allow for possible addition of -NN for uniqueness
-	    int maxname = 250 - collectionId.length() - 3;
-	    if (name.length() > maxname)
-		name = org.apache.commons.lang.StringUtils.abbreviateMiddle(name, "_", maxname);
-	    return name;
+        public String[] fixFileName(String collectionId, String name) {
+		String[] ret = new String[2];
+		ret[0] = "";
+		ret[1] = "";
+
+		if (name == null || name.equals(""))
+		    return ret;
+
+		int i = name.lastIndexOf("/");
+		if (i >= 0)
+		    name = name.substring(i+1);
+		String base = name;
+		String extension = "";
+		i = name.lastIndexOf(".");
+		if (i > 0) {
+		    base = name.substring(0, i);
+		    extension = name.substring(i+1);
+		}
+
+		base = Validator.escapeResourceName(base);
+		extension = Validator.escapeResourceName(extension);
+		ret[0] = base;
+		ret[1] = extension;
+
+		// that was easy. But now have to deal with names that are too long
+
+		// the longest identifier content service will actually take is 247. Note sure why
+		// from that subtract 1 for the period, and 4 for _xxx if we have duplicates
+		// that would give 242. Actually use 240, just for safety.
+		int maxname = 240 - collectionId.length();
+
+		if (maxname < 1) {
+		    return ret;  // nothing we can do. let other layers return error
+		}
+
+		int namelen = name.length();
+		
+		if (namelen <= maxname)
+		    return ret;  // easy case, no problem
+
+		int overage = namelen - maxname; // amount to cut
+
+		// doesn't seem to make sense to use ellipses for less than length of 8. better just to truncate
+		// if possible, truncate the base
+		if (base.length() > (overage + 8)) {
+		    ret[0] = org.apache.commons.lang.StringUtils.abbreviateMiddle(name, "_", maxname - extension.length());
+		    return ret;
+		}
+
+		// but what about b.eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee, or more likely, .xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+		if (extension.length() > (overage + 8)) {
+		    ret[1] = org.apache.commons.lang.StringUtils.abbreviateMiddle(extension, "_", maxname - base.length());
+		    return ret;
+		}
+
+		// not enough for both name and extension. just use name
+		ret[1] = "";
+		    
+		if (base.length() <= maxname)
+		    return ret;
+
+		// base has to be larger than maxname, so final length will be maxname
+		if (maxname > 8) {
+		    ret[0] = org.apache.commons.lang.StringUtils.abbreviateMiddle(base, "_", maxname);
+		    return ret;
+		}
+
+		ret[0] = base.substring(0, maxname);  // string is longer than maxname by test above
+		ret[1] = "";
+
+		return ret;
+
 	}
-
-
 
 // for group-owned student pages, put it in the worksite of the current user
 	public String getCollectionId(boolean urls) {
@@ -5592,17 +5644,7 @@ public class SimplePageBean {
 				String fname = file.getOriginalFilename();
 				if (fname == null || fname.length() == 0)
 					fname = file.getName();
-				int i = fname.lastIndexOf("/");
-				if (i >= 0)
-					fname = fname.substring(i+1);
-				String base = fname;
-				String extension = "";
-				i = fname.lastIndexOf(".");
-				if (i > 0) {
-					base = fname.substring(0, i);
-					extension = fname.substring(i+1);
-				}
-				
+
 				mimeType = file.getContentType();
 				try {
 					ContentResourceEdit res = null;
@@ -5613,10 +5655,8 @@ public class SimplePageBean {
 					    res = contentHostingService.editResource(resId);
 					} else {
 					    // otherwise create a new file
-					    res = contentHostingService.addResource(collectionId, 
-						                fixFileName(collectionId, Validator.escapeResourceName(base), Validator.escapeResourceName(extension)),
-								"",
-							  	MAXIMUM_ATTEMPTS_FOR_UNIQUENESS);
+					    String[] names = fixFileName(collectionId, fname);
+					    res = contentHostingService.addResource(collectionId, names[0], names[1], MAXIMUM_ATTEMPTS_FOR_UNIQUENESS);
 					}
 					if (isCaption)
 					    res.setContentType("text/vtt");

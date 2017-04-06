@@ -1369,7 +1369,7 @@ $(function() {
 					$(".format").attr("checked", false);
 					$("#format-" + format).attr("checked", true);
 					$("#formatstuff").show();
-					$("#edit-item-object-p").show();
+					$("#edit-item-object-p").hide();
 					fixitemshows();
 
 				}else {

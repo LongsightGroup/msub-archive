@@ -111,6 +111,12 @@ public class BltiPickerProducer implements ViewComponentProducer, NavigationCase
 			System.out.println("QuizPicker permission exception " + e);
 			return;
 		    }
+		} else {
+		    // hack: if the Blti manage tools helper calls us back, it doesn't set sending page. We need something 
+		    // or everything blows up. Assume we're on the current page.
+		    SimplePage currentPage = simplePageBean.getCurrentPage();
+		    if (currentPage != null)
+			((GeneralViewParameters) viewparams).setSendingPage(currentPage.getPageId());
 		}
 
 	        Integer bltiToolId = ((GeneralViewParameters)viewparams).addTool;
@@ -165,12 +171,11 @@ public class BltiPickerProducer implements ViewComponentProducer, NavigationCase
 				mainLink = createLink;
 				continue;
 			    }
-			    toolcount = 1;
 			    UIBranchContainer link = UIBranchContainer.make(tofill, "blti-create:");
 			    GeneralViewParameters view = new GeneralViewParameters(ShowItemProducer.VIEW_ID);
 			    view.setSendingPage(((GeneralViewParameters) viewparams).getSendingPage());
 			    view.setItemId(((GeneralViewParameters) viewparams).getItemId());
-			    view.setSource(createLink.Url);
+			    view.setSource("CREATE/BLTI/" + (toolcount++));
 			    view.setReturnView(VIEW_ID);
 			    view.setTitle(messageLocator.getMessage("simplepage.return_blti"));
 			    UIInternalLink.make(link, "blti-create-link", (bltiTool == null ? createLink.label : bltiTool.addText), view);
@@ -191,7 +196,7 @@ public class BltiPickerProducer implements ViewComponentProducer, NavigationCase
 			    GeneralViewParameters view = new GeneralViewParameters(ShowItemProducer.VIEW_ID);
 			    view.setSendingPage(((GeneralViewParameters) viewparams).getSendingPage());
 			    view.setItemId(((GeneralViewParameters) viewparams).getItemId());
-			    view.setSource(mainLink.Url);
+			    view.setSource("CREATE/BLTI/" + (toolcount++));
 			    view.setReturnView(VIEW_ID);
 			    view.setTitle(messageLocator.getMessage("simplepage.return_blti"));
 			    UIInternalLink.make(tofill, "blti-main-link", mainLink.label , view);
