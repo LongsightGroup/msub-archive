@@ -2,3 +2,6 @@ LSNBLDR-455 - When importing from cartridge HTML should be inline rather than li
 08-24-2016 --- Merging r320478 through r324944 into '.':
 04-06-2017 --- Merging r324945 through r325807 into '.':
 
+svn merge -c 322698 https://source.sakaiproject.org/svn/msub/longsight.com/lessonbuilder/sakai-10.x-s3
+SAK-30325 custom work to deliver the asset directly to Nginx via X-Accel-Redirect bypassing the JVM
+ * hopefully Lessons will be addressed before Sakai 11
