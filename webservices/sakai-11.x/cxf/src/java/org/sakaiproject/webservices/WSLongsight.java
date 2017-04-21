@@ -34,6 +34,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
 import org.sakaiproject.api.app.messageforums.SynopticMsgcntrItem;
 import org.sakaiproject.api.app.messageforums.SynopticMsgcntrManager;
 import org.sakaiproject.api.app.messageforums.cover.SynopticMsgcntrManagerCover;
@@ -1580,6 +1581,32 @@ public class WSLongsight extends AbstractWebService {
 
 		return "success";
 	}
+
+	@WebMethod
+	@Path("/getSitesWithProvider")
+	@Produces("text/plain")
+	@GET
+	public String getSitesWithProvider(
+			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+			@WebParam(name = "providerid", partName = "providerid") @QueryParam("providerid") String providerid) {
+
+		Session s = establishSession(sessionid); 
+
+		List<Map<String, String>> returnList = dbRead("SELECT realm_id FROM SAKAI_REALM WHERE PROVIDER_ID LIKE ?",
+			new String[]{ "%" + providerid + "%" }, new String[]{"realm_id"});
+
+		Set<String> sites = new HashSet<String>();
+		for(Map<String, String> map : returnList){
+			String realmId = map.get("realm_id");
+
+			if(!StringUtils.contains(realmId, "/group/")) {
+				sites.add(StringUtils.replace(realmId, "/site/", ""));
+			}
+		}
+
+		JSONArray array = new JSONArray(sites);
+		return array.toString();
+    }
 
 	@WebMethod
 	@Path("/copySiteWithProviderId")
