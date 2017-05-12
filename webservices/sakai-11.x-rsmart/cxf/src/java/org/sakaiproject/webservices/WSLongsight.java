@@ -34,6 +34,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
 import org.sakaiproject.api.app.messageforums.SynopticMsgcntrItem;
 import org.sakaiproject.api.app.messageforums.SynopticMsgcntrManager;
 import org.sakaiproject.api.app.messageforums.cover.SynopticMsgcntrManagerCover;
@@ -1580,6 +1581,32 @@ public class WSLongsight extends AbstractWebService {
 
 		return "success";
 	}
+
+	@WebMethod
+	@Path("/getSitesWithProvider")
+	@Produces("text/plain")
+	@GET
+	public String getSitesWithProvider(
+			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+			@WebParam(name = "providerid", partName = "providerid") @QueryParam("providerid") String providerid) {
+
+		Session s = establishSession(sessionid); 
+
+		List<Map<String, String>> returnList = dbRead("SELECT realm_id FROM SAKAI_REALM WHERE PROVIDER_ID LIKE ?",
+			new String[]{ "%" + providerid + "%" }, new String[]{"realm_id"});
+
+		Set<String> sites = new HashSet<String>();
+		for(Map<String, String> map : returnList){
+			String realmId = map.get("realm_id");
+
+			if(!StringUtils.contains(realmId, "/group/")) {
+				sites.add(StringUtils.replace(realmId, "/site/", ""));
+			}
+		}
+
+		JSONArray array = new JSONArray(sites);
+		return array.toString();
+    }
 
 	@WebMethod
 	@Path("/copySiteWithProviderId")
@@ -3156,18 +3183,21 @@ public class WSLongsight extends AbstractWebService {
 						LOG.info("Cache cleared because of eid update: " + ID_EID_CACHE + ":" + clearedCache);
 
 						// EST-3 clear out jldap_immutable table if it exists
-						int jldap = dbUpdate("DELETE IGNORE FROM jldap_immutable WHERE eid=? OR eid=?", new String[]{currentEid,newEid});
-						LOG.info("Deleted from jldap_immutable where eid=" + currentEid + " or eid=" + newEid + " : " + jldap);
+						try {
+							int jldap = dbUpdate("DELETE IGNORE FROM jldap_immutable WHERE eid=? OR eid=?", new String[]{currentEid,newEid});
+							LOG.info("Deleted from jldap_immutable where eid=" + currentEid + " or eid=" + newEid + " : " + jldap);
+						} catch (Exception eee) {
+							LOG.error("changeUserEidForce: No table jldap_immutable " + eee.getMessage());
+						}
 
 						return "Successfully updated eid: " + currentEid + " to eid: " + newEid + ";cacheCleared=" + clearedCache;
 					}
-                                        else {
+					else {
 						return "Update failed for changing from eid: " + currentEid + " to eid: " + newEid;
 					}
 				}
-
 			} 
-                        else {
+			else {
 				return "FAILURE: Access to changeUserEidForce is restricted to super admins";
 			}
 		}catch(Exception e){
@@ -3175,11 +3205,7 @@ public class WSLongsight extends AbstractWebService {
 		}
 	}
 
-	@WebMethod
-	@Path("/transferCopyEntities")
-	@Produces("text/plain")
-	@GET
-	public Map transferCopyEntities(String toolId, String fromContext, String toContext) {
+	protected Map transferCopyEntities(String toolId, String fromContext, String toContext) {
 
 		Map transversalMap = new HashMap();
 
@@ -3213,11 +3239,7 @@ public class WSLongsight extends AbstractWebService {
 		return transversalMap;
 	}
 
-	@WebMethod
-	@Path("/updateEntityReferences")
-	@Produces("text/plain")
-	@GET
-	public void updateEntityReferences(String toolId, String toContext, Map transversalMap, Site newSite) {
+	protected void updateEntityReferences(String toolId, String toContext, Map transversalMap, Site newSite) {
 		for (Iterator i = EntityManager.getEntityProducers().iterator(); i.hasNext();) {
 			EntityProducer ep = (EntityProducer) i.next();
 			if (ep instanceof EntityTransferrerRefMigrator && ep instanceof EntityTransferrer) {
@@ -3231,7 +3253,7 @@ public class WSLongsight extends AbstractWebService {
 					}
 				} catch (Throwable t) {
 					LOG.warn(
-							"Error encountered while asking EntityTransfer to updateEntityRefere     nces at site: "
+							"Error encountered while asking EntityTransfer to updateEntityReferences at site: "
 									+ toContext, t);
 				}
 			}
@@ -3637,6 +3659,7 @@ public class WSLongsight extends AbstractWebService {
 
 			Site site = siteService.getSite(siteid);
 			Set users = site.getUsersHasRole("Student");
+			if (users.size() == 0) users = site.getUsersHasRole("access");
 
 			for (Iterator u = users.iterator(); u.hasNext();) {
 				String userid = (String) u.next();
@@ -3904,7 +3927,7 @@ public class WSLongsight extends AbstractWebService {
 
 
                     ArrayList scores = publishedAssessmentService.getBasicInfoOfLastOrHighestOrAverageSubmittedAssessmentsByScoringOption(userid, siteid, true);
-                    System.out.println(userid+" "+scores.size());
+                    LOG.info("getScoresForSiteForUser() " + userid+" "+scores.size());
 
                     for (int i = 0; i < scores.size(); i++) {
                             AssessmentGradingData agd = (AssessmentGradingData) scores.get(i);
@@ -4062,9 +4085,11 @@ public class WSLongsight extends AbstractWebService {
 				ps.setString(i, param);
 				i++;
 			}
-			return ps.executeUpdate();
+			int returnVal = ps.executeUpdate();
+			connection.commit();
+			return returnVal;
 		}catch(Exception e){
-			e.printStackTrace();
+			LOG.error("Could not dbUpdate", e);
 		}finally{
 			if(ps != null){
 				try{
