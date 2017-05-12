@@ -3659,6 +3659,7 @@ public class WSLongsight extends AbstractWebService {
 
 			Site site = siteService.getSite(siteid);
 			Set users = site.getUsersHasRole("Student");
+			if (users.size() == 0) users = site.getUsersHasRole("access");
 
 			for (Iterator u = users.iterator(); u.hasNext();) {
 				String userid = (String) u.next();
