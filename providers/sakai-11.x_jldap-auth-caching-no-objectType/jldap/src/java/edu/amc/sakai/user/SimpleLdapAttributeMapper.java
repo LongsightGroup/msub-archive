@@ -125,10 +125,10 @@ public class SimpleLdapAttributeMapper implements LdapAttributeMapper {
 
 		String eidAttr = attributeMappings.get(AttributeMappingConstants.LOGIN_ATTR_MAPPING_KEY);
 		if (StringUtils.equalsIgnoreCase(eidAttr, "sAMAccountName")) {
-			return "(&(objectClass=user)(" + emailAttr + "=" + escapeSearchFilterTerm(emailAddr) + ")(!(objectClass=computer))(!(userAccountControl:1.2.840.113556.1.4.803:=2)))";
+			return "(&(objectClass=user)(" + emailAttr + "=" + escapeSearchFilterTerm(emailAddr) + "))";
 		}
 		else {
-			return "(&(" + emailAttr + "=" + escapeSearchFilterTerm(emailAddr) + ")(!(objectClass=computer)))";
+			return "(&(" + emailAttr + "=" + escapeSearchFilterTerm(emailAddr) + "))";
 		}
 		
 	}
@@ -141,10 +141,10 @@ public class SimpleLdapAttributeMapper implements LdapAttributeMapper {
 		String eidAttr = 
 			attributeMappings.get(AttributeMappingConstants.LOGIN_ATTR_MAPPING_KEY);
 		if (StringUtils.equalsIgnoreCase(eidAttr, "sAMAccountName")) {
-			return "(&(objectClass=user)(" + eidAttr + "=" + escapeSearchFilterTerm(eid) + ")(!(objectClass=computer))(!(userAccountControl:1.2.840.113556.1.4.803:=2)))";
+			return "(&(objectClass=user)(" + eidAttr + "=" + escapeSearchFilterTerm(eid) + "))";
 		}
 		else {
-			return "(&(" + eidAttr + "=" + escapeSearchFilterTerm(eid) + ")(!(objectClass=computer)))";
+			return "(&(" + eidAttr + "=" + escapeSearchFilterTerm(eid) + "))";
 		}
 		
 	}
@@ -601,25 +601,16 @@ public class SimpleLdapAttributeMapper implements LdapAttributeMapper {
 	 * @inheritDoc
 	 */
 	public String getManyUsersInOneSearch(Set<String> criteria) {
-		String eidAttr = attributeMappings.get(AttributeMappingConstants.LOGIN_ATTR_MAPPING_KEY);
-
 		StringBuilder sb = new StringBuilder();
-		if (StringUtils.equalsIgnoreCase(eidAttr, "sAMAccountName")) {
-			sb.append("(&(objectClass=user)(!(objectClass=computer))(!(userAccountControl:1.2.840.113556.1.4.803:=2))(|");
-		}
-		else {
-			sb.append("(&(!(objectClass=computer))(|");
-		}
+		sb.append("(|");
 
 		for ( Iterator<String> eidIterator = criteria.iterator(); eidIterator.hasNext(); ) {
-			sb.append( "(");
-			sb.append( eidAttr );
-			sb.append( "=" );
-			sb.append( escapeSearchFilterTerm(eidIterator.next()) );
-			sb.append( ")" );
+			sb.append("(");
+			sb.append(getFindUserByEidFilter(eidIterator.next()));
+			sb.append(")");
 		}
 		
-		sb.append("))");
+		sb.append(")");
 		
 		if (M_log.isDebugEnabled()) {
 			M_log.debug("getManyUsersInOneSearch() completed filter: " + sb.toString());
