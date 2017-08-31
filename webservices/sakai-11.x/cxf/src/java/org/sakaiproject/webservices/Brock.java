@@ -25,6 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.authz.api.Member;
 import org.sakaiproject.site.api.Site;
+import org.sakaiproject.site.api.SiteService.SortType;
 import org.sakaiproject.tool.api.Session;
 import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.util.Xml;
@@ -41,7 +42,46 @@ import org.w3c.dom.Node;
 @SOAPBinding(style = SOAPBinding.Style.RPC, use = SOAPBinding.Use.LITERAL)
 public class Brock extends AbstractWebService {
 	private static final Log LOG = LogFactory.getLog(Brock.class);
-	
+
+	@WebMethod
+	@Path("/brockGetSiteIds")
+	@Produces("text/xml")
+	@GET
+	public String brockGetSiteIds(
+			@WebParam(name = "sessionId", partName = "sessionId") @QueryParam("sessionId") String sessionId,
+			@WebParam(name = "criteria", partName = "criteria") @QueryParam("criteria") String criteria) 
+	{
+	  Session session = establishSession(sessionId);
+	  String returnValue = "";
+
+	  try {
+	    Document dom = Xml.createDocument();
+	    Node siteList = dom.createElement("sites");
+	    dom.appendChild(siteList);
+
+	    List<Site> siteIds = siteService.getSites(org.sakaiproject.site.api.SiteService.SelectionType.ANY, null, criteria, null, SortType.TITLE_ASC, null);
+
+	    for (int i = 0; i < siteIds.size(); i++) {
+	            Boolean gradebookExists = false;
+	            String siteTitle = siteIds.get(i).getTitle();
+	            try {
+	                gradebookExists = gradebookService.isGradebookDefined(siteTitle);
+	            } catch(Exception e) {
+	            	// No gradebook defined for site. Ignore.
+	            }
+
+	      Node item = dom.createElement("site");
+	      siteList.appendChild(item);
+	      item.appendChild( dom.createTextNode(siteTitle + (gradebookExists ? " *" : "")) );
+	    }
+	    returnValue = Xml.writeDocumentToString(dom);
+	  }
+	  catch(Exception e) {
+	    return e.getClass().getName() + " : " + e.getMessage();
+	  }
+	  return returnValue;
+	}
+
 	@WebMethod
 	@Path("/getCourseGrades2")
 	@Produces("text/xml")
