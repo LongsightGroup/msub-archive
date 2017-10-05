@@ -656,7 +656,9 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 			boolean userFound = getUserByEid(edit, edit.getEid(), null);
 
 			// No LDAPException means we have a good connection. Cache a negative result.
-			negativeCache.put(edit.getEid(), 1);
+			if (!userFound) {
+				negativeCache.put(edit.getEid(), 1);
+			}
 
 			return userFound;
 		} catch ( LDAPException e ) {
