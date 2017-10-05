@@ -926,8 +926,8 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 			negativeCache = memoryService.getCache(getClass().getName()+".negativeCache");
 			M_log.debug("negativeCache initialized in isSearchableEid");
 		}
-		int i = (int) negativeCache.get(eid);
-		if (i > 0) {
+		Object o = negativeCache.get(eid);
+		if (o != null) {
 				M_log.debug("negativeCache rejected: " + eid);
 				return false;
 		}
