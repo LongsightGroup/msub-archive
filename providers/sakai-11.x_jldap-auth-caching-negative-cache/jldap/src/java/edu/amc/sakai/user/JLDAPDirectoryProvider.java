@@ -221,6 +221,7 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 	 */
 	private Cache authCache;
 	private String authCacheSalt;
+	private Cache negativeCache;
 	private final int authCacheSaltLength = 8;
 	private final int authCacheHashIterations = 1000;
 	
@@ -262,6 +263,9 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 		// setup the authcache and the salt
 		authCache = memoryService.getCache(getClass().getName()+".authCache");
 		authCacheSalt = RandomStringUtils.random(authCacheSaltLength);
+
+		// setup the negative user cache
+		negativeCache = memoryService.getCache(getClass().getName()+".negativeCache");
 
 		// compile a pattern if the domain has been set
 		if (StringUtils.isNotEmpty(ldapDomain)) {
@@ -389,6 +393,7 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 		}
 
 		//authCache.clear();
+		negativeCache.clear();
 	}
 
 	/**
@@ -648,7 +653,12 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 	{
 
 		try {
-			return getUserByEid(edit, edit.getEid(), null);
+			boolean userFound = getUserByEid(edit, edit.getEid(), null);
+
+			// No LDAPException means we have a good connection. Cache a negative result.
+			negativeCache.put(edit.getEid(), 1);
+
+			return userFound;
 		} catch ( LDAPException e ) {
 			M_log.error("getUser() failed [eid: " + edit.getEid() + "]", e);
 			return false;
@@ -750,6 +760,9 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 					M_log.debug("JLDAP getUsers could not find user: " + userRemove.getEid());
 				}
 				users.remove(userRemove);
+
+				// Add eid to negative cache. We are confident the LDAP conn is alive and well here.
+				negativeCache.put(userRemove.getEid(), 1);
 			}
 			
 		} catch (LDAPException e)	{
@@ -907,6 +920,16 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 				}
 				return false;
 			}
+		}
+
+		if (negativeCache == null) {
+			negativeCache = memoryService.getCache(getClass().getName()+".negativeCache");
+			M_log.debug("negativeCache initialized in isSearchableEid");
+		}
+		int i = (int) negativeCache.get(eid);
+		if (i > 0) {
+				M_log.debug("negativeCache rejected: " + eid);
+				return false;
 		}
 		
 		if ( eidValidator == null ) {
