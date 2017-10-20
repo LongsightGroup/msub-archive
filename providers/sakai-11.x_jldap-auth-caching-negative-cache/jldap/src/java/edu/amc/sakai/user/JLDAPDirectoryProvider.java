@@ -657,7 +657,12 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 
 			// No LDAPException means we have a good connection. Cache a negative result.
 			if (!userFound) {
-				negativeCache.put(edit.getEid(), 1);
+				Object o = negativeCache.get(edit.getEid());
+				Integer seenCount = 0;
+				if (o != null) {
+					seenCount = (Integer) o;
+				}
+				negativeCache.put(edit.getEid(), (seenCount + 1));
 			}
 
 			return userFound;
@@ -764,7 +769,12 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 				users.remove(userRemove);
 
 				// Add eid to negative cache. We are confident the LDAP conn is alive and well here.
-				negativeCache.put(userRemove.getEid(), 1);
+				Integer seenCount = 0;
+				Object o = negativeCache.get(userRemove.getEid());
+				if (o != null) {
+					seenCount = (Integer) o;
+				}
+				negativeCache.put(userRemove.getEid(), (seenCount + 1));
 			}
 			
 		} catch (LDAPException e)	{
@@ -930,8 +940,9 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 		}
 		Object o = negativeCache.get(eid);
 		if (o != null) {
-				M_log.debug("negativeCache rejected: " + eid);
-				return false;
+				Integer seenCount = (Integer) o;
+				M_log.debug("negativeCache count for " + eid + "=" + seenCount);
+				if (seenCount > 3) return false;
 		}
 		
 		if ( eidValidator == null ) {
