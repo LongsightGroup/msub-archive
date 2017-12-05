@@ -192,8 +192,8 @@ public class Brock extends AbstractWebService {
 							for(Map<String, String> map : returnList) {
 								Long assignmentId = Long.parseLong(map.get("ID"));
 								String assignmentScoreString = gradebookService.getAssignmentScoreString(siteId, assignmentId, studentId);
-								Double assignmentScore = Double.parseDouble(assignmentScoreString);
-								runningLog += "assignment: " + String.valueOf(assignmentId) + "; assignmentScore: " + String.valueOf(assignmentScore) + "; ";
+								runningLog += "assignment: " + String.valueOf(assignmentId) + "; assignmentScore: " + assignmentScoreString + "; ";
+								Double assignmentScore = StringUtils.isNotBlank(assignmentScoreString) ? Double.parseDouble(assignmentScoreString) : null;
 
 								if( catType != 3 ) {
 									if( assignmentScore != null ) {
