@@ -83,6 +83,67 @@ public class Brock extends AbstractWebService {
 	}
 
 	@WebMethod
+	@Path("/getSitesForProvider")
+	@Produces("text/xml")
+	@GET
+	public String getSitesForProvider(			
+			@WebParam(name = "sessionId", partName = "sessionId") @QueryParam("sessionId") String sessionId,
+			@WebParam(name = "providerId", partName = "providerId") @QueryParam("providerId") String providerId) 
+	{
+
+		Session session = establishSession(sessionId);
+	
+		if (!securityService.isSuperUser()) {
+			LOG.warn("WS getSitesForProvider(): Permission denied. Restricted to super users.");
+			return "FAILURE: getSitesForProvider(): Permission denied. Restricted to super users.";
+		}
+
+		String returnValue = "";
+		String runningLog = "";
+		Site site = null;
+		String siteId = "";
+
+		try {
+			// First need to try to convert the providerId into a real site
+			List<Map<String, String>> providerList = dbRead("SELECT realm_id FROM SAKAI_REALM WHERE PROVIDER_ID LIKE ?",
+				new String[]{ "%" + providerId + "%" }, new String[]{"realm_id"});
+
+			Set<String> sites = new HashSet<String>();
+			for(Map<String, String> map : providerList){
+				String realmId = map.get("realm_id");
+
+				if(!StringUtils.contains(realmId, "/group/")) {
+					siteId = StringUtils.replace(realmId, "/site/", "");
+					sites.add(siteId);
+				}
+			}
+			
+			// We have to bail if there are multiple sites or no sites found
+			if (sites.isEmpty()) {
+				return "error: no sites associated with that providerId";
+			}
+			else if (sites.size() > 1) {
+				return "error: more than on site is associated that providerId";
+			}
+
+			Document dom = Xml.createDocument();
+			Node course = dom.createElement("course");
+			dom.appendChild(course);
+
+			Node siteT = dom.createElement("site");
+			course.appendChild(siteT);
+			siteT.appendChild(dom.createTextNode(siteId));
+
+			returnValue = Xml.writeDocumentToString(dom);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "error: " + runningLog;
+		}
+
+		return returnValue;
+	}
+
+	@WebMethod
 	@Path("/getCourseGrades2")
 	@Produces("text/xml")
 	@GET
