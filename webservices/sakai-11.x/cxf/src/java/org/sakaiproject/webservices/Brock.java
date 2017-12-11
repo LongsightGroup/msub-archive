@@ -98,49 +98,38 @@ public class Brock extends AbstractWebService {
 			return "FAILURE: getSitesForProvider(): Permission denied. Restricted to super users.";
 		}
 
-		String returnValue = "";
-		String runningLog = "";
-		Site site = null;
-		String siteId = "";
+		Document dom = Xml.createDocument();
+		Node course = dom.createElement("course");
+		dom.appendChild(course);
 
 		try {
 			// First need to try to convert the providerId into a real site
 			List<Map<String, String>> providerList = dbRead("SELECT realm_id FROM SAKAI_REALM WHERE PROVIDER_ID LIKE ?",
 				new String[]{ "%" + providerId + "%" }, new String[]{"realm_id"});
 
-			Set<String> sites = new HashSet<String>();
-			for(Map<String, String> map : providerList){
+			for (Map<String, String> map : providerList) {
 				String realmId = map.get("realm_id");
 
 				if(!StringUtils.contains(realmId, "/group/")) {
-					siteId = StringUtils.replace(realmId, "/site/", "");
-					sites.add(siteId);
+					String siteId = StringUtils.replace(realmId, "/site/", "");
+					Boolean gradebookExists = false;
+					try {
+						gradebookExists = gradebookService.isGradebookDefined(siteId);
+					} catch(Exception e) {
+						// No gradebook defined for site. Ignore.
+					}
+
+					Node siteT = dom.createElement("site");
+					course.appendChild(siteT);
+					siteT.appendChild(dom.createTextNode(siteId + (gradebookExists ? " *" : "")));
 				}
 			}
-			
-			// We have to bail if there are multiple sites or no sites found
-			if (sites.isEmpty()) {
-				return "error: no sites associated with that providerId";
-			}
-			else if (sites.size() > 1) {
-				return "error: more than on site is associated that providerId";
-			}
 
-			Document dom = Xml.createDocument();
-			Node course = dom.createElement("course");
-			dom.appendChild(course);
-
-			Node siteT = dom.createElement("site");
-			course.appendChild(siteT);
-			siteT.appendChild(dom.createTextNode(siteId));
-
-			returnValue = Xml.writeDocumentToString(dom);
+			return Xml.writeDocumentToString(dom);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "error: " + runningLog;
+			return "error: " + e.getMessage();
 		}
-
-		return returnValue;
 	}
 
 	@WebMethod
