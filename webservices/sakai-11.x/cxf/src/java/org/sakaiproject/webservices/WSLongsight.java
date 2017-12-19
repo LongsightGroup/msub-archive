@@ -3182,8 +3182,17 @@ public class WSLongsight extends AbstractWebService {
 						boolean clearedCache = clearCache(ID_EID_CACHE);
 						LOG.info("Cache cleared because of eid update: " + ID_EID_CACHE + ":" + clearedCache);
 
-						// EST-3 clear out jldap_immutable table if it exists
+						// EST-3 clear out jldap_immutable and CM tables if it exists
 						try {
+							int cme = dbUpdate("UPDATE CM_ENROLLMENT_T SET USER_ID=? WHERE USER_ID=?", new String[] { newEid, currentEid } );
+							LOG.info("UPDATE CM_ENROLLMENT_T where eid=" + currentEid + " to new eid=" + newEid + " : " + cme);
+
+							int cmoi = dbUpdate("UPDATE CM_OFFICIAL_INSTRUCTORS_T SET INSTRUCTOR_ID=? WHERE INSTRUCTOR_ID=?", new String[] { newEid, currentEid } );
+							LOG.info("UPDATE CM_OFFICIAL_INSTRUCTORS_T where eid=" + currentEid + " to new eid=" + newEid + " : " + cmoi);
+
+							int cmt = dbUpdate("UPDATE CM_MEMBERSHIP_T SET USER_ID=? WHERE USER_ID=?", new String[] { newEid, currentEid } );
+							LOG.info("UPDATE CM_MEMBERSHIP_T where eid=" + currentEid + " to new eid=" + newEid + " : " + cmt);
+
 							int jldap = dbUpdate("DELETE IGNORE FROM jldap_immutable WHERE eid=? OR eid=?", new String[]{currentEid,newEid});
 							LOG.info("Deleted from jldap_immutable where eid=" + currentEid + " or eid=" + newEid + " : " + jldap);
 						} catch (Exception eee) {
