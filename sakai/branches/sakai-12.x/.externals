@@ -95,7 +95,4 @@ webservices https://github.com/sakaiproject/sakai/branches/12.x/webservices
 # Additional tools
 blogwow https://github.com/sakaicontrib/blogwow/trunk
 evaluation https://github.com/sakaicontrib/evaluation/branches/12.x
-vericite  https://github.com/vericite/contentreview-impl-vericite/branches/2.0
-
-#POM Changes
-#shell_command find blogwow/ -name pom.xml -exec sed -i 's/12-SNAPSHOT/11-SNAPSHOT/g' {} \;
+#attendance https://github.com/sakaicontrib/attendance/branches/12.x

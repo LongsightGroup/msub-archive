@@ -120,8 +120,7 @@
                 <module>webservices</module>
                 <module>blogwow</module>
                 <module>evaluation</module>
-                <module>attendance</module>
-                <module>vericite</module>
+                <!--module>attendance</module-->
             </modules>
         </profile>
 
