@@ -45,7 +45,6 @@ licenses https://github.com/sakaiproject/sakai/branches/12.x/licenses
 login https://github.com/sakaiproject/sakai/branches/12.x/login
 mailarchive https://github.com/sakaiproject/sakai/branches/12.x/mailarchive
 mailsender https://github.com/sakaiproject/sakai/branches/12.x/mailsender
-memory https://github.com/sakaiproject/sakai/branches/12.x/memory
 message https://github.com/sakaiproject/sakai/branches/12.x/message
 msgcntr https://github.com/sakaiproject/sakai/branches/12.x/msgcntr
 mycalendar https://github.com/sakaiproject/sakai/branches/12.x/mycalendar
@@ -87,7 +86,7 @@ usermembership https://github.com/sakaiproject/sakai/branches/12.x/usermembershi
 velocity https://github.com/sakaiproject/sakai/branches/12.x/velocity
 web https://github.com/sakaiproject/sakai/branches/12.x/web
 webjars https://github.com/sakaiproject/sakai/branches/12.x/webjars
-webservices https://source.sakaiproject.org/svn/msub/longsight.com/webservices/sakai-12.x/
+webservices https://github.com/sakaiproject/sakai/branches/12.x/webservices
 
 #Patcher options: "mavenoptions: <options>"
 #mavenoptions:-Psakai-12 -Psakai12.x -Dsakai.edu-services.version=12-SNAPSHOT -Dsakai.common.version=12-SNAPSHOT -Dsakai.jdk.version=1.8
