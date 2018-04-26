@@ -111,6 +111,7 @@
       <property name="sessionFactory">
          <ref bean="org.sakaiproject.springframework.orm.hibernate.GlobalSessionFactory"/>
       </property>
+      <property name="sqlService" ref="org.sakaiproject.db.api.SqlService"/>
    </bean>
 
    <bean id="rsmartCustomerIntegrationMembershipDao"

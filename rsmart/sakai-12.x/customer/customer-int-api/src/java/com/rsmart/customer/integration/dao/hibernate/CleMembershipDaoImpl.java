@@ -25,7 +25,8 @@ import java.util.List;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
-import org.springframework.orm.hibernate3.HibernateTemplate;
+import org.sakaiproject.db.api.SqlService;
+import org.springframework.orm.hibernate4.HibernateTemplate;
 
 import com.rsmart.customer.integration.dao.CleMembershipDao;
 import com.rsmart.customer.integration.model.CleMembership;
@@ -38,6 +39,8 @@ import com.rsmart.customer.integration.model.CleMembership;
  */
 public class CleMembershipDaoImpl extends HibernateTemplate implements
 		CleMembershipDao {
+
+    private SqlService sqlService;
 
 	/**
 	 * Get DAO Class
@@ -80,11 +83,10 @@ public class CleMembershipDaoImpl extends HibernateTemplate implements
 	public List listSections() {
 		Connection connection = null;
 		PreparedStatement stmt = null;
-		Session session = getSession();
 		List<String> list = new ArrayList<String>();
 		
 		try {
-			connection = session.connection();
+			connection = sqlService.borrowConnection();
 			stmt = connection.prepareStatement("select distinct coursenumber from clemembership");
 
 			ResultSet rs = stmt.executeQuery();
@@ -102,6 +104,15 @@ public class CleMembershipDaoImpl extends HibernateTemplate implements
 			try {
 				stmt.close();
 			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			if (connection != null) {
+				try {
+					connection.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 		
@@ -116,11 +127,10 @@ public class CleMembershipDaoImpl extends HibernateTemplate implements
 	public int deleteAll() {
 		Connection connection = null;
 		PreparedStatement stmt = null;
-		Session session = getSession();
 		int cnt = 0;
 		
 		try {
-			connection = session.connection();
+			connection = sqlService.borrowConnection();
 			stmt = connection.prepareStatement("truncate table clemembership");
 			cnt = stmt.executeUpdate();
 			connection.commit();
@@ -132,6 +142,14 @@ public class CleMembershipDaoImpl extends HibernateTemplate implements
 			try {
 				stmt.close();
 			} catch (Exception e) {
+			}
+
+			if (connection != null) {
+				try {
+					connection.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 		
@@ -168,4 +186,7 @@ public class CleMembershipDaoImpl extends HibernateTemplate implements
 		update(mem);
 	}
 
+    public void setSqlService(SqlService sqlService) {
+        this.sqlService = sqlService;
+    }
 }

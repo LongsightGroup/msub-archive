@@ -6,13 +6,13 @@
   <parent>
     <artifactId>rsn-base</artifactId>
     <groupId>com.rsmart</groupId>
-    <version>11-SNAPSHOT</version>
+    <version>12-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <name>rsmart-util</name>
   <groupId>com.rsmart</groupId>
   <modules>
-    <module>testing</module>
+    <!-- module>testing</module -->
     <module>util-util/util</module>
   </modules>
 </project>

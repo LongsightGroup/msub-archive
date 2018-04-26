@@ -20,7 +20,7 @@
   <parent>
     <artifactId>turningpoint-job</artifactId>
     <groupId>com.rsmart</groupId>
-    <version>11-SNAPSHOT</version>
+    <version>12-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <name>Turningpoint Pack</name>
@@ -33,12 +33,12 @@
   	<dependency>
        <groupId>org.sakaiproject.kernel</groupId>
        <artifactId>sakai-kernel-util</artifactId>
-       <version>${sakai.kernel.version}</version>
+       <version>12-SNAPSHOT</version>
      </dependency>
      <dependency>
       <groupId>org.sakaiproject.kernel</groupId>
       <artifactId>sakai-kernel-api</artifactId>
-      <version>${sakai.kernel.version}</version>
+      <version>12-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
