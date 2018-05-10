@@ -123,7 +123,7 @@
       </property>
    </bean>
 
-   <bean abstract="true" id="cmProcessor">
+   <bean abstract="true" id="rsmartCmProcessor">
       <property name="dateFormat">
          <value>yyyy-MM-dd</value>
       </property>
@@ -138,7 +138,7 @@
       </property>
    </bean>
 
-   <bean id="com.rsmart.customer.integration.processor.cle.cm.CanonicalCourseProcessor" parent="cmProcessor"
+   <bean id="com.rsmart.customer.integration.processor.cle.cm.CanonicalCourseProcessor" parent="rsmartCmProcessor"
          class="com.rsmart.customer.integration.processor.cle.cm.CanonicalCourseProcessor">
       <property name="filename">
          <value>/tmp/canonical_course.csv</value>
@@ -154,7 +154,7 @@
       </property>
    </bean>
 
-   <bean id="com.rsmart.customer.integration.processor.cle.cm.AcademicSessionProcessor" parent="cmProcessor"
+   <bean id="com.rsmart.customer.integration.processor.cle.cm.AcademicSessionProcessor" parent="rsmartCmProcessor"
          class="com.rsmart.customer.integration.processor.cle.cm.AcademicSessionProcessor">
       <property name="filename">
          <value>/tmp/academic_session.csv</value>
@@ -170,7 +170,7 @@
       </property>
    </bean>
 
-   <bean id="com.rsmart.customer.integration.processor.cle.cm.CourseSetProcessor" parent="cmProcessor"
+   <bean id="com.rsmart.customer.integration.processor.cle.cm.CourseSetProcessor" parent="rsmartCmProcessor"
          class="com.rsmart.customer.integration.processor.cle.cm.CourseSetProcessor">
       <property name="filename">
          <value>/tmp/course_set.csv</value>
@@ -186,7 +186,7 @@
       </property>
    </bean>
 
-   <bean id="com.rsmart.customer.integration.processor.cle.cm.CourseOfferingProcessor" parent="cmProcessor"
+   <bean id="com.rsmart.customer.integration.processor.cle.cm.CourseOfferingProcessor" parent="rsmartCmProcessor"
          class="com.rsmart.customer.integration.processor.cle.cm.CourseOfferingProcessor">
       <property name="filename">
          <value>/tmp/course_offering.csv</value>
@@ -202,7 +202,7 @@
       </property>
    </bean>
 
-   <bean id="com.rsmart.customer.integration.processor.cle.cm.CourseOfferingMemberProcessor" parent="cmProcessor"
+   <bean id="com.rsmart.customer.integration.processor.cle.cm.CourseOfferingMemberProcessor" parent="rsmartCmProcessor"
          class="com.rsmart.customer.integration.processor.cle.cm.CourseOfferingMemberProcessor">
       <property name="filename">
          <value>/tmp/course_offering_member.csv</value>
@@ -218,7 +218,7 @@
       </property>
    </bean>
 
-   <bean id="com.rsmart.customer.integration.processor.cle.cm.SectionProcessor" parent="cmProcessor"
+   <bean id="com.rsmart.customer.integration.processor.cle.cm.SectionProcessor" parent="rsmartCmProcessor"
          class="com.rsmart.customer.integration.processor.cle.cm.SectionProcessor">
       <property name="filename">
          <value>/tmp/section.csv</value>
@@ -234,7 +234,7 @@
       </property>
    </bean>
 
-   <bean id="com.rsmart.customer.integration.processor.cle.cm.EnrollmentSetProcessor" parent="cmProcessor"
+   <bean id="com.rsmart.customer.integration.processor.cle.cm.EnrollmentSetProcessor" parent="rsmartCmProcessor"
          class="com.rsmart.customer.integration.processor.cle.cm.EnrollmentSetProcessor">
       <property name="filename">
          <value>/tmp/enrollment_set.csv</value>
@@ -250,7 +250,7 @@
       </property>
    </bean>
 
-   <bean id="com.rsmart.customer.integration.processor.cle.cm.EnrollmentProcessor" parent="cmProcessor"
+   <bean id="com.rsmart.customer.integration.processor.cle.cm.EnrollmentProcessor" parent="rsmartCmProcessor"
          class="com.rsmart.customer.integration.processor.cle.cm.EnrollmentProcessor">
       <property name="filename">
          <value>/tmp/enrollment.csv</value>
@@ -266,7 +266,7 @@
       </property>
    </bean>
 
-   <bean id="com.rsmart.customer.integration.processor.cle.cm.SectionMeetingProcessor" parent="cmProcessor"
+   <bean id="com.rsmart.customer.integration.processor.cle.cm.SectionMeetingProcessor" parent="rsmartCmProcessor"
          class="com.rsmart.customer.integration.processor.cle.cm.SectionMeetingProcessor">
         <property name="sectionHibernateHelper">
          <ref bean="com.rsmart.customer.integration.processor.cle.cm.SectionHibernateHelperImpl"/>
@@ -294,7 +294,7 @@
         <property name="sqlService" ref="org.sakaiproject.db.api.SqlService"/>
      </bean>
 
-   <bean id="com.rsmart.customer.integration.processor.cle.cm.SectionMemberProcessor" parent="cmProcessor"
+   <bean id="com.rsmart.customer.integration.processor.cle.cm.SectionMemberProcessor" parent="rsmartCmProcessor"
          class="com.rsmart.customer.integration.processor.cle.cm.SectionMemberProcessor">
       <property name="filename">
          <value>/tmp/section_member.csv</value>
@@ -310,7 +310,7 @@
       </property>
    </bean>
 
-   <bean id="com.rsmart.customer.integration.processor.cle.cm.InstructorProcessor" parent="cmProcessor"
+   <bean id="com.rsmart.customer.integration.processor.cle.cm.InstructorProcessor" parent="rsmartCmProcessor"
          class="com.rsmart.customer.integration.processor.cle.cm.InstructorProcessor">
       <property name="filename">
          <value>/tmp/instructor.csv</value>
@@ -326,7 +326,7 @@
       </property>
    </bean>
 
-    <bean id="com.rsmart.customer.integration.processor.cle.cm.MembershipProcessor" parent="cmProcessor"
+    <bean id="com.rsmart.customer.integration.processor.cle.cm.MembershipProcessor" parent="rsmartCmProcessor"
          class="com.rsmart.customer.integration.processor.cle.cm.MembershipProcessor">
       <property name="filename">
          <value>/tmp/membership.csv</value>
@@ -342,7 +342,7 @@
       </property>
    </bean>
 
-   <bean id="com.rsmart.customer.integration.processor.cle.cm.SectionCategoryProcessor" parent="cmProcessor"
+   <bean id="com.rsmart.customer.integration.processor.cle.cm.SectionCategoryProcessor" parent="rsmartCmProcessor"
          class="com.rsmart.customer.integration.processor.cle.cm.SectionCategoryProcessor">
       <property name="filename">
          <value>/tmp/section_category.csv</value>
