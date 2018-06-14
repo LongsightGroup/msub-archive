@@ -1,0 +1,5 @@
+/opt/src/sakai-12.x_jldap-auth-caching-cadidate-detail/userdetail/src/java/org/sakaiproject/user/detail/FallbackDetailProvider.java
+/opt/src/sakai-12.x_jldap-auth-caching-cadidate-detail/userdetail/src/java/org/sakaiproject/user/detail/CandidateDetailProviderImpl.java
+/opt/src/sakai-12.x_jldap-auth-caching-cadidate-detail/userdetail/src/java/org/sakaiproject/user/detail/MappingDetailProvider.java
+/opt/src/sakai-12.x_jldap-auth-caching-cadidate-detail/userdetail/src/java/org/sakaiproject/user/detail/ChainedDetailProvider.java
+/opt/src/sakai-12.x_jldap-auth-caching-cadidate-detail/userdetail/src/java/org/sakaiproject/user/detail/ValueEncryptionUtilities.java
