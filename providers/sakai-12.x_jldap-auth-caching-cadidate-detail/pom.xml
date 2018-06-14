@@ -24,6 +24,7 @@
     <module>federating</module>
     <module>imsent</module>
     <module>jldap</module>
+    <module>userdetail</module>
     <module>kerberos</module>
     <module>openldap</module>
     <module>sample</module>
