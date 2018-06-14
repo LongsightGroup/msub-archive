@@ -28,14 +28,10 @@ public class CandidateDetailProviderImpl implements CandidateDetailProvider {
 	private static final String USER_PROP_STUDENT_NUMBER = "studentNumber";
 	private static final String USER_PERM_STUDENT_NUMBER_VISIBLE = "user.studentnumber.visible";
 	
-	private final static String SITE_PROP_USE_INSTITUTIONAL_ANONYMOUS_ID = "useInstitutionalAnonymousID";
-	private final static String SITE_PROP_DISPLAY_ADDITIONAL_INFORMATION = "displayAdditionalInformation";
-	private final static String SITE_PROP_USE_INSTITUTIONAL_NUMERIC_ID = "useInstitutionalNumericID";
-	
-	private final static String SYSTEM_PROP_USE_INSTITUTIONAL_ANONYMOUS_ID = "useInstitutionalAnonymousID";
-	private final static String SYSTEM_PROP_DISPLAY_ADDITIONAL_INFORMATION = "displayAdditionalInformation";
-	private final static String SYSTEM_PROP_USE_INSTITUTIONAL_NUMERIC_ID = "useInsitutionalNumericID";
-	private final static String SYSTEM_PROP_ENCRYPT_NUMERIC_ID = "encryptInstitutionalNumericID";
+	private final static String PROP_USE_INSTITUTIONAL_ANONYMOUS_ID = "useInstitutionalAnonymousID";
+	private final static String PROP_DISPLAY_ADDITIONAL_INFORMATION = "displayAdditionalInformation";
+	private final static String PROP_USE_INSTITUTIONAL_NUMERIC_ID = "useInstitutionalNumericID";
+	private final static String PROP_ENCRYPT_NUMERIC_ID = "encryptInstitutionalNumericID";
 
 	private static Logger log = LoggerFactory.getLogger(CandidateDetailProviderImpl.class);
 	
@@ -75,8 +71,8 @@ public class CandidateDetailProviderImpl implements CandidateDetailProvider {
 	
 	public boolean useInstitutionalAnonymousId(Site site) {
 		try {
-			return (serverConfigurationService.getBoolean(SYSTEM_PROP_USE_INSTITUTIONAL_ANONYMOUS_ID, false) ||
-			(site != null && site.getProperties().getBooleanProperty(SITE_PROP_USE_INSTITUTIONAL_ANONYMOUS_ID)));
+			return (serverConfigurationService.getBoolean(PROP_USE_INSTITUTIONAL_ANONYMOUS_ID, false) ||
+			(site != null && site.getProperties().getBooleanProperty(PROP_USE_INSTITUTIONAL_ANONYMOUS_ID)));
 		} catch(Exception ignore) {}
 		return false;
 	}
@@ -107,8 +103,8 @@ public class CandidateDetailProviderImpl implements CandidateDetailProvider {
 	
 	public boolean isAdditionalNotesEnabled(Site site) {
 		try {
-			return (serverConfigurationService.getBoolean(SYSTEM_PROP_DISPLAY_ADDITIONAL_INFORMATION, false) ||
-			(site != null && site.getProperties().getBooleanProperty(SITE_PROP_DISPLAY_ADDITIONAL_INFORMATION)));
+			return (serverConfigurationService.getBoolean(PROP_DISPLAY_ADDITIONAL_INFORMATION, false) ||
+			(site != null && site.getProperties().getBooleanProperty(PROP_DISPLAY_ADDITIONAL_INFORMATION)));
 		} catch(Exception ignore) {}
 		return false;
 	}
@@ -136,7 +132,7 @@ public class CandidateDetailProviderImpl implements CandidateDetailProvider {
 		try
 		{
 			String studentNumber = user.getProperties().getProperty(USER_PROP_STUDENT_NUMBER);
-			if (serverConfigurationService.getBoolean(SYSTEM_PROP_ENCRYPT_NUMERIC_ID, true))
+			if (serverConfigurationService.getBoolean(PROP_ENCRYPT_NUMERIC_ID, true))
 			{
 				studentNumber = encryptionUtilities.decrypt(studentNumber);
 			}
@@ -159,8 +155,8 @@ public class CandidateDetailProviderImpl implements CandidateDetailProvider {
 	{
 		try
 		{
-			return (serverConfigurationService.getBoolean(SYSTEM_PROP_USE_INSTITUTIONAL_NUMERIC_ID, false) ||
-			(site != null && site.getProperties().getBooleanProperty(SITE_PROP_USE_INSTITUTIONAL_NUMERIC_ID)));
+			return (serverConfigurationService.getBoolean(PROP_USE_INSTITUTIONAL_NUMERIC_ID, false) ||
+			(site != null && site.getProperties().getBooleanProperty(PROP_USE_INSTITUTIONAL_NUMERIC_ID)));
 		}
 		catch (Exception ignore)
 		{
