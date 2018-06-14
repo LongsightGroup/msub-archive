@@ -1,0 +1,16 @@
+***************
+*** 19,24 ****
+      <module>imsent</module>
+      <module>jldap</module>
+      <module>jldap-mock</module>
+      <module>kerberos</module>
+      <module>openldap</module>
+      <module>sample</module>
+--- 19,25 ----
+      <module>imsent</module>
+      <module>jldap</module>
+      <module>jldap-mock</module>
++     <module>userdetail</module>
+      <module>kerberos</module>
+      <module>openldap</module>
+      <module>sample</module>
