@@ -9,7 +9,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.osedu.org/licenses/ECL-2.0
+ *       http://www.opensource.org/licenses/ECL-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -36,6 +36,11 @@ public abstract class AttributeMappingConstants {
 	 * name of a user entry's login (aka Sakai "EID") attribute
 	 */
 	public static final String LOGIN_ATTR_MAPPING_KEY = "login";
+	
+	/** Key into {@link #DEFAULT_ATTR_MAPPINGS} representing the logical
+	 * name of a user entry's authentication (aka Sakai "AID") attribute
+	 */
+	public static final String AUTHENTICATION_ATTR_MAPPING_KEY = "aid";
 	
 	/** Key into {@link #DEFAULT_ATTR_MAPPINGS} representing the logical
 	 * name of a user entry's given name attribute
@@ -67,14 +72,23 @@ public abstract class AttributeMappingConstants {
 	 */
 	public static final String GROUP_MEMBERSHIP_ATTR_MAPPING_KEY = "groupMembership";
 		
+	public static final String DISPLAY_ID_ATTR_MAPPING_KEY = "displayId";
+	
+	public static final String DISPLAY_NAME_ATTR_MAPPING_KEY = "displayName";
+	
+	public static final String CANDIDATE_ID_ATTR_MAPPING_KEY = "candidateID";
+	public static final String ADDITIONAL_INFO_ATTR_MAPPING_KEY = "additionalInfo";
+	public static final String STUDENT_NUMBER_ATTR_MAPPING_KEY = "studentNumber";
+	
 	/** Default value in {@link #DEFAULT_ATTR_MAPPINGS} representing
 	 * the physical name of a user entry's login (aka Sakai "EID") attribute
 	 */
 	public static final String DEFAULT_LOGIN_ATTR = "cn";
 	
-	public static final String CANDIDATE_ID_ATTR_MAPPING_KEY = "candidateID";
-	public static final String ADDITIONAL_INFO_ATTR_MAPPING_KEY = "additionalInfo";
-	public static final String STUDENT_NUMBER_ATTR_MAPPING_KEY = "studentNumber";
+	/** Default value in {@link #DEFAULT_ATTR_MAPPINGS} representing
+	 * the physical name of a user entry's authentication (aka Sakai "AID") attribute
+	 */
+	public static final String DEFAULT_AUTHENTICATION_ATTR = "dn";
 	
 	/** Default value in {@link #DEFAULT_ATTR_MAPPINGS} representing
 	 * the physical name of a user entry's given name attribute
@@ -128,6 +142,7 @@ public abstract class AttributeMappingConstants {
 	static {
 		
 		DEFAULT_ATTR_MAPPINGS.put(LOGIN_ATTR_MAPPING_KEY, DEFAULT_LOGIN_ATTR);
+		DEFAULT_ATTR_MAPPINGS.put(AUTHENTICATION_ATTR_MAPPING_KEY, DEFAULT_AUTHENTICATION_ATTR);
 		DEFAULT_ATTR_MAPPINGS.put(FIRST_NAME_ATTR_MAPPING_KEY, DEFAULT_FIRST_NAME_ATTR);
 		DEFAULT_ATTR_MAPPINGS.put(PREFERRED_FIRST_NAME_ATTR_MAPPING_KEY, DEFAULT_PREFERRED_FIRST_NAME_ATTR);
 		DEFAULT_ATTR_MAPPINGS.put(LAST_NAME_ATTR_MAPPING_KEY, DEFAULT_LAST_NAME_ATTR);

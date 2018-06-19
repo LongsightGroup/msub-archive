@@ -9,7 +9,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.osedu.org/licenses/ECL-2.0
+ *       http://www.opensource.org/licenses/ECL-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -93,8 +93,17 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 	/** Default LDAP maximum number of connections in the pool */
 	public static final int DEFAULT_POOL_MAX_CONNS = 10;
 	
+	/** Default LDAP maximum number of objects in a result */
+	public static final int DEFAULT_MAX_RESULT_SIZE = 1000;
+
 	/** Default LDAP maximum number of objects to query for */
 	public static final int DEFAULT_MAX_OBJECTS_TO_QUERY = 500;
+	
+	/** Property of the user object to store the display ID under */
+	public static final String DISPLAY_ID_PROPERTY = JLDAPDirectoryProvider.class+"-displayId";
+
+	/** Property of the user object to store the display Name under */
+	public static final String DISPLAY_NAME_PROPERTY = JLDAPDirectoryProvider.class+"-displayName";
 
 	public static final boolean DEFAULT_ALLOW_AUTHENTICATION = true;
 	
@@ -172,6 +181,9 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 	private int operationTimeout = DEFAULT_OPERATION_TIMEOUT_MILLIS;
 	
 	private int searchScope = DEFAULT_SEARCH_SCOPE;
+
+	/** Should the provider support searching by Authentication ID */
+	private boolean enableAid = false;
 
 	/** 
 	 * User entry attribute mappings. Keys are logical attr names,
