@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 
@@ -68,6 +69,7 @@ import org.sakaiproject.importer.api.ImportDataSource;
 import org.sakaiproject.importer.api.ResetOnCloseInputStream;
 import org.sakaiproject.memory.api.Cache;
 import org.sakaiproject.service.gradebook.shared.Assignment;
+import org.sakaiproject.service.gradebook.shared.GradeDefinition;
 import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SitePage;
@@ -4161,6 +4163,99 @@ public class WSLongsight extends AbstractWebService {
 		return returnList;
 	}
 
+	@WebMethod
+	@Path("/getCourseGradesWhenAssignmentsComplete")
+	@Produces("text/plain")
+	@GET
+	public String getCourseGradesWhenAssignmentsComplete(
+			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+			@WebParam(name = "siteId", partName = "siteId") @QueryParam("siteId") String siteId) 
+	{
+		Session s = establishSession(sessionid);
+		String retval = "";
+
+		try {
+			if (gradebookService == null) return "Cannot get Gradebook service!";
+
+			List<Assignment> itemList = gradebookService.getAssignments(siteId);
+			if (itemList == null) return "No gradebook items for site";
+
+            Gradebook gb = (Gradebook) gradebookService.getGradebook(siteId);
+            Map<String, String> cCourseGrade = gradebookService.getImportCourseGrade(siteId, true, true);
+
+            Map<String, String> userMap = new HashMap<>();
+            List<String> userIds = new ArrayList<>();
+
+            // The getImportCourseGrade returns eid presumably for an export to CSV
+            List<User> userList = userDirectoryService.getUsersByEids(cCourseGrade.keySet());
+
+            for (User u : userList) {
+            	userMap.put(u.getId(), u.getEid());
+            	userIds.add(u.getId());
+            }
+
+			List<Long> gradableObjectIds = new ArrayList<Long>();
+			for (Assignment a: itemList) {
+				boolean isExtraCredit = a.getExtraCredit();
+				double points = a.getPoints();
+				boolean isCounted = a.isCounted();
+
+				if (!isExtraCredit && isCounted && points >= 1.0) {
+					gradableObjectIds.add(a.getId());
+				}
+			}
+			
+			// This only fetches completed gradebook items
+			Map<Long, List<GradeDefinition>> gradesMap = gradebookService.getGradesWithoutCommentsForStudentsForItems(siteId, gradableObjectIds, userIds);
+
+			// Map to track completion below
+			Map<String, Set<Long>> studentCompletion = new HashMap<>();
+
+			// Now loop through all graded items
+			for (Map.Entry<Long, List<GradeDefinition>> gboGradeDef : gradesMap.entrySet()) {
+				long key = gboGradeDef.getKey();
+				List<GradeDefinition> gradeDefs = gboGradeDef.getValue();
+
+				for (GradeDefinition gradeDef : gradeDefs) {
+					String userId = gradeDef.getStudentUid();
+					String progress = gradeDef.getGrade();
+
+					if (StringUtils.isNotBlank(progress)) {
+						Set<Long> completedGrades = new HashSet<>();
+						if (studentCompletion.containsKey(userId)) completedGrades = studentCompletion.get(userId);
+						completedGrades.add(key);
+						studentCompletion.put(userId, completedGrades);
+					}
+				}
+			}
+
+			// Now remove students who didn't complete all gradable items
+			Set<String> incompleteUsers = new HashSet<>();
+			for (Map.Entry<String, Set<Long>> u : studentCompletion.entrySet()) {
+				String userId = u.getKey();
+				String eid = userMap.get(userId);
+				String grade = cCourseGrade.get(eid);
+				Set<Long> finishedItems = u.getValue();
+
+				boolean finishedAllItems = true;
+				for (Long item : gradableObjectIds) {
+					if (!finishedItems.contains(item)) {
+						finishedAllItems = false;
+						LOG.info("getCourseGradesWhenAssignmentsComplete not returning " + userId + " because " + item + " is not complete");
+						break;
+					}
+				}
+
+				if (finishedAllItems && StringUtils.isNotBlank(grade)) { 
+					retval += eid + "," + grade + "\r\n";
+				}
+			}
+		} catch (Exception e) {
+			return e.getClass().getName() + " : " + e.getMessage();
+		}
+
+		return retval;
+	}
 
 }
 
