@@ -4200,7 +4200,7 @@ public class SakaiScript extends AbstractWebService {
         			transversalMap.putAll(entityMap);
         		}
 
-        		updateEntityReferences(toolId, sourcesiteid, transversalMap, site);
+        		updateEntityReferences(toolId, destinationsiteid, transversalMap, site);
             }
         } catch (Exception e) {
             LOG.error("WS copySiteContent(): " + e.getClass().getName() + " : " + e.getMessage(), e);
@@ -4260,7 +4260,7 @@ public class SakaiScript extends AbstractWebService {
     			transversalMap.putAll(entityMap);
     		}
 
-    		updateEntityReferences(toolid, sourcesiteid, transversalMap, site);
+    		updateEntityReferences(toolid, destinationsiteid, transversalMap, site);
     	}
     	catch (Exception e)
     	{
