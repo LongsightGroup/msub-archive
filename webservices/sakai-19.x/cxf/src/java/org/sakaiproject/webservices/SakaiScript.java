@@ -77,6 +77,7 @@ import org.sakaiproject.tool.api.Tool;
 import org.sakaiproject.user.api.PreferencesEdit;
 import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserEdit;
+import org.sakaiproject.user.api.UserNotDefinedException;
 import org.sakaiproject.util.ArrayUtil;
 import org.sakaiproject.util.FormattedText;
 import org.sakaiproject.util.ResourceLoader;
@@ -588,8 +589,14 @@ public class SakaiScript extends AbstractWebService {
             @WebParam(name = "userid", partName = "userid") @QueryParam("userid") String userid) {
         Session session = establishSession(sessionid);
         try {
-            User user = userDirectoryService.getUserByEid(userid);
-            return user.getDisplayName();
+            return userDirectoryService.getUserByEid(userid).getDisplayName();
+        } catch (UserNotDefinedException unde) {
+            try {
+                return userDirectoryService.getUser(userid).getDisplayName();
+            } catch (UserNotDefinedException unde2) {
+                log.error("WS getUserDisplayName() failed for user: " + userid + " : " + unde2.getClass().getName() + " : " + unde2.getMessage());
+                return "";
+            }
         } catch (Exception e) {
             log.error("WS getUserDisplayName() failed for user: " + userid + " : " + e.getClass().getName() + " : " + e.getMessage());
             return "";
@@ -3628,7 +3635,7 @@ public class SakaiScript extends AbstractWebService {
      * <tools>
      * <tool id="dafd2a4d-8d3f-4f4c-8e12-171968b259cd">
      * <tool-id>sakai.iframe.site</tool-id>
-     * <tool-title>Site Information Display</tool-title>
+     * <tool-title>Welcome</tool-title>
      * </tool>
      * ...
      * </tools>
@@ -4160,7 +4167,38 @@ public class SakaiScript extends AbstractWebService {
         return Xml.writeDocumentToString(dom);
     }
 
-
+    /**
+     * Get all site IDs for which the criteria fully or partially matches the title, the description or the skin.
+     *
+     * @param sessionid     valid session
+     * @param criteria      string to search for
+     * @return The site IDs
+     */
+    @WebMethod
+    @Path("/findSitesByTitle")
+    @Produces("text/plain")
+    @GET
+    public String findSitesByTitle(
+            @WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+            @WebParam(name = "criteria", partName = "criteria") @QueryParam("criteria") String criteria) {
+        Session s = establishSession(sessionid);
+        String siteIDs = "";
+        try {
+            List<String> siteIdsList = siteService.getSiteIds(SelectionType.ANY, null, criteria,
+                    null, SortType.NONE, null);
+            if (siteIdsList != null && !siteIdsList.isEmpty()) {
+            	StringBuilder sb = new StringBuilder();
+                for (String siteId : siteIdsList) {
+                    sb.append(siteId).append(",");
+                }
+                siteIDs = sb.substring(0, sb.length() - 1);
+            }
+        } catch (Throwable t) {
+            log.warn("Error encountered {}", t.getMessage());
+        }
+        return siteIDs;
+    }
+    
     /**
      * Get the placement ID for a given tool in the given site
      *

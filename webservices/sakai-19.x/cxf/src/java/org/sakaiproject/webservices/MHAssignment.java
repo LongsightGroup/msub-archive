@@ -155,6 +155,7 @@ public class MHAssignment extends AbstractWebService {
                     gradebookID,
                     assignmentID,
                     "",
+                    null,
                     assignment_Title,
                     assignment_maxPoints,
                     new Date(assignment_dueTime),
@@ -172,6 +173,7 @@ public class MHAssignment extends AbstractWebService {
                     assignment_maxPoints,
                     new Date(assignment_dueTime),
                     "MH Gradebook",
+                    null,
                     false
                 );
 
@@ -285,7 +287,7 @@ public class MHAssignment extends AbstractWebService {
             jsonAssignment += "\"id\":\"" + assignment.getId().toString() + "\",";
             jsonAssignment += "\"name\":\"" + assignment.getName() + "\",";
             jsonAssignment += "\"points\":\"" + assignment.getPoints().toString() + "\",";
-            jsonAssignment += "\"ungraded\":\"" + assignment.getUngraded() + "\",";
+            jsonAssignment += "\"ungraded\":\"" + assignment.isUngraded() + "\",";
             jsonAssignment += "\"isCounted\":\"" + assignment.isCounted() + "\",";
             jsonAssignment += "\"isExternallyMaintained\":\"" + assignment.isExternallyMaintained() + "\",";
             jsonAssignment += "\"isReleased\":\"" + assignment.isReleased() + "\"";
@@ -380,6 +382,7 @@ public class MHAssignment extends AbstractWebService {
             assignment_maxPoints,
             new Date(assignment_dueTime),
             "MH Gradebook",
+            null,
             false
         );
         return usiResult(USI_CREATED, assignmentID);
