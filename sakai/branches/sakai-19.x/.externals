@@ -42,7 +42,6 @@ help https://github.com/sakaiproject/sakai/branches/19.x/help
 jobscheduler https://github.com/sakaiproject/sakai/branches/19.x/jobscheduler
 kernel https://github.com/sakaiproject/sakai/branches/19.x/kernel
 lessonbuilder https://github.com/sakaiproject/sakai/branches/19.x/lessonbuilder
-library https://github.com/sakaiproject/sakai/branches/19.x/library
 licenses https://github.com/sakaiproject/sakai/branches/19.x/licenses
 login https://github.com/sakaiproject/sakai/branches/19.x/login
 mailarchive https://github.com/sakaiproject/sakai/branches/19.x/mailarchive
@@ -97,5 +96,8 @@ blogwow https://github.com/sakaicontrib/blogwow/branches/19.x
 certification https://github.com/sakaicontrib/certification/branches/19.x
 evaluation https://github.com/sakaicontrib/evaluation/branches/19.x
 webservices https://source.sakaiproject.org/svn/msub/longsight.com/webservices/sakai-19.x
+
+# Skin Customizations
+library https://github.com/LongsightGroup/sakai/branches/24-19.x/library
 
 #shell_command find ./ -name pom.xml -exec sed -i 's/20-SNAPSHOT/19-SNAPSHOT/g' {} \;
