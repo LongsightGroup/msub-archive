@@ -117,6 +117,7 @@
                 <module>velocity</module>
                 <module>web</module>
                 <module>webjars</module>
+                <module>webservices</module>
 		<!-- Additional Tools -->
                 <module>attendance</module>
                 <module>blogwow</module>
