@@ -1700,6 +1700,33 @@ public class WSLongsight extends AbstractWebService {
 	}
 
 	@WebMethod
+	@Path("/copySiteInformation")
+	@Produces("text/plain")
+	@GET
+	public String copySiteInformation(
+			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+			@WebParam(name = "fromSiteId", partName = "fromSiteId") @QueryParam("fromSiteId") String fromSiteId,
+			@WebParam(name = "toSiteId", partName = "toSiteId") @QueryParam("toSiteId") String toSiteId)
+	{
+		Session session = establishSession(sessionid);
+		Site toSite = null;
+		try {
+			Site fromSite = siteService.getSite(fromSiteId);
+			toSite = siteService.getSite(toSiteId);
+			toSite.setDescription(fromSite.getDescription());
+			toSite.setInfoUrl(fromSite.getInfoUrl());
+			siteService.save(toSite);
+		} catch (IdUnusedException iue) {
+			LOG.warn("failure: site not found", iue);
+			return "failure";
+		} catch (Exception e) {
+			LOG.warn("failure copying site information", e);
+			return "failure";
+		}
+		return "success";
+	}
+
+	@WebMethod
 	@Path("/longsightGetUserEmail")
 	@Produces("text/plain")
 	@GET
