@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 
@@ -66,6 +67,7 @@ import org.sakaiproject.importer.api.ImportDataSource;
 import org.sakaiproject.importer.api.ResetOnCloseInputStream;
 import org.sakaiproject.memory.api.Cache;
 import org.sakaiproject.service.gradebook.shared.Assignment;
+import org.sakaiproject.service.gradebook.shared.GradeDefinition;
 import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SitePage;
@@ -1695,6 +1697,33 @@ public class WSLongsight extends AbstractWebService {
 		}
 		catch (Exception e) {
 			return e.getClass().getName() + " : " + e.getMessage();
+		}
+		return "success";
+	}
+
+	@WebMethod
+	@Path("/copySiteInformation")
+	@Produces("text/plain")
+	@GET
+	public String copySiteInformation(
+			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+			@WebParam(name = "fromSiteId", partName = "fromSiteId") @QueryParam("fromSiteId") String fromSiteId,
+			@WebParam(name = "toSiteId", partName = "toSiteId") @QueryParam("toSiteId") String toSiteId)
+	{
+		Session session = establishSession(sessionid);
+		Site toSite = null;
+		try {
+			Site fromSite = siteService.getSite(fromSiteId);
+			toSite = siteService.getSite(toSiteId);
+			toSite.setDescription(fromSite.getDescription());
+			toSite.setInfoUrl(fromSite.getInfoUrl());
+			siteService.save(toSite);
+		} catch (IdUnusedException iue) {
+			LOG.warn("failure: site not found", iue);
+			return "failure";
+		} catch (Exception e) {
+			LOG.warn("failure copying site information", e);
+			return "failure";
 		}
 		return "success";
 	}
@@ -3607,6 +3636,142 @@ public class WSLongsight extends AbstractWebService {
 	}
 
 	@WebMethod
+	@Path("/getUserAssesmentAttemptDate")
+	@Produces("text/plain")
+	@GET
+	public String getUserAssesmentAttemptDate(
+			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+			@WebParam(name = "siteid", partName = "siteid") @QueryParam("siteid") String siteid,
+			@WebParam(name = "userid", partName = "userid") @QueryParam("userid") String userid,
+			@WebParam(name = "assessmentName", partName = "assessmentName") @QueryParam("assessmentName") String assessmentName) {
+		Session session = establishSession(sessionid); 
+		String retVal = "";
+		LOG.warn(assessmentName);
+
+		PublishedAssessmentService publishedAssessmentService = new PublishedAssessmentService();
+
+		try {
+
+			Site site = siteService.getSite(siteid);
+			userid = userDirectoryService.getUserByEid(userid).getId();        
+
+			List scores = publishedAssessmentService.getBasicInfoOfLastOrHighestOrAverageSubmittedAssessmentsByScoringOption(userid, siteid, true);
+			LOG.warn("Got this many assessments: "+scores.size());
+
+			for (int i = 0; i < scores.size(); i++) {
+				AssessmentGradingData agd = (AssessmentGradingData) scores.get(i);
+				LOG.warn("Got "+agd.getPublishedAssessmentTitle());
+				if (agd.getPublishedAssessmentTitle().equals(assessmentName)) {
+
+					retVal = agd.getAttemptDate().toString();
+				}
+
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return retVal;
+	}
+
+	@WebMethod
+	@Path("/getScoresForSite")
+	@Produces("text/plain")
+	@GET
+	public String getScoresForSite(
+			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+			@WebParam(name = "siteid", partName = "siteid") @QueryParam("siteid") String siteid) {
+		Session session = establishSession(sessionid); 
+
+		// establish the xml document
+		Document dom = Xml.createDocument();
+		Node list = dom.createElement("list");
+		dom.appendChild(list);
+
+		PublishedAssessmentService publishedAssessmentService = new PublishedAssessmentService();
+
+		try {
+
+			Site site = siteService.getSite(siteid);
+			Set users = site.getUsersHasRole("Student");
+			if (users.size() == 0) users = site.getUsersHasRole("access");
+
+			for (Iterator u = users.iterator(); u.hasNext();) {
+				String userid = (String) u.next();
+
+				List scores = publishedAssessmentService.getBasicInfoOfLastOrHighestOrAverageSubmittedAssessmentsByScoringOption(userid, siteid, true);
+
+				for (int i = 0; i < scores.size(); i++) {
+					AssessmentGradingData agf = (AssessmentGradingData) scores.get(i);
+
+					Node item = dom.createElement("item");
+
+					Node assessmentId = dom.createElement("assessmentId");
+					assessmentId.appendChild( dom.createTextNode(agf.getPublishedAssessmentId().toString()));
+					item.appendChild(assessmentId);
+
+					Node title = dom.createElement("title");
+					title.appendChild( dom.createTextNode(agf.getPublishedAssessmentTitle()));
+					item.appendChild(title);
+
+					Node finalScore = dom.createElement("finalScore");
+					finalScore.appendChild( dom.createTextNode(agf.getFinalScore().toString()));
+					item.appendChild(finalScore);
+
+					Node autoScore = dom.createElement("autoScore");
+					autoScore.appendChild( dom.createTextNode(agf.getTotalAutoScore().toString()));
+					item.appendChild(autoScore);
+
+					Node overrideScore = dom.createElement("overrideScore");
+					overrideScore.appendChild( dom.createTextNode(agf.getTotalOverrideScore().toString()));
+					item.appendChild(overrideScore);
+
+					Node attemptDate = dom.createElement("attemptDate");
+					attemptDate.appendChild( dom.createTextNode(agf.getAttemptDate().toString()));
+					item.appendChild(attemptDate);
+
+					Node comments = dom.createElement("comments");
+					comments.appendChild( dom.createTextNode(agf.getComments()));
+					item.appendChild(comments);
+
+					Node sakaiUserId = dom.createElement("userId");
+					sakaiUserId.appendChild( dom.createTextNode(agf.getAgentId()));
+					item.appendChild(sakaiUserId);
+
+					Node username = dom.createElement("username");
+					try {
+						User user = userDirectoryService.getUser(agf.getAgentId());
+						String eid = user.getEid();
+						username.appendChild( dom.createTextNode(eid) );
+
+						Node firstName = dom.createElement("firstName");
+						firstName.appendChild( dom.createTextNode(user.getFirstName()));
+						item.appendChild(firstName);
+
+						Node lastName = dom.createElement("lastName");
+						lastName.appendChild( dom.createTextNode(user.getLastName()));
+						item.appendChild(lastName);
+					}
+					catch (Exception ee) {
+						username.appendChild( dom.createTextNode("nouser") );
+					}
+					item.appendChild(username);
+
+
+
+					list.appendChild(item);
+				}
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return Xml.writeDocumentToString(dom);
+	}
+
+	@WebMethod
 	@Path("/getUserEid")
 	@Produces("text/plain")
 	@GET
@@ -3647,6 +3812,138 @@ public class WSLongsight extends AbstractWebService {
 		} 
 
 	} 
+
+	@WebMethod
+        @Path("/getScoresForSiteForUser")
+        @Produces("text/plain")
+        @GET
+        public String getScoresForSiteForUser(
+            @WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+            @WebParam(name = "siteid", partName = "siteid") @QueryParam("siteid") String siteid,
+            @WebParam(name = "userid", partName = "userid") @QueryParam("userid") String userid) {
+            Session session = establishSession(sessionid); 
+
+            // establish the xml document
+            Document dom = Xml.createDocument();
+            Node list = dom.createElement("list");
+            dom.appendChild(list);
+
+            PublishedAssessmentService publishedAssessmentService = new PublishedAssessmentService();
+
+            try {
+
+                    Site site = siteService.getSite(siteid);
+                    //Set users = site.getUsersHasRole("Student");
+                    userid = userDirectoryService.getUserByEid(userid).getId();
+
+
+                    List scores = publishedAssessmentService.getBasicInfoOfLastOrHighestOrAverageSubmittedAssessmentsByScoringOption(userid, siteid, true);
+                    LOG.info("getScoresForSiteForUser() " + userid+" "+scores.size());
+
+                    for (int i = 0; i < scores.size(); i++) {
+                            AssessmentGradingData agd = (AssessmentGradingData) scores.get(i);
+
+                            Node item = dom.createElement("item");
+
+                            Node assessmentId = dom.createElement("assessmentId");
+                            assessmentId.appendChild( dom.createTextNode(agd.getPublishedAssessmentId().toString()));
+                            item.appendChild(assessmentId);
+
+                            Node title = dom.createElement("title");
+                            title.appendChild( dom.createTextNode(agd.getPublishedAssessmentTitle()));
+                            item.appendChild(title);
+
+                            Node finalScore = dom.createElement("finalScore");
+                            finalScore.appendChild( dom.createTextNode(agd.getFinalScore().toString()));
+                            item.appendChild(finalScore);
+
+                            Node autoScore = dom.createElement("autoScore");
+                            autoScore.appendChild( dom.createTextNode(agd.getTotalAutoScore().toString()));
+                            item.appendChild(autoScore);
+
+                            Node overrideScore = dom.createElement("overrideScore");
+                            overrideScore.appendChild( dom.createTextNode(agd.getTotalOverrideScore().toString()));
+                            item.appendChild(overrideScore);
+
+                            Node attemptDate = dom.createElement("attemptDate");
+                            attemptDate.appendChild( dom.createTextNode(agd.getAttemptDate().toString()));
+                            item.appendChild(attemptDate);
+
+                            Node submitDate = dom.createElement("submitDate");
+                            submitDate.appendChild( dom.createTextNode(agd.getSubmittedDate().toString()));
+                            item.appendChild(submitDate);
+
+                            Node comments = dom.createElement("comments");
+                            comments.appendChild( dom.createTextNode(agd.getComments()));
+                            item.appendChild(comments);
+
+                            Node sakaiUserId = dom.createElement("userId");
+                            sakaiUserId.appendChild( dom.createTextNode(agd.getAgentId()));
+                            item.appendChild(sakaiUserId);
+
+                            Node username = dom.createElement("username");
+                            try {
+                                    User user = userDirectoryService.getUser(agd.getAgentId());
+                                    String eid = user.getEid();
+                                    username.appendChild( dom.createTextNode(eid) );
+
+                                    Node firstName = dom.createElement("firstName");
+                                    firstName.appendChild( dom.createTextNode(user.getFirstName()));
+                                    item.appendChild(firstName);
+
+                                    Node lastName = dom.createElement("lastName");
+                                    lastName.appendChild( dom.createTextNode(user.getLastName()));
+                                    item.appendChild(lastName);
+                            }
+                            catch (Exception ee) {
+                                    username.appendChild( dom.createTextNode("nouser") );
+                            }
+                            item.appendChild(username);
+                            list.appendChild(item);
+                    }
+            }
+            catch (Exception e) {
+                    e.printStackTrace();
+            }
+
+            return Xml.writeDocumentToString(dom);
+    }
+
+        @WebMethod
+        @Path("/getPublishedAssessmentsForSite")
+        @Produces("text/plain")
+        @GET
+        public String getPublishedAssessmentsForSite(
+            @WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+            @WebParam(name = "siteid", partName = "siteid") @QueryParam("siteid") String siteid) {
+
+                Session session = establishSession(sessionid); 
+
+                PublishedAssessmentService publishedAssessmentService = new PublishedAssessmentService();
+
+                List publishedAssessmentList = publishedAssessmentService.getBasicInfoOfAllPublishedAssessments2(PublishedAssessmentFacadeQueries.TITLE, true, siteid);
+
+                Document dom = Xml.createDocument();
+                Node list = dom.createElement("list");
+                dom.appendChild(list);
+
+                for (int i = 0; i < publishedAssessmentList.size(); i++) {
+                        PublishedAssessmentFacade f = (PublishedAssessmentFacade)publishedAssessmentList.get(i);
+                        Node item = dom.createElement("item");
+
+                        Node id = dom.createElement("id");
+                        id.appendChild( dom.createTextNode(f.getPublishedAssessmentId().toString()));
+                        item.appendChild(id);
+
+                        Node title = dom.createElement("title");
+                        title.appendChild( dom.createTextNode(f.getTitle()));
+                        item.appendChild(title);
+
+                        list.appendChild(item);
+                }
+
+                return Xml.writeDocumentToString(dom);
+        }
 
 	@WebMethod
 	@Path("/addProviderIdToSite")
@@ -3766,6 +4063,99 @@ public class WSLongsight extends AbstractWebService {
 		return returnList;
 	}
 
+	@WebMethod
+	@Path("/getCourseGradesWhenAssignmentsComplete")
+	@Produces("text/plain")
+	@GET
+	public String getCourseGradesWhenAssignmentsComplete(
+			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+			@WebParam(name = "siteId", partName = "siteId") @QueryParam("siteId") String siteId) 
+	{
+		Session s = establishSession(sessionid);
+		String retval = "";
+
+		try {
+			if (gradebookService == null) return "Cannot get Gradebook service!";
+
+			List<Assignment> itemList = gradebookService.getAssignments(siteId);
+			if (itemList == null) return "No gradebook items for site";
+
+            Gradebook gb = (Gradebook) gradebookService.getGradebook(siteId);
+            Map<String, String> cCourseGrade = gradebookService.getImportCourseGrade(siteId, true, true);
+
+            Map<String, String> userMap = new HashMap<>();
+            List<String> userIds = new ArrayList<>();
+
+            // The getImportCourseGrade returns eid presumably for an export to CSV
+            List<User> userList = userDirectoryService.getUsersByEids(cCourseGrade.keySet());
+
+            for (User u : userList) {
+            	userMap.put(u.getId(), u.getEid());
+            	userIds.add(u.getId());
+            }
+
+			List<Long> gradableObjectIds = new ArrayList<Long>();
+			for (Assignment a: itemList) {
+				boolean isExtraCredit = a.getExtraCredit();
+				double points = a.getPoints();
+				boolean isCounted = a.isCounted();
+
+				if (!isExtraCredit && isCounted && points >= 1.0) {
+					gradableObjectIds.add(a.getId());
+				}
+			}
+			
+			// This only fetches completed gradebook items
+			Map<Long, List<GradeDefinition>> gradesMap = gradebookService.getGradesWithoutCommentsForStudentsForItems(siteId, gradableObjectIds, userIds);
+
+			// Map to track completion below
+			Map<String, Set<Long>> studentCompletion = new HashMap<>();
+
+			// Now loop through all graded items
+			for (Map.Entry<Long, List<GradeDefinition>> gboGradeDef : gradesMap.entrySet()) {
+				long key = gboGradeDef.getKey();
+				List<GradeDefinition> gradeDefs = gboGradeDef.getValue();
+
+				for (GradeDefinition gradeDef : gradeDefs) {
+					String userId = gradeDef.getStudentUid();
+					String progress = gradeDef.getGrade();
+
+					if (StringUtils.isNotBlank(progress)) {
+						Set<Long> completedGrades = new HashSet<>();
+						if (studentCompletion.containsKey(userId)) completedGrades = studentCompletion.get(userId);
+						completedGrades.add(key);
+						studentCompletion.put(userId, completedGrades);
+					}
+				}
+			}
+
+			// Now remove students who didn't complete all gradable items
+			Set<String> incompleteUsers = new HashSet<>();
+			for (Map.Entry<String, Set<Long>> u : studentCompletion.entrySet()) {
+				String userId = u.getKey();
+				String eid = userMap.get(userId);
+				String grade = cCourseGrade.get(eid);
+				Set<Long> finishedItems = u.getValue();
+
+				boolean finishedAllItems = true;
+				for (Long item : gradableObjectIds) {
+					if (!finishedItems.contains(item)) {
+						finishedAllItems = false;
+						LOG.info("getCourseGradesWhenAssignmentsComplete not returning " + userId + " because " + item + " is not complete");
+						break;
+					}
+				}
+
+				if (finishedAllItems && StringUtils.isNotBlank(grade)) { 
+					retval += eid + "," + grade + "\r\n";
+				}
+			}
+		} catch (Exception e) {
+			return e.getClass().getName() + " : " + e.getMessage();
+		}
+
+		return retval;
+	}
 
 }
 
