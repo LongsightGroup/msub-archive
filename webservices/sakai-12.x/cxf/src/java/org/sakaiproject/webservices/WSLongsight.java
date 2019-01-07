@@ -4096,7 +4096,7 @@ public class WSLongsight extends AbstractWebService {
 
 			List<Long> gradableObjectIds = new ArrayList<Long>();
 			for (Assignment a: itemList) {
-				boolean isExtraCredit = a.getExtraCredit();
+				boolean isExtraCredit = a.isExtraCredit();
 				double points = a.getPoints();
 				boolean isCounted = a.isCounted();
 
