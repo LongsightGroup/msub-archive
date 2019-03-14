@@ -86,7 +86,6 @@ usermembership https://github.com/sakaiproject/sakai/branches/19.x/usermembershi
 velocity https://github.com/sakaiproject/sakai/branches/19.x/velocity
 web https://github.com/sakaiproject/sakai/branches/19.x/web
 webjars https://github.com/sakaiproject/sakai/branches/19.x/webjars
-webservices https://github.com/sakaiproject/sakai/branches/19.x/webservices
 
 #Patcher options: "mavenoptions: <options>"
 #mavenoptions:-Psakai-19 -Psakai19.x -Dsakai.edu-services.version=19-SNAPSHOT -Dsakai.common.version=19-SNAPSHOT -Dsakai.jdk.version=1.8
@@ -96,8 +95,6 @@ attendance https://github.com/sakaicontrib/attendance/branches/19.x
 blogwow https://github.com/sakaicontrib/blogwow/branches/19.x
 certification https://github.com/sakaicontrib/certification/branches/19.x
 evaluation https://github.com/sakaicontrib/evaluation/branches/19.x
-
-# UnComment when LS webservices is fixed
-# webservices https://source.sakaiproject.org/svn/msub/longsight.com/webservices/sakai-19.x
+webservices https://source.sakaiproject.org/svn/msub/longsight.com/webservices/sakai-19.x
 
 #shell_command find ./ -name pom.xml -exec sed -i 's/20-SNAPSHOT/19-SNAPSHOT/g' {} \;
