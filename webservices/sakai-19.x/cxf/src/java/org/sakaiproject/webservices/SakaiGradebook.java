@@ -496,7 +496,7 @@ public class SakaiGradebook extends AbstractWebService {
 		}
 	}
 
-    public boolean mapsAreEqual(Map<String, Double> mapA, Map<String, Double> mapB) {
+    private boolean mapsAreEqual(Map<String, Double> mapA, Map<String, Double> mapB) {
 
         try{
             for (String k : mapB.keySet())
