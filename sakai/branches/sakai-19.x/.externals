@@ -97,5 +97,3 @@ blogwow https://github.com/sakaicontrib/blogwow/branches/19.x
 certification https://github.com/sakaicontrib/certification/branches/19.x
 evaluation https://github.com/sakaicontrib/evaluation/branches/19.x
 webservices https://source.sakaiproject.org/svn/msub/longsight.com/webservices/sakai-19.x
-
-#shell_command find ./ -name pom.xml -exec sed -i 's/20-SNAPSHOT/19-SNAPSHOT/g' {} \;
