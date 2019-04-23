@@ -122,7 +122,7 @@ public class WSLongsight extends AbstractWebService {
 	private static final String STUDENT_OPEN_DATE = "sections_student_open_date";
 
 	@WebMethod
-	@Path("/addNewUser")
+	@Path("/longsightSiteExists")
 	@Produces("text/plain")
 	@GET
 	public String longsightSiteExists(
@@ -140,7 +140,7 @@ public class WSLongsight extends AbstractWebService {
 	}
 
 	@WebMethod
-	@Path("/addNewUser")
+	@Path("/longsightGetTitle")
 	@Produces("text/plain")
 	@GET
 	public String longsightGetTitle(
@@ -160,7 +160,7 @@ public class WSLongsight extends AbstractWebService {
 	}
 
 	@WebMethod
-	@Path("/addNewUser")
+	@Path("/longsightGetIdFromTitle")
 	@Produces("text/plain")
 	@GET
 	public String longsightGetIdFromTitle(
