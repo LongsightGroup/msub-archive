@@ -28,15 +28,14 @@
 <!--properties:  war.bundle: true -->
     </dependency>
     <dependency>
-      <groupId>javax.mail</groupId>
-      <artifactId>mail</artifactId>
-      <version>1.4</version>
+      <groupId>com.sun.mail</groupId>
+      <artifactId>javax.mail</artifactId>
+      <scope>provided</scope>
 <!--properties:  war.bundle: true -->
     </dependency>
     <dependency>
-      <groupId>net.sf.opencsv</groupId>
+      <groupId>com.opencsv</groupId>
       <artifactId>opencsv</artifactId>
-      <version>1.8</version>
 <!--properties:  war.bundle: true -->
     </dependency>
   </dependencies>
