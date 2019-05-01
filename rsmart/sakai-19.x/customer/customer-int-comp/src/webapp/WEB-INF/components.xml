@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-<beans default-lazy-init="false">
-
-   <import resource="cm-components.xml"/>
+   <!-- import resource="cm-components.xml"/ -->
 
    <bean id="com.rsmart.sis.scheduler.job.CustomerIntegration"
       class="org.sakaiproject.component.app.scheduler.jobs.SpringJobBeanWrapper"
@@ -12,7 +12,7 @@
          <value>customerIntegrationJob</value>
       </property>
       <property name="jobName">
-         <value>SIS Synchronization</value>
+         <value>rSmart SIS Synchronization</value>
       </property>
       <property name="schedulerManager">
          <ref bean="org.sakaiproject.api.app.scheduler.SchedulerManager" />
@@ -41,11 +41,6 @@
                 </bean>
                 <bean class="org.sakaiproject.component.app.scheduler.jobs.SpringConfigurableJobProperty">
                      <property name="required" value="false"/>
-                     <property name="labelResourceKey" value="com.rsmart.customer.integration.processor.cle.CleUserProcessor.filename"/>
-                     <property name="descriptionResourceKey" value="com.rsmart.customer.integration.processor.cle.CleUserProcessor.description"/>
-                </bean>
-                <bean class="org.sakaiproject.component.app.scheduler.jobs.SpringConfigurableJobProperty">
-                     <property name="required" value="false"/>
                      <property name="labelResourceKey" value="com.rsmart.customer.integration.processor.cle.CleCourseProcessor.filename"/>
                      <property name="descriptionResourceKey" value="com.rsmart.customer.integration.processor.cle.CleCourseProcessor.description"/>
                 </bean>
@@ -69,11 +64,6 @@
                      <property name="labelResourceKey" value="com.rsmart.customer.integration.processor.cle.CleSectionMembershipProcessor.filename"/>
                      <property name="descriptionResourceKey" value="com.rsmart.customer.integration.processor.cle.CleSectionMembershipProcessor.description"/>
                 </bean>
-                <bean class="org.sakaiproject.component.app.scheduler.jobs.SpringConfigurableJobProperty">
-                     <property name="required" value="false"/>
-                     <property name="labelResourceKey" value="com.rsmart.customer.integration.processor.cle.CleRemoveUserProcessor.filename"/>
-                     <property name="descriptionResourceKey" value="com.rsmart.customer.integration.processor.cle.CleRemoveUserProcessor.description"/>
-                </bean>
             </set>
         </property>
     </bean>
@@ -84,13 +74,11 @@
 		<property name="securityService" ref="org.sakaiproject.authz.api.SecurityService"/>
 		<property name="dataProcessors">
 		   <list>
-		       <ref bean="com.rsmart.customer.integration.processor.cle.CleUserProcessor"/>
 		       <ref bean="com.rsmart.customer.integration.processor.cle.CleCourseProcessor"/>
 		       <ref bean="com.rsmart.customer.integration.processor.cle.CleMembershipProcessor"/>
 		       <ref bean="com.rsmart.customer.integration.processor.cle.CleCourseMemberProcesssor"/>
              <ref bean="com.rsmart.customer.integration.processor.cle.CleSectionProcessor"/>
              <ref bean="com.rsmart.customer.integration.processor.cle.CleSectionMembershipProcessor"/>
-             <ref bean="com.rsmart.customer.integration.processor.cle.CleRemoveUserProcessor"/>
            </list>
 	   </property>
 	  <property name="emailService">
@@ -129,63 +117,6 @@
          </props>
       </property>
    </bean>
-
-    <bean id="com.rsmart.customer.integration.processor.cle.CleUserProcessor" class="com.rsmart.customer.integration.processor.cle.CleUserProcessor">
-		<property name="filename">
-			<value>/tmp/cleuser.csv</value>
-		</property>
-		<property name="headerRowPresent">
-			<value>false</value>
-		</property>
-		<property name="columns">
-			<value>7</value>
-		</property>
-		<property name="userDirectoryService">
-			<ref bean="org.sakaiproject.user.api.UserDirectoryService"/>
-	    </property>
-	    <property name="updateAllowed">
-			<value>true</value>
-		</property>
-		<property name="archive">
-			<value>false</value>
-		</property>
-        <property name="externallyProvided"><value>false</value></property>
-		<property name="fileArchiveUtil">
-			<ref bean="com.rsmart.customer.integration.util.FileArchiveUtil"/>
-	   </property>
-      <property name="emailService" ref="org.sakaiproject.email.api.EmailService"/>
-      <property name="emailTemplateService" ref="org.sakaiproject.emailtemplateservice.service.EmailTemplateService"/>
-      <property name="userDataService" ref ="com.rsmart.userdataservice.UserDataService"/>
-	</bean>
-
-   <bean id="com.rsmart.customer.integration.processor.cle.CleRemoveUserProcessor" class="com.rsmart.customer.integration.processor.cle.CleRemoveUserProcessor">
-     <property name="filename">
-        <value>/tmp/cleremoveuser.csv</value>
-     </property>
-     <property name="headerRowPresent">
-        <value>false</value>
-     </property>
-     <property name="columns">
-        <value>1</value>
-     </property>
-     <property name="userDirectoryService">
-        <ref bean="org.sakaiproject.user.api.UserDirectoryService"/>
-      </property>
-      <property name="lookupByUserId">
-        <value>false</value>
-     </property>
-     <property name="sessionManager"  ref="org.sakaiproject.tool.api.SessionManager"/>
-     <property name="archive">
-        <value>false</value>
-     </property>
-		<property name="siteService">
-			<ref bean="org.sakaiproject.site.api.SiteService"/>
-	   </property>      
-     <property name="fileArchiveUtil">
-        <ref bean="com.rsmart.customer.integration.util.FileArchiveUtil"/>
-     </property>
-  </bean>
-
 
    <bean id="com.rsmart.customer.integration.processor.cle.CleCourseProcessor" class="com.rsmart.customer.integration.processor.cle.CleCourseProcessor">
 		<property name="filename">

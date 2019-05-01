@@ -32,18 +32,6 @@
       <artifactId>scheduler-component-shared</artifactId>
       <scope>provided</scope>
   </dependency>
-    <dependency>
-      <groupId>com.rsmart</groupId>
-         <artifactId>user-data-api</artifactId>
-         <version>${sakai.version}</version>
-          <scope>provided</scope>
-      </dependency>
-       <dependency>
-         <artifactId>user-data-model</artifactId>
-         <groupId>com.rsmart</groupId>
-         <version>${sakai.version}</version>
-        <scope>provided</scope>
-        </dependency>
       <dependency>
       <groupId>com.rsmart</groupId>
       <artifactId>customer-int-api</artifactId>
