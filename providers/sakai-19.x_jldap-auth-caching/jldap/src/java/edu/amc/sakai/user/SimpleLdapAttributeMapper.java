@@ -320,6 +320,14 @@ public class SimpleLdapAttributeMapper implements LdapAttributeMapper {
                         }
                         userData.setEmail(attrValue);
         	}
+        } else if ( logicalAttrName.equals("jpegPhoto") && attrValue != null ) {
+        	if ( M_log.isDebugEnabled() ) {
+        		M_log.debug("mapLdapAttributeOntoUserData() mapping jpegPhoto: " +
+        				"[logical attr name = " + logicalAttrName + 
+        				"][physical attr name = " + attribute.getName() + 
+        				"][value length = " + attribute.toString() + "]");
+        	}
+            userData.setProperty(logicalAttrName, java.util.Base64.getEncoder().encodeToString(attribute.getByteValue()));
         } else {
         	if ( M_log.isDebugEnabled() ) {
         		M_log.debug("mapLdapAttributeOntoUserData() mapping attribute to a User property: " +
