@@ -31,6 +31,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -327,7 +328,13 @@ public class SimpleLdapAttributeMapper implements LdapAttributeMapper {
         				"][physical attr name = " + attribute.getName() + 
         				"][value length = " + attribute.toString() + "]");
         	}
-            userData.setProperty(logicalAttrName, java.util.Base64.getEncoder().encodeToString(attribute.getByteValue()));
+            boolean isBase64 = Base64.isBase64(attribute.getByteValue());
+            if (isBase64) {
+              userData.setProperty(logicalAttrName, attrValue);
+            }
+            else {
+              userData.setProperty(logicalAttrName, java.util.Base64.getEncoder().encodeToString(attribute.getByteValue()));
+            }
         } else {
         	if ( M_log.isDebugEnabled() ) {
         		M_log.debug("mapLdapAttributeOntoUserData() mapping attribute to a User property: " +
