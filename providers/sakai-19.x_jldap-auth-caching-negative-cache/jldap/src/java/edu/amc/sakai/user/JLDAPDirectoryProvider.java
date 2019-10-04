@@ -221,6 +221,7 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 	 */
 	private Cache authCache;
 	private String authCacheSalt;
+	private Cache negativeCache;
 	private final int authCacheSaltLength = 8;
 	private final int authCacheHashIterations = 1000;
 	
@@ -262,6 +263,9 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 		// setup the authcache and the salt
 		authCache = memoryService.getCache(getClass().getName()+".authCache");
 		authCacheSalt = RandomStringUtils.random(authCacheSaltLength);
+
+		// setup the negative user cache
+		negativeCache = memoryService.getCache(getClass().getName()+".negativeCache");
 
 		// compile a pattern if the domain has been set
 		if (StringUtils.isNotEmpty(ldapDomain)) {
@@ -389,6 +393,7 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 		}
 
 		//authCache.clear();
+		negativeCache.clear();
 	}
 
 	/**
@@ -648,7 +653,19 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 	{
 
 		try {
-			return getUserByEid(edit, edit.getEid(), null);
+			boolean userFound = getUserByEid(edit, edit.getEid(), null);
+
+			// No LDAPException means we have a good connection. Cache a negative result.
+			if (!userFound) {
+				Object o = negativeCache.get(edit.getEid());
+				Integer seenCount = 0;
+				if (o != null) {
+					seenCount = (Integer) o;
+				}
+				negativeCache.put(edit.getEid(), (seenCount + 1));
+			}
+
+			return userFound;
 		} catch ( LDAPException e ) {
 			M_log.error("getUser() failed [eid: " + edit.getEid() + "]", e);
 			return false;
@@ -750,6 +767,14 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 					M_log.debug("JLDAP getUsers could not find user: " + userRemove.getEid());
 				}
 				users.remove(userRemove);
+
+				// Add eid to negative cache. We are confident the LDAP conn is alive and well here.
+				Integer seenCount = 0;
+				Object o = negativeCache.get(userRemove.getEid());
+				if (o != null) {
+					seenCount = (Integer) o;
+				}
+				negativeCache.put(userRemove.getEid(), (seenCount + 1));
 			}
 			
 		} catch (LDAPException e)	{
@@ -907,6 +932,17 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 				}
 				return false;
 			}
+		}
+		
+		if (negativeCache == null) {
+			negativeCache = memoryService.getCache(getClass().getName()+".negativeCache");
+			M_log.debug("negativeCache initialized in isSearchableEid");
+		}
+		Object o = negativeCache.get(eid);
+		if (o != null) {
+				Integer seenCount = (Integer) o;
+				M_log.debug("negativeCache count for " + eid + "=" + seenCount);
+				if (seenCount > 3) return false;
 		}
 		
 		if ( eidValidator == null ) {
