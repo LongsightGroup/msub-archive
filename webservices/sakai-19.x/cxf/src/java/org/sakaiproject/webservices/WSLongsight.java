@@ -67,6 +67,7 @@ import org.sakaiproject.importer.api.ImportDataSource;
 import org.sakaiproject.importer.api.ResetOnCloseInputStream;
 import org.sakaiproject.memory.api.Cache;
 import org.sakaiproject.service.gradebook.shared.Assignment;
+import org.sakaiproject.service.gradebook.shared.CourseGrade;
 import org.sakaiproject.service.gradebook.shared.GradeDefinition;
 import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
@@ -2506,6 +2507,25 @@ public class WSLongsight extends AbstractWebService {
 
 	}
 
+	private Map<String, String> getGradeableStudentMap(final String siteId) {
+		Map<String, String> m = new HashMap<>();
+
+		try {
+			final Set<String> userUuids = siteService.getSite(siteId).getUsersIsAllowed("section.role.student");
+			final List<User> users = userDirectoryService.getUsers(userUuids);
+			
+			for (User u : users) {
+				if (userUuids.contains(u.getId())) {
+					m.put(u.getId(), u.getDisplayId());
+				}
+			}
+		} catch (IdUnusedException e) {
+			e.printStackTrace();
+		}
+
+		return m;
+	}
+
 	@WebMethod
 	@Path("/getCourseGrades")
 	@Produces("text/plain")
@@ -2525,39 +2545,37 @@ public class WSLongsight extends AbstractWebService {
 		try {
 
 			Gradebook gb = (Gradebook) gradebookService.getGradebook(siteId);
+			Map<String, String> students = getGradeableStudentMap(siteId);
+			List<String> userUuids = new ArrayList<>(students.keySet());
 
-				// get the calculated grades
-				Map<String, String> cCourseGrade = gradebookService.getImportCourseGrade(siteId); 
-				Map<String, String> eCourseGrade = gradebookService.getEnteredCourseGrade(siteId);
+			// get the calculated grades
+			Map<String, CourseGrade> courseGrades = gradebookService.getCourseGradeForStudents(gb.getUid(), userUuids); 
 
-				// override any grades the instructor has manually set
-				for (Map.Entry<String, String> entry : eCourseGrade.entrySet()) {
-					cCourseGrade.put(entry.getKey(), entry.getValue());
-				}
+			Document dom = Xml.createDocument();
+			Node course = dom.createElement("course");
+			dom.appendChild(course);
 
-				Document dom = Xml.createDocument();
-				Node course = dom.createElement("course");
-				dom.appendChild(course);
+			Node course_id = dom.createElement("course_id");
+			course.appendChild(course_id);
+			course_id.appendChild(dom.createTextNode(siteId));
 
-				Node course_id = dom.createElement("course_id");
-				course.appendChild(course_id);
-				course_id.appendChild(dom.createTextNode(siteId));
+			for (Entry<String, CourseGrade> entry : courseGrades.entrySet()) {
+				final String studentEid = students.get(entry.getKey());
+				final CourseGrade cg = entry.getValue();
 
-				for (Map.Entry<String, String> entry : cCourseGrade.entrySet()) {
-					Node student = dom.createElement("student");
-					course.appendChild(student);
+				Node student = dom.createElement("student");
+				course.appendChild(student);
 
-					Node student_id = dom.createElement("student_id");
-					student.appendChild(student_id);
-					student_id.appendChild(dom.createTextNode(entry.getKey()));
+				Node student_id = dom.createElement("student_id");
+				student.appendChild(student_id);
+				student_id.appendChild(dom.createTextNode(studentEid));
 
-					Node course_grade = dom.createElement("course_grade");
-					student.appendChild(course_grade);
+				Node course_grade = dom.createElement("course_grade");
+				student.appendChild(course_grade);
+				course_grade.appendChild(dom.createTextNode(cg.getDisplayGrade()));
+			}
 
-					course_grade.appendChild(dom.createTextNode(entry.getValue()));
-				}
-
-				gradeResult = Xml.writeDocumentToString(dom);
+			gradeResult = Xml.writeDocumentToString(dom);
 		} catch (Exception e) {
 			return e.getClass().getName() + " : " + e.getMessage();
 		}
@@ -2606,14 +2624,11 @@ public class WSLongsight extends AbstractWebService {
 						continue;
 					}
 
-					// get the calculated grades
-					Map<String, String> cCourseGrade = gradebookService.getImportCourseGrade(siteId); 
-					Map<String, String> eCourseGrade = gradebookService.getEnteredCourseGrade(siteId);
+					Map<String, String> students = getGradeableStudentMap(siteId);
+					List<String> userUuids = new ArrayList<>(students.keySet());
 
-					// override any grades the instructor has manually set
-					for (Map.Entry<String, String> entry : eCourseGrade.entrySet()) {
-						cCourseGrade.put(entry.getKey(), entry.getValue());
-					}
+					// get the calculated grades
+					Map<String, CourseGrade> courseGrades = gradebookService.getCourseGradeForStudents(gb.getUid(), userUuids); 
 
 					Node course = dom.createElement("course");
 					courses.appendChild(course);
@@ -2622,18 +2637,21 @@ public class WSLongsight extends AbstractWebService {
 					course.appendChild(course_id);
 					course_id.appendChild(dom.createTextNode(siteId));
 
-					for (Map.Entry<String, String> entry : cCourseGrade.entrySet()) {
+					for (Entry<String, CourseGrade> entry : courseGrades.entrySet()) {
+						final String studentEid = students.get(entry.getKey());
+						final CourseGrade cg = entry.getValue();
+
 						Node student = dom.createElement("student");
 						course.appendChild(student);
 
 						Node student_id = dom.createElement("student_id");
 						student.appendChild(student_id);
-						student_id.appendChild(dom.createTextNode(entry.getKey()));
+						student_id.appendChild(dom.createTextNode(studentEid));
 
 						Node course_grade = dom.createElement("course_grade");
 						student.appendChild(course_grade);
 
-						course_grade.appendChild(dom.createTextNode(entry.getValue()));
+						course_grade.appendChild(dom.createTextNode(cg.getDisplayGrade()));
 					}
 
 				}
@@ -2667,9 +2685,11 @@ public class WSLongsight extends AbstractWebService {
                 try {
                         Gradebook gb = (Gradebook) gradebookService.getGradebook(siteId);
 
-                        // get the calculated grades
-                        Map<String, String> cCourseGrade = gradebookService.getImportCourseGrade(siteId, true, false);
-                        Map<String, String> eCourseGrade = gradebookService.getEnteredCourseGrade(siteId);
+    					Map<String, String> students = getGradeableStudentMap(siteId);
+    					List<String> userUuids = new ArrayList<>(students.keySet());
+
+    					// get the calculated grades
+    					Map<String, CourseGrade> courseGrades = gradebookService.getCourseGradeForStudents(gb.getUid(), userUuids); 
 
                         Document dom = Xml.createDocument();
                         Node course = dom.createElement("course");
@@ -2680,32 +2700,38 @@ public class WSLongsight extends AbstractWebService {
                         course_id.appendChild(dom.createTextNode(siteId));
 
                         // override any grades the instructor has manually set
-                        for (Map.Entry<String, String> entry : eCourseGrade.entrySet()) {
+                        for (Map.Entry<String, CourseGrade> entry : courseGrades.entrySet()) {
+    						final String studentEid = students.get(entry.getKey());
+    						final CourseGrade cg = entry.getValue();
+   
                                 Node override = dom.createElement("override");
                                 course.appendChild(override);
 
                                 Node student_id = dom.createElement("student_id");
                                 override.appendChild(student_id);
-                                student_id.appendChild(dom.createTextNode(entry.getKey()));
+                                student_id.appendChild(dom.createTextNode(studentEid));
 
                                 Node course_grade = dom.createElement("course_grade");
                                 override.appendChild(course_grade);
 
-                                course_grade.appendChild(dom.createTextNode(entry.getValue()));
+                                course_grade.appendChild(dom.createTextNode(cg.getEnteredGrade()));
                         }
 
-                        for (Map.Entry<String, String> entry : cCourseGrade.entrySet()) {
+                        for (Entry<String, CourseGrade> entry : courseGrades.entrySet()) {
+    						final String studentEid = students.get(entry.getKey());
+    						final CourseGrade cg = entry.getValue();
+  
                                 Node student = dom.createElement("student");
                                 course.appendChild(student);
 
                                 Node student_id = dom.createElement("student_id");
                                 student.appendChild(student_id);
-                                student_id.appendChild(dom.createTextNode(entry.getKey()));
+                                student_id.appendChild(dom.createTextNode(studentEid));
 
                                 Node course_grade = dom.createElement("course_grade");
                                 student.appendChild(course_grade);
 
-                                course_grade.appendChild(dom.createTextNode(entry.getValue()));
+                                course_grade.appendChild(dom.createTextNode(cg.getCalculatedGrade()));
                         }
 
                         gradeResult = Xml.writeDocumentToString(dom);
@@ -2715,78 +2741,6 @@ public class WSLongsight extends AbstractWebService {
 
                 return gradeResult;
         }
-
-	@WebMethod
-	@Path("/getCourseGradesForUser")
-	@Produces("text/plain")
-	@GET
-	public String getCourseGradesForUser(
-			@WebParam(name = "sessionId", partName = "sessionId") @QueryParam("sessionId") String sessionId,
-			@WebParam(name = "siteId", partName = "siteId") @QueryParam("siteId") String siteId,
-			@WebParam(name = "instructorId", partName = "instructorId") @QueryParam("instructorId") String instructorId,
-			@WebParam(name = "userid", partName = "userid") @QueryParam("userid") String userid) 
-	{
-		Session session = establishSession(sessionId);
-
-		if (!securityService.isSuperUser()) {
-			LOG.warn("WS getCourseGradesForUser(): Permission denied. Restricted to super users.");
-			return "FAILURE: getCourseGradesForUser(): Permission denied. Restricted to super users.";
-		}
-
-		String gradeResult = "";
-		try {
-
-			Gradebook gb = (Gradebook) gradebookService.getGradebook(siteId);
-
-			if (gb.isCourseGradeDisplayed()) {
-				// get the calculated grades
-				Map<String, String> cCourseGrade = gradebookService.getImportCourseGrade(siteId); 
-				Map<String, String> eCourseGrade = gradebookService.getEnteredCourseGrade(siteId);
-
-				// override any grades the instructor has manually set
-				for (Map.Entry<String, String> entry : eCourseGrade.entrySet()) {
-					cCourseGrade.put(entry.getKey(), entry.getValue());
-				}
-
-				Document dom = Xml.createDocument();
-				Node course = dom.createElement("course");
-				dom.appendChild(course);
-
-				Node course_id = dom.createElement("course_id");
-				course.appendChild(course_id);
-				course_id.appendChild(dom.createTextNode(siteId));
-
-				for (Map.Entry<String, String> entry : cCourseGrade.entrySet()) {
-					if (entry.getKey().equals(userid)) {
-						Node student = dom.createElement("student");
-						course.appendChild(student);
-
-						Node student_id = dom.createElement("student_id");
-						student.appendChild(student_id);
-						student_id.appendChild(dom.createTextNode(entry.getKey()));
-
-						Node course_grade = dom.createElement("course_grade");
-						student.appendChild(course_grade);
-
-						course_grade.appendChild(dom.createTextNode(entry.getValue()));
-					}
-				}
-
-				gradeResult = Xml.writeDocumentToString(dom);
-			} else {
-				Document dom = Xml.createDocument();
-				Node error = dom.createElement("error");
-				error.appendChild(dom.createTextNode("Grades for course "+siteId+" have not been released to students yet inside Sakai."));
-				dom.appendChild(error);
-				gradeResult = Xml.writeDocumentToString(dom);
-			}
-
-		} catch (Exception e) {
-			return e.getClass().getName() + " : " + e.getMessage();
-		}
-
-		return gradeResult;
-	}
 
 	@WebMethod
 	@Path("/longsightImportFromFile")
@@ -4081,18 +4035,8 @@ public class WSLongsight extends AbstractWebService {
 			if (itemList == null) return "No gradebook items for site";
 
             Gradebook gb = (Gradebook) gradebookService.getGradebook(siteId);
-            Map<String, String> cCourseGrade = gradebookService.getImportCourseGrade(siteId, true, true);
-
-            Map<String, String> userMap = new HashMap<>();
-            List<String> userIds = new ArrayList<>();
-
-            // The getImportCourseGrade returns eid presumably for an export to CSV
-            List<User> userList = userDirectoryService.getUsersByEids(cCourseGrade.keySet());
-
-            for (User u : userList) {
-            	userMap.put(u.getId(), u.getEid());
-            	userIds.add(u.getId());
-            }
+            Map<String, String> students = getGradeableStudentMap(siteId);
+            List<String> userUuids = new ArrayList<>(students.keySet());
 
 			List<Long> gradableObjectIds = new ArrayList<Long>();
 			for (Assignment a: itemList) {
@@ -4106,7 +4050,7 @@ public class WSLongsight extends AbstractWebService {
 			}
 			
 			// This only fetches completed gradebook items
-			Map<Long, List<GradeDefinition>> gradesMap = gradebookService.getGradesWithoutCommentsForStudentsForItems(siteId, gradableObjectIds, userIds);
+			Map<Long, List<GradeDefinition>> gradesMap = gradebookService.getGradesWithoutCommentsForStudentsForItems(siteId, gradableObjectIds, userUuids);
 
 			// Map to track completion below
 			Map<String, Set<Long>> studentCompletion = new HashMap<>();
@@ -4133,8 +4077,6 @@ public class WSLongsight extends AbstractWebService {
 			Set<String> incompleteUsers = new HashSet<>();
 			for (Map.Entry<String, Set<Long>> u : studentCompletion.entrySet()) {
 				String userId = u.getKey();
-				String eid = userMap.get(userId);
-				String grade = cCourseGrade.get(eid);
 				Set<Long> finishedItems = u.getValue();
 
 				boolean finishedAllItems = true;
@@ -4146,8 +4088,14 @@ public class WSLongsight extends AbstractWebService {
 					}
 				}
 
-				if (finishedAllItems && StringUtils.isNotBlank(grade)) { 
-					retval += eid + "," + grade + "\r\n";
+				if (finishedAllItems) {
+					final CourseGrade cg = gradebookService.getCourseGradeForStudent(gb.getUid(), userId);
+					final String grade = cg.getDisplayGrade();
+
+					if (StringUtils.isNotBlank(grade)) {
+						final String eid = students.get(userId);
+						retval += eid + "," + grade + "\r\n";
+					}
 				}
 			}
 		} catch (Exception e) {

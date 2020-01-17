@@ -453,24 +453,6 @@ public class SakaiGradebook extends AbstractWebService {
 		}
 	}
 
-    // TODO: Can't return a Map using CXF
-	private Map getCourseGrades(
-			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
-			@WebParam(name = "gradebookUid", partName = "gradebookUid") @QueryParam("gradebookUid") String gradebookUid) {
-
-		Session s = establishSession(sessionid);
-
-		Map calculatedGrades = gradebookService.getImportCourseGrade(gradebookUid);
-		Map overrides = gradebookService.getEnteredCourseGrade(gradebookUid);
-		Iterator it = overrides.entrySet().iterator();
-		while (it.hasNext()) {
-			Map.Entry pairs = (Map.Entry) it.next();
-			calculatedGrades.put(pairs.getKey(), pairs.getValue());
-		}
-		return calculatedGrades;
-
-	}
-
     @WebMethod
     @Path("/isUserAbleToGradeStudent")
     @Produces("text/plain")
