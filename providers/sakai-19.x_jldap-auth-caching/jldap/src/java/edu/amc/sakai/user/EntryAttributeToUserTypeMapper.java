@@ -90,7 +90,8 @@ public class EntryAttributeToUserTypeMapper implements UserTypeMapper {
 			getUserTypeAttribute(ldapEntry, mapper);
 		
 		if ( userTypeAttr == null ) {
-			return null;
+			// return null; 65746 LAMP null user type.... let the default mapper work below
+			return defaultSakaiUserType;
 		}
 		
 		String[] userTypeAttrValues = 
