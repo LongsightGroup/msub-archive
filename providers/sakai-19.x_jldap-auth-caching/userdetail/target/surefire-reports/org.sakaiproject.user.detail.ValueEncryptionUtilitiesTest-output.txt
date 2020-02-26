@@ -1,5 +1,5 @@
 SLF4J: This version of SLF4J requires log4j version 1.2.12 or later. See also http://www.slf4j.org/codes.html#log4j_version
-17:11:36,255  main ERROR ValueEncryptionUtilities:157 - Error while decrypting value noGoodCipherText
+17:52:23,551  main ERROR ValueEncryptionUtilities:157 - Error while decrypting value noGoodCipherText
 java.lang.IllegalArgumentException: The supplied data is not correctly encoded: noGoodCipherText
 	at org.sakaiproject.user.detail.ValueEncryptionUtilities.decrypt(ValueEncryptionUtilities.java:136)
 	at org.sakaiproject.user.detail.ValueEncryptionUtilitiesTest.testFailedDecryption(ValueEncryptionUtilitiesTest.java:103)

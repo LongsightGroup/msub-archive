@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" name="org.sakaiproject.user.detail.ValueEncryptionUtilitiesTest" time="1.401" tests="9" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" name="org.sakaiproject.user.detail.ValueEncryptionUtilitiesTest" time="1.398" tests="9" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
     <property name="sun.boot.library.path" value="/Library/Java/JavaVirtualMachines/jdk1.8.0_211.jdk/Contents/Home/jre/lib"/>
@@ -69,10 +69,10 @@
   </properties>
   <testcase name="testDifferentLengths" classname="org.sakaiproject.user.detail.ValueEncryptionUtilitiesTest" time="0.226"/>
   <testcase name="testSameLengths" classname="org.sakaiproject.user.detail.ValueEncryptionUtilitiesTest" time="0"/>
-  <testcase name="testUnicode" classname="org.sakaiproject.user.detail.ValueEncryptionUtilitiesTest" time="0"/>
-  <testcase name="testRoundsEncryption" classname="org.sakaiproject.user.detail.ValueEncryptionUtilitiesTest" time="1.14"/>
+  <testcase name="testUnicode" classname="org.sakaiproject.user.detail.ValueEncryptionUtilitiesTest" time="0.001"/>
+  <testcase name="testRoundsEncryption" classname="org.sakaiproject.user.detail.ValueEncryptionUtilitiesTest" time="1.143"/>
   <testcase name="testRoundTripSmall" classname="org.sakaiproject.user.detail.ValueEncryptionUtilitiesTest" time="0"/>
-  <testcase name="testFailedDecryption" classname="org.sakaiproject.user.detail.ValueEncryptionUtilitiesTest" time="0.006"/>
+  <testcase name="testFailedDecryption" classname="org.sakaiproject.user.detail.ValueEncryptionUtilitiesTest" time="0.004"/>
   <testcase name="testNoPadding" classname="org.sakaiproject.user.detail.ValueEncryptionUtilitiesTest" time="0"/>
   <testcase name="testRoundTrip" classname="org.sakaiproject.user.detail.ValueEncryptionUtilitiesTest" time="0"/>
   <testcase name="testEncryptDifferent" classname="org.sakaiproject.user.detail.ValueEncryptionUtilitiesTest" time="0"/>
