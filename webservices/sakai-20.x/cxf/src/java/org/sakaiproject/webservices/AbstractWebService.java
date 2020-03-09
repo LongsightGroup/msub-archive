@@ -56,6 +56,7 @@ import org.sakaiproject.memory.api.MemoryService;
 import org.sakaiproject.db.api.SqlService;
 import org.sakaiproject.importer.api.ImportService;
 import org.sakaiproject.api.app.syllabus.SyllabusManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
@@ -104,6 +105,7 @@ public class AbstractWebService {
     protected SqlService sqlService;
     protected ImportService importService;
     protected SyllabusManager syllabusManager;
+    protected TransactionTemplate transactionTemplate;
 
     /**
      * Get the Session related to the given sessionid
@@ -317,5 +319,10 @@ public class AbstractWebService {
     @WebMethod(exclude = true)
     public void setSyllabusManager(SyllabusManager syllabusManager) {
         this.syllabusManager = syllabusManager;
+    }
+
+    @WebMethod(exclude = true)
+    public void setTransactionTemplate(TransactionTemplate transactionTemplate) {
+        this.transactionTemplate = transactionTemplate;
     }
 }

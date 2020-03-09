@@ -56,7 +56,6 @@ import org.sakaiproject.content.api.ContentResourceEdit;
 import org.sakaiproject.content.api.ResourceType;
 import org.sakaiproject.entity.api.EntityProducer;
 import org.sakaiproject.entity.api.EntityTransferrer;
-import org.sakaiproject.entity.api.EntityTransferrerRefMigrator;
 import org.sakaiproject.entity.api.ResourceProperties;
 import org.sakaiproject.entity.api.ResourcePropertiesEdit;
 import org.sakaiproject.entity.cover.EntityManager;
@@ -91,6 +90,9 @@ import org.sakaiproject.user.api.UserEdit;
 import org.sakaiproject.user.api.UserNotDefinedException;
 import org.sakaiproject.util.ArrayUtil;
 import org.sakaiproject.util.Xml;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -3195,51 +3197,47 @@ public class WSLongsight extends AbstractWebService {
 		}
 	}
 
-	protected Map transferCopyEntities(String toolId, String fromContext, String toContext) {
+  protected Map<String, String> transferCopyEntities(String toolId, String fromContext, String toContext) {
+        Map<String, String> transversalMap = new HashMap<>();
 
-		Map transversalMap = new HashMap();
+        // offer to all EntityProducers
+        for (EntityProducer ep : entityManager.getEntityProducers()) {
+            if (ep instanceof EntityTransferrer) {
+                try {
+                    EntityTransferrer et = (EntityTransferrer) ep;
 
-		// offer to all EntityProducers
-		for (Iterator i = EntityManager.getEntityProducers().iterator(); i.hasNext();) {
-			EntityProducer ep = (EntityProducer) i.next();
+                    // if this producer claims this tool id
+                    if (ArrayUtil.contains(et.myToolIds(), toolId)) {
+                        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+                            @Override
+                            protected void doInTransactionWithoutResult(TransactionStatus status) {
+
+                                Map<String, String> entityMap
+                                    = et.transferCopyEntities(
+                                        fromContext, toContext, new ArrayList<>(), null, false);
+                                if (entityMap != null) {
+                                    transversalMap.putAll(entityMap);
+                                }
+                            }
+                        });
+                    }
+                } catch (Exception e) {
+                    LOG.error("Error encountered while asking EntityTransfer to transferCopyEntities from: " + fromContext + " to: " + toContext + ", " + e.getMessage());
+                }
+            }
+        }
+        return transversalMap;
+  }
+
+	protected void updateEntityReferences(String toolId, String toContext, Map transversalMap, Site newSite) {
+		for (EntityProducer ep : entityManager.getEntityProducers()) {
 			if (ep instanceof EntityTransferrer) {
 				try {
 					EntityTransferrer et = (EntityTransferrer) ep;
 
 					// if this producer claims this tool id
 					if (ArrayUtil.contains(et.myToolIds(), toolId)) {
-						if(ep instanceof EntityTransferrerRefMigrator){
-							EntityTransferrerRefMigrator etMp = (EntityTransferrerRefMigrator) ep;
-							Map<String,String> entityMap = etMp.transferCopyEntitiesRefMigrator(fromContext, toContext,
-									new Vector());
-							if(entityMap != null){                                                   
-								transversalMap.putAll(entityMap);
-							}
-						}else{
-							et.transferCopyEntities(fromContext, toContext, new Vector());
-						}
-					}
-				} catch (Throwable t) {
-					LOG.warn(this + ".transferCopyEntities: Error encountered while asking EntityTransfer to transferCopyEntities from: "
-							+ fromContext + " to: " + toContext, t);
-				}
-			}
-		}
-
-		return transversalMap;
-	}
-
-	protected void updateEntityReferences(String toolId, String toContext, Map transversalMap, Site newSite) {
-		for (Iterator i = EntityManager.getEntityProducers().iterator(); i.hasNext();) {
-			EntityProducer ep = (EntityProducer) i.next();
-			if (ep instanceof EntityTransferrerRefMigrator && ep instanceof EntityTransferrer) {
-				try {
-					EntityTransferrer et = (EntityTransferrer) ep;
-					EntityTransferrerRefMigrator etRM = (EntityTransferrerRefMigrator) ep;
-
-					// if this producer claims this tool id
-					if (ArrayUtil.contains(et.myToolIds(), toolId)) {
-						etRM.updateEntityReferences(toContext, transversalMap);
+						et.updateEntityReferences(toContext, transversalMap);
 					}
 				} catch (Throwable t) {
 					LOG.warn(
