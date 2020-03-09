@@ -12,11 +12,11 @@
     <parent>
         <groupId>org.sakaiproject.webservices</groupId>
         <artifactId>webservices</artifactId>
-        <version>19-SNAPSHOT</version>
+        <version>20-SNAPSHOT</version>
     </parent>
 
     <properties>
-        <cxf.version>3.1.14</cxf.version>
+        <cxf.version>3.3.5</cxf.version>
     </properties>
 
     <dependencies>
@@ -143,13 +143,9 @@
             <artifactId>commons-codec</artifactId>
         </dependency>
         <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20090211</version>
+            <version>${sakai.org.json.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jumpmind.symmetric</groupId>
@@ -165,7 +161,6 @@
         <dependency>
             <groupId>aopalliance</groupId>
             <artifactId>aopalliance</artifactId>
-            <version>1.0</version>
             <scope>provided</scope>
         </dependency>
 
