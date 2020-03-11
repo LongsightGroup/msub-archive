@@ -14,11 +14,11 @@
     <packaging>pom</packaging>
 
     <organization>
-        <name>The Sakai Foundation</name>
-        <url>http://www.sakaiproject.org/</url>
+        <name>Sakai Community and the Apereo Foundation</name>
+        <url>https://www.sakailms.org/</url>
     </organization>
 
-    <url>http://www.sakaiproject.org/</url>
+    <inceptionYear>2003</inceptionYear>
 
     <licenses>
         <license>
@@ -30,7 +30,7 @@
 
     <issueManagement>
         <system>Jira</system>
-        <url>http://issues.sakaiproject.org/jira/browse/SAK</url>
+        <url>https://jira.sakaiproject.org/projects/SAK/issues</url>
     </issueManagement>
 
     <profiles>
@@ -63,7 +63,6 @@
                 <module>dav</module>
                 <module>delegatedaccess</module>
                 <module>deploy</module>
-                <module>docker</module>
                 <module>edu-services</module>
                 <module>emailtemplateservice</module>
                 <module>endorsed</module>
@@ -78,7 +77,6 @@
                 <module>jsf2</module>
                 <module>kernel</module>
                 <module>lessonbuilder</module>
-                <module>licenses</module>
                 <module>login</module>
                 <module>mailarchive</module>
                 <module>mailsender</module>
@@ -87,8 +85,6 @@
                 <module>mycalendar</module>
                 <module>myconnections</module>
                 <module>oauth</module>
-                <module>oss-parent</module>
-                <module>pack</module>
                 <module>pasystem</module>
                 <module>podcasts</module>
                 <module>polls</module>
@@ -111,8 +107,6 @@
                 <module>simple-rss-portlet</module>
                 <module>site</module>
                 <module>site-manage</module>
-                <module>sitedescription</module>
-                <module>sitemembers</module>
                 <module>sitestats</module>
                 <module>syllabus</module>
                 <module>taggable</module>
