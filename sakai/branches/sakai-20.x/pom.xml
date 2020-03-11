@@ -56,12 +56,14 @@
                 <module>commons</module>
                 <module>config</module>
                 <module>cloud-content</module>
+                <module>cloud-storage</module>
                 <module>content</module>
                 <module>content-review</module>
                 <module>courier</module>
                 <module>dav</module>
                 <module>delegatedaccess</module>
                 <module>deploy</module>
+                <module>docker</module>
                 <module>edu-services</module>
                 <module>emailtemplateservice</module>
                 <module>endorsed</module>
@@ -76,6 +78,7 @@
                 <module>jsf2</module>
                 <module>kernel</module>
                 <module>lessonbuilder</module>
+                <module>licenses</module>
                 <module>login</module>
                 <module>mailarchive</module>
                 <module>mailsender</module>
@@ -84,6 +87,8 @@
                 <module>mycalendar</module>
                 <module>myconnections</module>
                 <module>oauth</module>
+                <module>oss-parent</module>
+                <module>pack</module>
                 <module>pasystem</module>
                 <module>podcasts</module>
                 <module>polls</module>
@@ -106,6 +111,8 @@
                 <module>simple-rss-portlet</module>
                 <module>site</module>
                 <module>site-manage</module>
+                <module>sitedescription</module>
+                <module>sitemembers</module>
                 <module>sitestats</module>
                 <module>syllabus</module>
                 <module>taggable</module>
