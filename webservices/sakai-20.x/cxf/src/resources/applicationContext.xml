@@ -285,9 +285,9 @@
     <bean id="org.sakaiproject.webservices.SakaiGradebook" class="org.sakaiproject.webservices.SakaiGradebook" parent="org.sakaiproject.webservices.AbstractWebService" >
         <property name="gradebookFrameworkService" ref="org.sakaiproject.service.gradebook.GradebookFrameworkService"/>
     </bean>
-    <bean id="org.sakaiproject.webservices.Brock" class="org.sakaiproject.webservices.Brock" init-method="init" parent="org.sakaiproject.webservices.AbstractWebService" />
-    <bean id="org.sakaiproject.webservices.WSLongsight" class="org.sakaiproject.webservices.WSLongsight" init-method="init" parent="org.sakaiproject.webservices.AbstractWebService" />
-    <bean id="org.sakaiproject.webservices.MHAssignment" class="org.sakaiproject.webservices.MHAssignment" init-method="init" parent="org.sakaiproject.webservices.AbstractWebService">
+    <bean id="org.sakaiproject.webservices.Brock" class="org.sakaiproject.webservices.Brock" parent="org.sakaiproject.webservices.AbstractWebService" />
+    <bean id="org.sakaiproject.webservices.WSLongsight" class="org.sakaiproject.webservices.WSLongsight" parent="org.sakaiproject.webservices.AbstractWebService" />
+    <bean id="org.sakaiproject.webservices.MHAssignment" class="org.sakaiproject.webservices.MHAssignment" parent="org.sakaiproject.webservices.AbstractWebService">
         <property name="gradebookExternalAssessmentService" ref="org.sakaiproject.service.gradebook.GradebookExternalAssessmentService"/>
     </bean>
 
