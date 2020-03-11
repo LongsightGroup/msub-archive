@@ -3208,18 +3208,10 @@ public class WSLongsight extends AbstractWebService {
 
                     // if this producer claims this tool id
                     if (ArrayUtil.contains(et.myToolIds(), toolId)) {
-                        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-                            @Override
-                            protected void doInTransactionWithoutResult(TransactionStatus status) {
-
-                                Map<String, String> entityMap
-                                    = et.transferCopyEntities(
-                                        fromContext, toContext, new ArrayList<>(), null, false);
-                                if (entityMap != null) {
-                                    transversalMap.putAll(entityMap);
-                                }
-                            }
-                        });
+                        Map<String, String> entityMap = et.transferCopyEntities(fromContext, toContext, new ArrayList<>(), null, false);
+                        if (entityMap != null) {
+                            transversalMap.putAll(entityMap);
+                        }
                     }
                 } catch (Exception e) {
                     LOG.error("Error encountered while asking EntityTransfer to transferCopyEntities from: " + fromContext + " to: " + toContext + ", " + e.getMessage());
