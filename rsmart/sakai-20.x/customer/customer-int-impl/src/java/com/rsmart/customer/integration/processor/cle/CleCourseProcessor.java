@@ -617,8 +617,7 @@ public class CleCourseProcessor extends BaseCsvFileProcessor {
 
 
                     ThreadLocalManager.set("sakai:ToolComponent:current.placement", new org.sakaiproject.util.Placement(null,toolId,null,null,toContext,null));
-					et.transferCopyEntities(fromContext, toContext,
-							new Vector());
+					et.transferCopyEntities(fromContext, toContext, new ArrayList<String>(), null);
 				}
 			}
 			}
