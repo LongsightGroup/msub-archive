@@ -27,6 +27,7 @@
     <module>kerberos</module>
     <module>openldap</module>
     <module>sample</module>
+    <module>unboundid</module>
   </modules>
   <dependencyManagement>
     <dependencies>
