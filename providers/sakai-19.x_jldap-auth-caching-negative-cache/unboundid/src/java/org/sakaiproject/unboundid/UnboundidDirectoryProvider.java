@@ -38,6 +38,8 @@ import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
 import org.sakaiproject.authz.api.SecurityService;
+import org.sakaiproject.memory.api.Cache;
+import org.sakaiproject.memory.api.MemoryService;
 import org.sakaiproject.user.api.AuthenticationIdUDP;
 import org.sakaiproject.user.api.DisplayAdvisorUDP;
 import org.sakaiproject.user.api.ExternalUserSearchUDP;
@@ -184,6 +186,8 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	 */
 	private Map<String,String> attributeMappings;
 
+	private MemoryService memoryService;
+	
 	/** Handles LDAPConnection allocation */
 	private LDAPConnectionPool connectionPool;
 
@@ -220,6 +224,7 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	 * If false, only users who have existing accounts may authenticate via LDAP.
 	 */
 	@Getter @Setter private boolean allowAuthenticationExternal = DEFAULT_ALLOW_AUTHENTICATION_EXTERNAL;
+	private Cache negativeCache;
 
 	/**
 	 * Flag for allowing/disallowing authentication for admin-equivalent users.
@@ -259,6 +264,10 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	{
 
 		log.debug("init()");
+
+		// setup the negative user cache
+		negativeCache = memoryService.getCache(getClass().getName()+".negativeCache");
+
 
 		// We don't want to allow people to break their config by setting the batch size to be more than the maxResultsSize.
 		if (batchSize > maxResultSize) {
@@ -344,6 +353,13 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	 */
 	public void destroy() {
 		log.debug("destroy()");
+	}
+
+	public void clearCache() {
+		log.debug("clearCache()");
+
+		//authCache.clear();
+		negativeCache.clear();
 	}
 
 	/**
@@ -528,7 +544,19 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 		}
 
 		try {
-			return getUserByEid(edit, edit.getEid());
+			boolean userFound = getUserByEid(edit, edit.getEid());
+
+			// No LDAPException means we have a good connection. Cache a negative result.
+			if (!userFound) {
+				Object o = negativeCache.get(edit.getEid());
+				Integer seenCount = 0;
+				if (o != null) {
+					seenCount = (Integer) o;
+				}
+				negativeCache.put(edit.getEid(), (seenCount + 1));
+			}
+
+			return userFound;
 		} catch ( LDAPException e ) {
 			log.error("getUser() failed [eid: " + edit.getEid() + "]", e);
 			return false;
@@ -633,6 +661,14 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 			for (UserEdit userRemove : usersToRemove) {
 				log.debug("Unboundid getUsers could not find user: {}", userRemove.getEid());
 				users.remove(userRemove);
+
+				// Add eid to negative cache. We are confident the LDAP conn is alive and well here.
+				Integer seenCount = 0;
+				Object o = negativeCache.get(userRemove.getEid());
+				if (o != null) {
+					seenCount = (Integer) o;
+				}
+				negativeCache.put(userRemove.getEid(), (seenCount + 1));
 			}
 			
 		} catch (LDAPException e)	{
@@ -753,6 +789,17 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	 *   set, or the result of {@link EidValidator#isSearchableEid(String)}
 	 */
 	protected boolean isSearchableEid(String eid) {
+
+		if (negativeCache == null) {
+			negativeCache = memoryService.getCache(getClass().getName()+".negativeCache");
+			log.debug("negativeCache initialized in isSearchableEid");
+		}
+		Object o = negativeCache.get(eid);
+		if (o != null) {
+				Integer seenCount = (Integer) o;
+				log.debug("negativeCache count for " + eid + "=" + seenCount);
+				if (seenCount > 3) return false;
+		}
 		if ( eidValidator == null ) {
 			return true;
 		}
