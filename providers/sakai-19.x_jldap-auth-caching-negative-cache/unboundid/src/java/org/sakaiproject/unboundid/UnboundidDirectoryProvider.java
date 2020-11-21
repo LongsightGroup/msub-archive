@@ -1462,6 +1462,14 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 		}
 	}
 
+	public MemoryService getMemoryService() {
+		return memoryService;
+	}
+
+	public void setMemoryService(MemoryService memoryService) {
+		this.memoryService = memoryService;
+	}
+
 	/** 
      * Search all the externally provided users that match this criteria in eid, 
      * email, first or last name. 
