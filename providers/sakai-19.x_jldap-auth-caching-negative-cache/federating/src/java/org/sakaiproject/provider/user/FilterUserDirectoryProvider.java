@@ -34,6 +34,8 @@ import java.util.Vector;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.sakaiproject.memory.api.Cache;
+import org.sakaiproject.memory.api.MemoryService;
 import org.sakaiproject.user.api.ExternalUserSearchUDP;
 import org.sakaiproject.user.api.AuthenticationIdUDP;
 import org.sakaiproject.user.api.DisplayAdvisorUDP;
@@ -102,6 +104,9 @@ public class FilterUserDirectoryProvider implements UserDirectoryProvider, Exter
 	private UserDirectoryProvider nextProvider;
 	
 	private Long providerID = null;
+
+	private Cache negativeCache;
+	private MemoryService memoryService;
 	
 	/**
 	 * Final initialization, once all dependencies are set.
@@ -122,6 +127,7 @@ public class FilterUserDirectoryProvider implements UserDirectoryProvider, Exter
 		try
 		{
 			log.info("init() FILTER as "+providerID);
+			negativeCache = memoryService.getCache("org.sakaiproject.unboundid.UnboundidDirectoryProvider.negativeCache");
 		}
 		catch (Throwable t)
 		{
@@ -160,10 +166,21 @@ public class FilterUserDirectoryProvider implements UserDirectoryProvider, Exter
 	 */
 	public boolean getUser(UserEdit edit)
 	{
-		if (log.isDebugEnabled()) {
-			log.debug("FUDP: getUser(" + edit.getId() + " eid:" + edit.getEid()  + ") as "+providerID);
-			log.debug("FUDP: doing myProvider.getUser() as " + providerID);
+    if (edit == null || edit.getEid() == null || "null".equals(edit.getEid())) return false;
+		log.debug("FUDP: getUser(" + edit.getId() + " eid:" + edit.getEid()  + ") as "+providerID);
+
+		if (negativeCache == null) {
+			negativeCache = memoryService.getCache("org.sakaiproject.unboundid.UnboundidDirectoryProvider.negativeCache");
+			log.debug("negativeCache initialized in getUser");
 		}
+		Object o = negativeCache.get(edit.getEid());
+		if (o != null) {
+				Integer seenCount = (Integer) o;
+				log.debug("negativeCache count for " + edit.getEid() + "=" + seenCount);
+				if (seenCount > 3) return false;
+		}
+
+		log.debug("FUDP: doing myProvider.getUser() as " + providerID);
 		if (  myProvider.getUser(edit) ) {
 			return true;
 		} else if ( nextProvider != null ) {
@@ -647,6 +664,19 @@ public class FilterUserDirectoryProvider implements UserDirectoryProvider, Exter
 			}
 		}
 		return null;
+	}
+
+	public void clearCache() {
+		log.debug("clearCache()");
+		negativeCache.clear();
+	}
+
+	public MemoryService getMemoryService() {
+		return memoryService;
+	}
+
+	public void setMemoryService(MemoryService memoryService) {
+		this.memoryService = memoryService;
 	}
 
 
