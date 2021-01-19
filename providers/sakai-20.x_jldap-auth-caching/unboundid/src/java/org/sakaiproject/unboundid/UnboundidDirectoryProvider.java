@@ -50,7 +50,7 @@ import org.sakaiproject.user.api.UsersShareEmailUDP;
 import com.unboundid.ldap.sdk.BindResult;
 import com.unboundid.ldap.sdk.DereferencePolicy;
 import com.unboundid.ldap.sdk.LDAPConnectionOptions;
-import com.unboundid.ldap.sdk.LDAPConnectionPool;
+import com.unboundid.ldap.sdk.LDAPConnection;
 import com.unboundid.ldap.sdk.LDAPSearchException;
 import com.unboundid.ldap.sdk.ResultCode;
 import com.unboundid.ldap.sdk.SearchResult;
@@ -59,7 +59,6 @@ import com.unboundid.ldap.sdk.SearchScope;
 import com.unboundid.ldap.sdk.ServerSet;
 import com.unboundid.ldap.sdk.SimpleBindRequest;
 import com.unboundid.ldap.sdk.SingleServerSet;
-import com.unboundid.ldap.sdk.migrate.ldapjdk.LDAPConnection;
 import com.unboundid.ldap.sdk.migrate.ldapjdk.LDAPEntry;
 import com.unboundid.ldap.sdk.migrate.ldapjdk.LDAPException;
 import com.unboundid.util.ssl.SSLUtil;
@@ -185,7 +184,7 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	private Map<String,String> attributeMappings;
 
 	/** Handles LDAPConnection allocation */
-	private LDAPConnectionPool connectionPool;
+	private LDAPConnection connectionPool;
 
 	/** Handles LDAP attribute mappings and encapsulates filter writing */
 	private LdapAttributeMapper ldapAttributeMapper;
@@ -243,6 +242,12 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	 */
 	private boolean authenticateWithProviderFirst = DEFAULT_AUTHENTICATE_WITH_PROVIDER_FIRST;
 
+    // Create a new LDAP connection pool with 10 connections
+    ServerSet serverSet = null;
+
+    // Set some sane defaults to better handle timeouts. Unboundid will wait 30 seconds by default on a hung connection.
+    LDAPConnectionOptions connectOptions = new LDAPConnectionOptions();
+
 	public UnboundidDirectoryProvider() {
 		log.debug("instantating UnboundidDirectoryProvider");
 	}
@@ -266,51 +271,31 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 			log.warn("Unboundid batchSize is larger than maxResultSize, batchSize has been reduced from: "+ batchSize + " to: "+ maxResultSize);
 		}
 
-		createConnectionPool();
+                connectOptions.setAbandonOnTimeout(true);
+                connectOptions.setConnectTimeoutMillis(operationTimeout);
+                connectOptions.setResponseTimeoutMillis(operationTimeout); // Sakai should not be making any giant queries to LDAP
+
+                serverSet = new SingleServerSet(ldapHost[0], ldapPort[0], connectOptions);
+
 		initLdapAttributeMapper();
 	}
 
         /**
          * Create the LDAP connection pool
          */
-        protected synchronized boolean createConnectionPool() {
+        protected boolean createConnectionPool() {
 
                 if (connectionPool != null) {
                         return true;
                 }
 
-                // Create a new LDAP connection pool with 10 connections
-                ServerSet serverSet = null;
-
-                // Set some sane defaults to better handle timeouts. Unboundid will wait 30 seconds by default on a hung connection.
-                LDAPConnectionOptions connectOptions = new LDAPConnectionOptions();
-                connectOptions.setAbandonOnTimeout(true);
-                connectOptions.setConnectTimeoutMillis(operationTimeout);
-                connectOptions.setResponseTimeoutMillis(operationTimeout); // Sakai should not be making any giant queries to LDAP
-
-                if (isSecureConnection()) {
-                        try {
-                                // If testing locally only, could use `new TrustAllTrustManager()` as contructor parameter to SSLUtil
-                                SSLUtil sslUtil = new SSLUtil();
-                                SSLSocketFactory sslSocketFactory = sslUtil.createSSLSocketFactory();
-
-                                serverSet = new SingleServerSet(ldapHost[0], ldapPort[0], sslSocketFactory, connectOptions);
-                        } catch (GeneralSecurityException ex) {
-                                log.error("Error while initializing LDAP SSLSocketFactory");
-                                throw new RuntimeException(ex);
-                        }
-                } else {
-                        serverSet = new SingleServerSet(ldapHost[0], ldapPort[0], connectOptions);
-                }
-
-
 		SimpleBindRequest bindRequest = new SimpleBindRequest(ldapUser, ldapPassword);
 		try {
-			log.info("Creating LDAP connection pool of size " + poolMaxConns);
-			connectionPool = new LDAPConnectionPool(serverSet, bindRequest, poolMaxConns);
-			connectionPool.setRetryFailedOperationsDueToInvalidConnections(retryFailedOperationsDueToInvalidConnections);
+			log.debug("Creating new LDAP connection");
+			connectionPool = serverSet.getConnection();
+			connectionPool.bind(bindRequest);
 		} catch (com.unboundid.ldap.sdk.LDAPException e) {
-			log.error("Could not init LDAP pool", e);
+			log.error("Could not auth initial bind request", e);
 			return false;
 		}
 
@@ -386,8 +371,6 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	 */
 	public boolean authenticateUser(final String userLogin, final UserEdit edit, final String password)
 	{
-		com.unboundid.ldap.sdk.LDAPConnection lc = null;
-
 		log.debug("authenticateUser(): [userLogin = {}]", userLogin);
 
 		if ( !(allowAuthentication) ) {
@@ -432,8 +415,7 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 
 			log.debug("authenticateUser(): attempting to allocate bound connection [userLogin = {}][bind dn [{}]", userLogin, endUserDN);
 			
-			lc = connectionPool.getConnection();
-			BindResult bindResult = lc.bind(endUserDN, password);
+			BindResult bindResult = connectionPool.bind(endUserDN, password);
 			if(bindResult.getResultCode().equals(ResultCode.SUCCESS)) {
 				log.info("Authenticated {} ({}) from LDAP in {} ms", userLogin, endUserDN, System.currentTimeMillis() - start);
 				return true;
@@ -459,7 +441,7 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 					+ userLogin + "]", e);
 		} finally {
 			// We don't want this user-bound LDAP connection returned to the pool
-			connectionPool.releaseDefunctConnection(lc);
+			if (connectionPool != null) connectionPool.close();
 		}
 	}
 
@@ -946,6 +928,8 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 					"][return attribs = " + 
 					Arrays.toString(searchResultPhysicalAttributeNames) + 
 					"][max results = " + maxResults + "]", e);
+		} finally {
+			if (connectionPool != null) connectionPool.close();
 		}
 	}
 
@@ -1425,13 +1409,13 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	 */
 	public void setSearchScope(int searchScope) throws IllegalArgumentException {
 		switch ( searchScope ) {
-			case LDAPConnection.SCOPE_BASE :
+			case 0:
 				this.searchScope = SearchScope.BASE;
 				return;
-			case LDAPConnection.SCOPE_ONE :
+			case 1:
 				this.searchScope = SearchScope.ONE;
 				return;
-			case LDAPConnection.SCOPE_SUB :
+			case 2:
 				this.searchScope = SearchScope.SUB;
 				return;
 			default :
