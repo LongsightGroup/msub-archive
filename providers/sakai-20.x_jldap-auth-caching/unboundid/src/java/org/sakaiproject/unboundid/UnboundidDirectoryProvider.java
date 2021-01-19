@@ -21,6 +21,9 @@
 
 package org.sakaiproject.unboundid;
 
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,6 +31,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.security.GeneralSecurityException;
 import javax.net.ssl.SSLSocketFactory;
 
@@ -35,6 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import org.sakaiproject.authz.api.SecurityService;
@@ -44,6 +49,7 @@ import org.sakaiproject.user.api.DisplayAdvisorUDP;
 import org.sakaiproject.user.api.ExternalUserSearchUDP;
 import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserDirectoryProvider;
+import org.sakaiproject.user.api.UserDirectoryService;
 import org.sakaiproject.user.api.UserEdit;
 import org.sakaiproject.user.api.UserFactory;
 import org.sakaiproject.user.api.UsersShareEmailUDP;
@@ -89,7 +95,7 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	public static final boolean DEFAULT_IS_SECURE_CONNECTION = false;
 
 	/**  Default LDAP access timeout in milliseconds */
-	public static final int DEFAULT_OPERATION_TIMEOUT_MILLIS = 9000;
+	public static final int DEFAULT_OPERATION_TIMEOUT_MILLIS = 5000;
 
 	/** Default referral following behavior */
 	public static final boolean DEFAULT_IS_FOLLOW_REFERRALS = false;
@@ -122,7 +128,7 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 
 	public static final boolean DEFAULT_ALLOW_AUTHENTICATION_EXTERNAL = true;
 
-	public static final boolean DEFAULT_ALLOW_AUTHENTICATION_ADMIN = false;
+	public static final boolean DEFAULT_ALLOW_AUTHENTICATION_ADMIN = true;
 
 	public static final boolean DEFAULT_ALLOW_SEARCH_EXTERNAL = true;
 
@@ -218,6 +224,24 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	 * Flag for allowing/disallowing authentication on a global basis
 	 */
 	private boolean allowAuthentication = DEFAULT_ALLOW_AUTHENTICATION;
+	
+	/** 
+	 * Long-lasting authentication cache because some institutions have very 
+	 * unreliable LDAP servers
+	 */
+	private Cache authCache;
+	private String authCacheSalt;
+	private final int authCacheSaltLength = 8;
+	private final int authCacheHashIterations = 1000;
+	
+	/**
+	 * Domain name associated with this JLDAP configuration.
+	 * Used to limit searches. For example, do not attempt to search of auth 
+	 * users from outside of this domain
+	 */
+	private UserDirectoryService userDirectoryService;
+	private String ldapDomain;
+	private Pattern domainPattern;
 
 	/**
 	 * Flag for allowing/disallowing authentication for external users (who do not already exist).
@@ -272,6 +296,19 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	{
 
 		log.debug("init()");
+
+		// setup the authcache and the salt
+		authCache = memoryService.getCache(getClass().getName()+".authCache");
+		authCacheSalt = RandomStringUtils.random(authCacheSaltLength);
+
+		// compile a pattern if the domain has been set
+		if (StringUtils.isNotEmpty(ldapDomain)) {
+			String patternString = "^((?!@" + ldapDomain + ").)*$";
+			domainPattern = Pattern.compile(patternString, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+			if ( log.isDebugEnabled() ) {
+				log.debug("init(): compiled a pattern for domain checking: " + patternString);
+			}
+		}
 
 		// We don't want to allow people to break their config by setting the batch size to be more than the maxResultsSize.
 		if (batchSize > maxResultSize) {
@@ -414,8 +451,8 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 		}
 
 		if (connectionPool == null && !createConnectionPool()) {
-			log.error("No LDAP connection pool available: unable to authenticate");
-			return false;
+			log.error("No LDAP connection pool available: attempt cached authentication for {}", userLogin);
+			return attemptCachedAuthentication (userLogin, password);
 		}
 
 		try
@@ -438,6 +475,8 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 			BindResult bindResult = connectionPool.bind(endUserDN, password);
 			if(bindResult.getResultCode().equals(ResultCode.SUCCESS)) {
 				log.info("Authenticated {} ({}) from LDAP in {} ms", userLogin, endUserDN, System.currentTimeMillis() - start);
+				// put the successful authentication in the authCache
+				cacheAuthAttempt (userLogin, password);
 				return true;
 			}
 
@@ -450,10 +489,13 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 				log.info("authenticateUser(): invalid credentials [userLogin = {}]", userLogin);
 				return false;
 			} else {
-				throw new RuntimeException(
+				log.warn(
 						"authenticateUser(): LDAPException during authentication attempt [userLogin = "
 						+ userLogin + "][result code = " + e.getResultCode().toString() + 
-						"][error message = "+ e.getExceptionMessage() + "]", e);
+						"][error message = "+ e.getExceptionMessage() + "]");
+				
+				// try to do a cached auth
+				return attemptCachedAuthentication (userLogin, password);
 			}
 		} catch ( Exception e ) {
 			throw new RuntimeException(
@@ -765,6 +807,12 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	protected LdapUserData getUserByEid(String eid) 
 	throws LDAPException {
 
+		// Do not look up internal sakai ids in LDAP
+		// example: 52578688-0868-49ed-a382-ee06c80b9164
+		if ((eid.equals("null")) || (eid.length() == 36 && StringUtils.countMatches(eid, "-") == 4)) {
+			return null;
+		}
+
 		if ( !(isSearchableEid(eid)) ) {
 			if (eid == null)
 			{
@@ -778,6 +826,18 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 
 		log.debug("getUserByEid(): [eid = {}]", eid);
 		String filter = ldapAttributeMapper.getFindUserByEidFilter(eid);
+
+		// See if they are logging in against sAMAccountName or uid
+		String loginKey = ldapAttributeMapper.getAttributeMapping(AttributeMappingConstants.LOGIN_ATTR_MAPPING_KEY).toLowerCase();
+		//String loginKey = getAttributeMappings().get(AttributeMappingConstants.LOGIN_ATTR_MAPPING_KEY);
+		if ((loginKey.equals("samaccountname") || loginKey.equals("uid")) && StringUtils.contains(eid, "@") && StringUtils.isNotEmpty(ldapDomain)) {
+			filter = "sAMAccountName=" + StringUtils.substringBefore(eid, "@");
+			
+			if (log.isDebugEnabled()) {
+				log.debug("Changed the filter because of use of sAMAccountName: " + filter);
+			}
+		}
+				
 
 		// takes care of caching and everything
 		return (LdapUserData)searchDirectoryForSingleEntry(filter, 
@@ -795,6 +855,15 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	 *   set, or the result of {@link EidValidator#isSearchableEid(String)}
 	 */
 	protected boolean isSearchableEid(String eid) {
+		if (domainPattern != null) {
+			if (domainPattern.matcher(eid).matches()) {
+				if ( log.isDebugEnabled() ) {
+					log.debug("domainPattern rejected: " + domainPattern.pattern() + "::" + eid);
+				}
+				return false;
+			}
+		}
+
 		if (negativeCache == null) {
 			negativeCache = memoryService.getCache(getClass().getName() + ".negativeCache");
 			log.debug("negativeCache initialized in isSearchableEid");
@@ -803,7 +872,7 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 		if (o != null) {
 			Integer seenCount = (Integer) o;
 			log.debug("negativeCache count for {}={}", eid, seenCount);
-			if (seenCount > 3) {
+			if (seenCount > 12) {
 				return false;
 			}
 		}
@@ -1077,6 +1146,16 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 		ldapAttributeMapper.mapUserDataOntoUserEdit(userData, userEdit);
 		
 			userEdit.setEid(StringUtils.lowerCase(userData.getEid()));
+	}
+
+	public String getLdapDomain () 
+	{
+		return ldapDomain;
+	}
+	
+	public void setLdapDomain (String ldapDomain) 
+	{
+		this.ldapDomain = ldapDomain;
 	}
 
 	/**
@@ -1521,6 +1600,32 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 			log.debug("External search is disabled");
 			return null;
 		}
+
+		// who is the user doing the search?
+		try {
+			String domain = getLdapDomain();
+
+			if (StringUtils.isNotEmpty(domain)) {
+                                        domain = domain.toLowerCase();
+
+					User currentUser = userDirectoryService.getCurrentUser();
+					String email = currentUser.getEmail().toLowerCase();
+
+					if (StringUtils.isNotEmpty(email) && StringUtils.contains(email, "@")) {
+							if (log.isDebugEnabled()) {
+									log.debug("Checking if current user (" + email +") should be searching against this domain (" + domain + ")");
+							}
+							String emailDomain = StringUtils.substringAfter(email, "@");
+
+							if (!StringUtils.contains(domain, emailDomain)) {
+									return null;
+							}
+					}
+			}
+		}
+		catch (Exception e) {
+			log.warn("searchExternalUsers(): Error trying to match on domain", e);
+		}
 		
 		String filter = ldapAttributeMapper.getFindUserByCrossAttributeSearchFilter(criteria);
 		List<UserEdit> users = new ArrayList<UserEdit>();
@@ -1530,6 +1635,8 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 			List<LdapUserData> ldapUsers = searchDirectory(filter, null, null, null, maxResultSize);
 			
 			for(LdapUserData ldapUserData: ldapUsers) {
+				String ldapUserEid = ldapUserData.getEid();
+				if (StringUtils.isBlank(ldapUserEid)) continue;
 				
 				//create a user object and map the data onto it
 				//SAK-20625 ensure we have an id-eid mapping at this time
@@ -1566,6 +1673,11 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
                         return users;
                 }
 
+		if ( !isSearchableEid(email) ) {
+			log.debug("findUsersByEmail(): passing on search because of domain [email = " + email + "].");
+			return users;
+		}
+
 		String filter = ldapAttributeMapper.getFindUserByEmailFilter(email);
 		try {
 			List<LdapUserData> ldapUsers = searchDirectory(filter, null, null, null, maxResultSize);
@@ -1594,6 +1706,61 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	public void setSearchAliases(boolean searchAliases)
 	{
 		this.searchAliases = searchAliases;
+	}
+	
+	private void cacheAuthAttempt (final String userLogin, final String password) 
+	{
+		byte[] hashedPassword = getPasswordHash (password);
+		
+		if (log.isDebugEnabled())
+		{
+			log.debug("Caching auth attempt for: " + userLogin);
+		}
+
+		if (authCache == null) authCache = memoryService.getCache(getClass().getName()+".authCache");
+		authCache.put(userLogin, hashedPassword);	
+	}
+	
+	private boolean attemptCachedAuthentication (final String userLogin, final String password)
+	{
+		byte[] hashedPassword = getPasswordHash (password);
+		byte[] cachedPassword = (byte[]) authCache.get(userLogin);
+		
+		if (log.isDebugEnabled())
+		{
+			log.debug("attemptCachedAuthentication for " + userLogin + 
+					"; credentials match=" + Arrays.equals(hashedPassword, cachedPassword));
+		}
+		return hashedPassword != null && cachedPassword != null && Arrays.equals(hashedPassword, cachedPassword);
+	}
+	
+	private byte[] getPasswordHash (final String password)
+	{
+		MessageDigest messageDigest;
+		try {
+			messageDigest = MessageDigest.getInstance("SHA-256");
+			messageDigest.reset();
+			messageDigest.update(authCacheSalt.getBytes("UTF-8"));
+			byte[] input = messageDigest.digest(password.getBytes("UTF-8"));
+			
+			// now hash a whole bunch of times
+			for (int i = 0; i < authCacheHashIterations; i++) {
+				messageDigest.reset();
+				input = messageDigest.digest(input);
+			}
+			
+			return input;
+		} catch (NoSuchAlgorithmException e) {
+			log.warn("No SHA-256 on this server!", e);
+		} catch (UnsupportedEncodingException e) {
+			log.warn("Could not encode user's password to SHA-256!", e);
+		}
+		
+		try {
+			return password.getBytes("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			return null;
+		}
 	}
 
 }

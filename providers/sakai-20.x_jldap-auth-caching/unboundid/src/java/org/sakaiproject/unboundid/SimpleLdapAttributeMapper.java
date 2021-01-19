@@ -36,6 +36,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 
 import org.sakaiproject.entity.api.ResourceProperties;
@@ -138,12 +139,21 @@ public class SimpleLdapAttributeMapper implements LdapAttributeMapper {
 		
 		String emailAttr = 
 			attributeMappings.get(AttributeMappingConstants.EMAIL_ATTR_MAPPING_KEY);
+		String eidAttr = attributeMappings.get(AttributeMappingConstants.LOGIN_ATTR_MAPPING_KEY);
 		MessageFormat valueFormat = valueMappings.get(AttributeMappingConstants.EMAIL_ATTR_MAPPING_KEY);
 		if (valueFormat == null) {
-			return emailAttr + "=" + escapeSearchFilterTerm(emailAddr);
+			if (StringUtils.equalsIgnoreCase(eidAttr, "sAMAccountName")) {
+				return "(&(objectClass=user)(" + emailAttr + "=" + escapeSearchFilterTerm(emailAddr) + ")(!(objectClass=computer))(!(userAccountControl:1.2.840.113556.1.4.803:=2)))";
+			} else {
+				return "(&(" + emailAttr + "=" + escapeSearchFilterTerm(emailAddr) + ")(!(objectClass=computer)))";
+			}
 		} else {
 			valueFormat = (MessageFormat) valueFormat.clone();
-			return emailAttr + "=" + escapeSearchFilterTerm(valueFormat.format(new Object[]{emailAddr}));
+			if (StringUtils.equalsIgnoreCase(eidAttr, "sAMAccountName")) {
+				return "(&(objectClass=user)(" + emailAttr + "=" + escapeSearchFilterTerm(valueFormat.format(new Object[]{emailAddr})) + ")(!(objectClass=computer))(!(userAccountControl:1.2.840.113556.1.4.803:=2)))";
+			} else {
+				return "(&(" + emailAttr + "=" + escapeSearchFilterTerm(valueFormat.format(new Object[]{emailAddr})) + ")(!(objectClass=computer)))";
+			}
 		}
 	}
 
@@ -156,11 +166,20 @@ public class SimpleLdapAttributeMapper implements LdapAttributeMapper {
 			attributeMappings.get(AttributeMappingConstants.LOGIN_ATTR_MAPPING_KEY);
 		MessageFormat valueFormat = valueMappings.get(AttributeMappingConstants.LOGIN_ATTR_MAPPING_KEY);
 		if (valueFormat == null) {
-			return eidAttr + "=" + escapeSearchFilterTerm(eid);
+			if (StringUtils.equalsIgnoreCase(eidAttr, "sAMAccountName")) {
+				return "(&(objectClass=user)(" + eidAttr + "=" + escapeSearchFilterTerm(eid) + ")(!(objectClass=computer))(!(userAccountControl:1.2.840.113556.1.4.803:=2)))";
+			} else {
+				return "(&(" + eidAttr + "=" + escapeSearchFilterTerm(eid) + ")(!(objectClass=computer)))";
+			}
 		} else {
 			valueFormat = (MessageFormat) valueFormat.clone();
-			return eidAttr + "=" + escapeSearchFilterTerm(valueFormat.format(new Object[]{eid}));
+			if (StringUtils.equalsIgnoreCase(eidAttr, "sAMAccountName")) {
+				return "(&(objectClass=user)(" + eidAttr + "=" + escapeSearchFilterTerm(valueFormat.format(new Object[]{eid})) + ")(!(objectClass=computer))(!(userAccountControl:1.2.840.113556.1.4.803:=2)))";
+			} else {
+				return "(&(" + eidAttr + "=" + escapeSearchFilterTerm(valueFormat.format(new Object[]{eid})) + ")(!(objectClass=computer)))";
+			}
 		}
+		
 	}
 
 	public String getFindUserByAidFilter(String aid) {
@@ -314,6 +333,20 @@ public class SimpleLdapAttributeMapper implements LdapAttributeMapper {
             log.debug("mapLdapAttributeOntoUserData() mapping attribute to User display name: [logical attr name = {}][physical attr name = {}][value = {}]",
                 logicalAttrName, attribute.getName(), attrValue);
             userData.setProperty(UnboundidDirectoryProvider.DISPLAY_NAME_PROPERTY, attrValue);
+        } else if ( logicalAttrName.equals("jpegPhoto") && attrValue != null ) {
+        	if ( log.isDebugEnabled() ) {
+        		log.debug("mapLdapAttributeOntoUserData() mapping jpegPhoto: " +
+        				"[logical attr name = " + logicalAttrName + 
+        				"][physical attr name = " + attribute.getName() + 
+        				"][value length = " + attribute.toString() + "]");
+        	}
+            boolean isBase64 = Base64.isBase64(unboundidAttribute.getValueByteArray());
+            if (isBase64) {
+              userData.setProperty(logicalAttrName, attrValue);
+            }
+            else {
+              userData.setProperty(logicalAttrName, java.util.Base64.getEncoder().encodeToString(unboundidAttribute.getValueByteArray()));
+            }
         } else {
             log.debug("mapLdapAttributeOntoUserData() mapping attribute to a User property: [logical attr name (and property name) = {}][physical attr name = {}][value = {}]",
                 logicalAttrName, attribute.getName(), attrValue);
@@ -580,16 +613,25 @@ public class SimpleLdapAttributeMapper implements LdapAttributeMapper {
 	 * @inheritDoc
 	 */
 	public String getManyUsersInOneSearch(Set<String> criteria) {
+		String eidAttr = attributeMappings.get(AttributeMappingConstants.LOGIN_ATTR_MAPPING_KEY);
+
 		StringBuilder sb = new StringBuilder();
-		sb.append("(|");
+		if (StringUtils.equalsIgnoreCase(eidAttr, "sAMAccountName")) {
+			sb.append("(&(objectClass=user)(!(objectClass=computer))(!(userAccountControl:1.2.840.113556.1.4.803:=2))(|");
+		}
+		else {
+			sb.append("(&(!(objectClass=computer))(|");
+		}
 
 		for ( Iterator<String> eidIterator = criteria.iterator(); eidIterator.hasNext(); ) {
-			sb.append("(");
-			sb.append(getFindUserByEidFilter(eidIterator.next()));
-			sb.append(")");
+			sb.append( "(");
+			sb.append( eidAttr );
+			sb.append( "=" );
+			sb.append( escapeSearchFilterTerm(eidIterator.next()) );
+			sb.append( ")" );
 		}
 		
-		sb.append(")");
+		sb.append("))");
 		
 		log.debug("getManyUsersInOneSearch() completed filter: {}", sb.toString());
 		
