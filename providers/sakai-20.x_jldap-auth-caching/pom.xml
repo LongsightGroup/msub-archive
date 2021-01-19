@@ -26,7 +26,7 @@
     <module>jldap</module>
     <module>userdetail</module>
     <module>kerberos</module>
-    <module>openldap</module>
+    <module>unboundid</module>
     <module>sample</module>
   </modules>
   <dependencyManagement>
