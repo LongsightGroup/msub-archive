@@ -38,7 +38,6 @@ import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
 import org.sakaiproject.authz.api.SecurityService;
-import org.sakaiproject.memory.api.Cache;
 import org.sakaiproject.memory.api.MemoryService;
 import org.sakaiproject.user.api.AuthenticationIdUDP;
 import org.sakaiproject.user.api.DisplayAdvisorUDP;
@@ -49,8 +48,10 @@ import org.sakaiproject.user.api.UserEdit;
 import org.sakaiproject.user.api.UserFactory;
 import org.sakaiproject.user.api.UsersShareEmailUDP;
 
+import com.unboundid.ldap.sdk.BindRequest;
 import com.unboundid.ldap.sdk.BindResult;
 import com.unboundid.ldap.sdk.DereferencePolicy;
+import com.unboundid.ldap.sdk.GetEntryLDAPConnectionPoolHealthCheck;
 import com.unboundid.ldap.sdk.LDAPConnectionOptions;
 import com.unboundid.ldap.sdk.LDAPConnectionPool;
 import com.unboundid.ldap.sdk.LDAPSearchException;
@@ -65,6 +66,7 @@ import com.unboundid.ldap.sdk.migrate.ldapjdk.LDAPConnection;
 import com.unboundid.ldap.sdk.migrate.ldapjdk.LDAPEntry;
 import com.unboundid.ldap.sdk.migrate.ldapjdk.LDAPException;
 import com.unboundid.util.ssl.SSLUtil;
+import org.sakaiproject.memory.api.Cache;
 
 /**
  * <p>
@@ -79,6 +81,9 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 
 	/** Security Service */
 	@Setter private SecurityService securityService;
+
+	/** Memory Service */
+	@Setter private MemoryService memoryService;
 
 	/** Default LDAP connection port */
 	public static final int[] DEFAULT_LDAP_PORT = {389};
@@ -103,6 +108,8 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	public static final int DEFAULT_POOL_MAX_CONNS = 10;
 	
 	public static final boolean DEFAULT_RETRY_FAILED_OPERATIONS_DUE_TO_INVALID_CONNECTIONS = false;
+
+	public static final long DEFAULT_HEALTH_CHECK_INTERVAL_MILLIS = 60000L;
 
 	/** Default LDAP maximum number of objects in a result */
 	public static final int DEFAULT_MAX_RESULT_SIZE = 1000;
@@ -154,6 +161,10 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	
 	private boolean retryFailedOperationsDueToInvalidConnections = DEFAULT_RETRY_FAILED_OPERATIONS_DUE_TO_INVALID_CONNECTIONS;
 
+	private long healthCheckIntervalMillis = DEFAULT_HEALTH_CHECK_INTERVAL_MILLIS;
+
+	private Map<String,String> healthCheckMappings = null;
+
 	/** Maximum number of results from one LDAP query */
 	private int maxResultSize = DEFAULT_MAX_RESULT_SIZE;
 
@@ -186,8 +197,6 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	 */
 	private Map<String,String> attributeMappings;
 
-	private MemoryService memoryService;
-	
 	/** Handles LDAPConnection allocation */
 	private LDAPConnectionPool connectionPool;
 
@@ -224,7 +233,6 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	 * If false, only users who have existing accounts may authenticate via LDAP.
 	 */
 	@Getter @Setter private boolean allowAuthenticationExternal = DEFAULT_ALLOW_AUTHENTICATION_EXTERNAL;
-	private Cache negativeCache;
 
 	/**
 	 * Flag for allowing/disallowing authentication for admin-equivalent users.
@@ -248,6 +256,9 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	 */
 	private boolean authenticateWithProviderFirst = DEFAULT_AUTHENTICATE_WITH_PROVIDER_FIRST;
 
+	/** Negative cache */
+	private Cache negativeCache;
+
 	public UnboundidDirectoryProvider() {
 		log.debug("instantating UnboundidDirectoryProvider");
 	}
@@ -265,51 +276,77 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 
 		log.debug("init()");
 
-		// setup the negative user cache
-		negativeCache = memoryService.getCache(getClass().getName()+".negativeCache");
-
-
 		// We don't want to allow people to break their config by setting the batch size to be more than the maxResultsSize.
 		if (batchSize > maxResultSize) {
 			batchSize = maxResultSize;
 			log.warn("Unboundid batchSize is larger than maxResultSize, batchSize has been reduced from: "+ batchSize + " to: "+ maxResultSize);
 		}
 
-		// Create a new LDAP connection pool with 10 connections
-		ServerSet serverSet = null;
+		// setup the negative user cache
+		negativeCache = memoryService.getCache(getClass().getName() + ".negativeCache");
 
-		// Set some sane defaults to better handle timeouts. Unboundid will wait 30 seconds by default on a hung connection.
-		LDAPConnectionOptions connectOptions = new LDAPConnectionOptions();
-		connectOptions.setAbandonOnTimeout(true);
-		connectOptions.setConnectTimeoutMillis(operationTimeout);
-		connectOptions.setResponseTimeoutMillis(operationTimeout); // Sakai should not be making any giant queries to LDAP
-
-		if (isSecureConnection()) {
-			try {
-				// If testing locally only, could use `new TrustAllTrustManager()` as contructor parameter to SSLUtil
-				SSLUtil sslUtil = new SSLUtil();
-				SSLSocketFactory sslSocketFactory = sslUtil.createSSLSocketFactory();
-
-				serverSet = new SingleServerSet(ldapHost[0], ldapPort[0], sslSocketFactory, connectOptions);
-			} catch (GeneralSecurityException ex) {
-				log.error("Error while initializing LDAP SSLSocketFactory");
-				throw new RuntimeException(ex);
-			}
-		} else {
-			serverSet = new SingleServerSet(ldapHost[0], ldapPort[0], connectOptions);
-		}
-
-		SimpleBindRequest bindRequest = new SimpleBindRequest(ldapUser, ldapPassword);
-		try {
-			log.info("Creating LDAP connection pool of size " + poolMaxConns);
-			connectionPool = new LDAPConnectionPool(serverSet, bindRequest, poolMaxConns);
-			connectionPool.setRetryFailedOperationsDueToInvalidConnections(retryFailedOperationsDueToInvalidConnections);
-		} catch (com.unboundid.ldap.sdk.LDAPException e) {
-			log.error("Could not init LDAP pool", e);
-		}
-		   
+		createConnectionPool();
 		initLdapAttributeMapper();
 	}
+
+        /**
+         * Create the LDAP connection pool
+         */
+        protected synchronized boolean createConnectionPool() {
+
+                if (connectionPool != null) {
+                        return true;
+                }
+
+                // Create a new LDAP connection pool with 10 connections
+                ServerSet serverSet = null;
+
+                // Set some sane defaults to better handle timeouts. Unboundid will wait 30 seconds by default on a hung connection.
+                LDAPConnectionOptions connectOptions = new LDAPConnectionOptions();
+                connectOptions.setAbandonOnTimeout(true);
+                connectOptions.setConnectTimeoutMillis(operationTimeout);
+                connectOptions.setResponseTimeoutMillis(operationTimeout); // Sakai should not be making any giant queries to LDAP
+
+                if (isSecureConnection()) {
+                        try {
+                                // If testing locally only, could use `new TrustAllTrustManager()` as contructor parameter to SSLUtil
+                                SSLUtil sslUtil = new SSLUtil();
+                                SSLSocketFactory sslSocketFactory = sslUtil.createSSLSocketFactory();
+
+                                serverSet = new SingleServerSet(ldapHost[0], ldapPort[0], sslSocketFactory, connectOptions);
+                        } catch (GeneralSecurityException ex) {
+                                log.error("Error while initializing LDAP SSLSocketFactory");
+                                throw new RuntimeException(ex);
+                        }
+                } else {
+                        serverSet = new SingleServerSet(ldapHost[0], ldapPort[0], connectOptions);
+                }
+
+                BindRequest bindRequest = new SimpleBindRequest(ldapUser, ldapPassword);
+                try {
+                    log.info("Creating LDAP connection pool of size {}", poolMaxConns);
+                    connectionPool = new LDAPConnectionPool(serverSet, bindRequest, poolMaxConns);
+                    connectionPool.setRetryFailedOperationsDueToInvalidConnections(retryFailedOperationsDueToInvalidConnections);
+                    connectionPool.setHealthCheckIntervalMillis(healthCheckIntervalMillis);
+                    if (healthCheckMappings != null) {
+                        GetEntryLDAPConnectionPoolHealthCheck healthCheck = new GetEntryLDAPConnectionPoolHealthCheck(
+                            ldapUser,
+                            Long.parseLong(healthCheckMappings.get("maxResponseTime")),
+                            Boolean.parseBoolean(healthCheckMappings.get("invokeOnCreate")),
+                            Boolean.parseBoolean(healthCheckMappings.get("invokeAfterAuthentication")),
+                            Boolean.parseBoolean(healthCheckMappings.get("invokeOnCheckout")),
+                            Boolean.parseBoolean(healthCheckMappings.get("invokeOnRelease")),
+                            Boolean.parseBoolean(healthCheckMappings.get("invokeForBackgroundChecks")),
+                            Boolean.parseBoolean(healthCheckMappings.get("invokeOnException")));
+                        connectionPool.setHealthCheck(healthCheck);
+                    }
+               } catch (com.unboundid.ldap.sdk.LDAPException e) {
+                   log.error("Could not init LDAP pool", e);
+                   return false;
+              }
+
+             return true;
+        }
 
 	/**
 	 * Lazily "injects" a {@link LdapAttributeMapper} if one
@@ -353,12 +390,14 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	 */
 	public void destroy() {
 		log.debug("destroy()");
+		clearCache();
 	}
 
+	/**
+	 * Resets the internal {@link LdapUserData} cache
+	 */
 	public void clearCache() {
 		log.debug("clearCache()");
-
-		//authCache.clear();
 		negativeCache.clear();
 	}
 
@@ -408,6 +447,11 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 
 		if ( !allowAuthenticationAdmin && securityService.isSuperUser(edit.getId())) {
 			log.debug("authenticateUser(): returning false, not authenticating for superuser (admin) {}", edit.getEid());
+			return false;
+		}
+
+		if (connectionPool == null && !createConnectionPool()) {
+			log.error("No LDAP connection pool available: unable to authenticate");
 			return false;
 		}
 
@@ -789,16 +833,17 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	 *   set, or the result of {@link EidValidator#isSearchableEid(String)}
 	 */
 	protected boolean isSearchableEid(String eid) {
-
 		if (negativeCache == null) {
-			negativeCache = memoryService.getCache(getClass().getName()+".negativeCache");
+			negativeCache = memoryService.getCache(getClass().getName() + ".negativeCache");
 			log.debug("negativeCache initialized in isSearchableEid");
 		}
 		Object o = negativeCache.get(eid);
 		if (o != null) {
-				Integer seenCount = (Integer) o;
-				log.debug("negativeCache count for " + eid + "=" + seenCount);
-				if (seenCount > 3) return false;
+			Integer seenCount = (Integer) o;
+			log.debug("negativeCache count for {}={}", eid, seenCount);
+			if (seenCount > 3) {
+				return false;
+			}
 		}
 		if ( eidValidator == null ) {
 			return true;
@@ -902,6 +947,10 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	throws LDAPException {
 
 		log.debug("searchDirectory(): [filter = {}]", filter);
+
+		if (connectionPool == null && !createConnectionPool()) {
+			throw new LDAPException("No LDAP connection pool available: unable to search");
+		}
 
 		try {
 
@@ -1242,6 +1291,24 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 		this.retryFailedOperationsDueToInvalidConnections = retryFailedOperationsDueToInvalidConnections;
 	}
 
+	public long getHealthCheckIntervalMillis() {
+		return healthCheckIntervalMillis;
+	}
+
+	public void setHealthCheckIntervalMillis(long healthCheckIntervalMillis) {
+		this.healthCheckIntervalMillis = healthCheckIntervalMillis;
+	}
+
+	public Map<String, String> getHealthCheckMappings()
+	{
+		return healthCheckMappings;
+	}
+
+	public void setHealthCheckMappings(Map<String, String> healthCheckMappings)
+	{
+		this.healthCheckMappings = healthCheckMappings;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -1460,14 +1527,6 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 			default :
 				throw new IllegalArgumentException("Invalid search scope [" + searchScope +"]");
 		}
-	}
-
-	public MemoryService getMemoryService() {
-		return memoryService;
-	}
-
-	public void setMemoryService(MemoryService memoryService) {
-		this.memoryService = memoryService;
 	}
 
 	/** 

@@ -17,6 +17,7 @@
   <inceptionYear>2005</inceptionYear>
   <packaging>jar</packaging>
   <properties>
+    <sakai.unboundid.version>5.1.3</sakai.unboundid.version>
     <deploy.target />
   </properties>
   <dependencies>
@@ -39,7 +40,7 @@
     <dependency>
       <groupId>com.unboundid</groupId>
       <artifactId>unboundid-ldapsdk</artifactId>
-      <version>4.0.11</version>
+      <version>${sakai.unboundid.version}</version>
     </dependency>
     <dependency>
       <groupId>org.jmock</groupId>
@@ -50,7 +51,7 @@
     <dependency>
       <groupId>org.zapodot</groupId>
       <artifactId>embedded-ldap-junit</artifactId>
-      <version>0.7</version>
+      <version>0.8.1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
