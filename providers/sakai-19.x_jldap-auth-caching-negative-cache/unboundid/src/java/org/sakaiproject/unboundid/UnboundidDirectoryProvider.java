@@ -303,9 +303,10 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 
                 // Set some sane defaults to better handle timeouts. Unboundid will wait 30 seconds by default on a hung connection.
                 LDAPConnectionOptions connectOptions = new LDAPConnectionOptions();
-                connectOptions.setAbandonOnTimeout(true);
+                //connectOptions.setAbandonOnTimeout(true);
                 connectOptions.setConnectTimeoutMillis(operationTimeout);
                 connectOptions.setResponseTimeoutMillis(operationTimeout); // Sakai should not be making any giant queries to LDAP
+                connectOptions.setUseSynchronousMode(true); // customization based on https://ldapwiki.com/wiki/Tips%20using%20UnboundID%20LDAP%20SDK
 
                 if (isSecureConnection()) {
                         try {
