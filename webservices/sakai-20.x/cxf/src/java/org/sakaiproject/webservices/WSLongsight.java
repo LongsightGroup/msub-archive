@@ -50,6 +50,7 @@ import org.sakaiproject.calendar.api.CalendarEventEdit;
 import org.sakaiproject.calendar.api.RecurrenceRule;
 import org.sakaiproject.calendar.cover.CalendarImporterService;
 import org.sakaiproject.calendar.cover.CalendarService;
+import org.sakaiproject.cluster.api.ClusterService;
 import org.sakaiproject.content.api.ContentCollection;
 import org.sakaiproject.content.api.ContentCollectionEdit;
 import org.sakaiproject.content.api.ContentResourceEdit;
@@ -4094,6 +4095,19 @@ public class WSLongsight extends AbstractWebService {
 
 		return retval;
 	}
+
+	@WebMethod
+	@Path("/setNodeStatus")
+	@Produces("text/plain")
+	@GET
+	public void setNodeStatus(
+			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid,
+			@WebParam(name = "serverid", partName = "serverid") @QueryParam("serverid") String serverid,
+			@WebParam(name = "status", partName = "status") @QueryParam("status") String status)
+	{
+		Session session = establishSession(sessionid);
+		clusterService.markClosing(serverid, !ClusterService.Status.CLOSING.toString().equals(status));
+  }
 
 }
 

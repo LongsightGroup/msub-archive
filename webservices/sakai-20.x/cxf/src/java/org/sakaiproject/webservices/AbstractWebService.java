@@ -28,6 +28,7 @@ import org.sakaiproject.assignment.api.AssignmentService;
 import org.sakaiproject.authz.api.AuthzGroupService;
 import org.sakaiproject.authz.api.SecurityService;
 import org.sakaiproject.calendar.api.CalendarService;
+import org.sakaiproject.cluster.api.ClusterService;
 import org.sakaiproject.component.api.ServerConfigurationService;
 import org.sakaiproject.content.api.ContentHostingService;
 import org.sakaiproject.entity.api.EntityManager;
@@ -72,6 +73,7 @@ public class AbstractWebService {
     protected AuthenticationManager authenticationManager;
     protected AuthzGroupService authzGroupService;
     protected CalendarService calendarService;
+    protected ClusterService clusterService;
     protected EventTrackingService eventTrackingService;
     protected GradebookService gradebookService;
     protected SecurityService securityService;
@@ -152,6 +154,11 @@ public class AbstractWebService {
     @WebMethod(exclude = true)
     public void setCalendarService(CalendarService calendarService) {
         this.calendarService = calendarService;
+    }
+
+    @WebMethod(exclude = true)
+    public void setClusterService(ClusterService clusterService) {
+        this.clusterService = clusterService;
     }
 
     @WebMethod(exclude = true)
