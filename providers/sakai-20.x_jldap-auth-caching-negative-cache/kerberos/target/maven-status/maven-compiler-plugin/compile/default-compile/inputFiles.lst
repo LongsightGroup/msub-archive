@@ -1,0 +1,4 @@
+/opt/src/sakai-20.x_jldap-auth-caching-negative-cache/kerberos/src/java/org/sakaiproject/component/kerberos/user/JassAuthenticate.java
+/opt/src/sakai-20.x_jldap-auth-caching-negative-cache/kerberos/src/java/org/sakaiproject/component/kerberos/user/UsernamePasswordCallback.java
+/opt/src/sakai-20.x_jldap-auth-caching-negative-cache/kerberos/src/java/org/sakaiproject/component/kerberos/user/NullCallbackHandler.java
+/opt/src/sakai-20.x_jldap-auth-caching-negative-cache/kerberos/src/java/org/sakaiproject/component/kerberos/user/KerberosUserDirectoryProvider.java

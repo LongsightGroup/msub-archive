@@ -1,0 +1,7 @@
+org/sakaiproject/component/kerberos/user/KerberosUserDirectoryProvider.class
+org/sakaiproject/component/kerberos/user/JassAuthenticate$1.class
+org/sakaiproject/component/kerberos/user/JassAuthenticate.class
+org/sakaiproject/component/kerberos/user/UsernamePasswordCallback.class
+org/sakaiproject/component/kerberos/user/NullCallbackHandler.class
+org/sakaiproject/component/kerberos/user/JassAuthenticate$AcceptorAction.class
+org/sakaiproject/component/kerberos/user/JassAuthenticate$InitiatorAction.class

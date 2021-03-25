@@ -1,0 +1,6 @@
+org/sakaiproject/coursemanagement/impl/provider/SectionRoleResolver.class
+org/sakaiproject/coursemanagement/impl/provider/CourseSetRoleResolver.class
+org/sakaiproject/coursemanagement/impl/provider/RoleResolver.class
+org/sakaiproject/coursemanagement/impl/provider/CourseManagementGroupProvider.class
+org/sakaiproject/coursemanagement/impl/provider/BaseRoleResolver.class
+org/sakaiproject/coursemanagement/impl/provider/CourseOfferingRoleResolver.class
