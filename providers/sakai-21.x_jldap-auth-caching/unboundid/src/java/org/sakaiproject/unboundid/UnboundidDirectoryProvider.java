@@ -54,8 +54,10 @@ import org.sakaiproject.user.api.UserEdit;
 import org.sakaiproject.user.api.UserFactory;
 import org.sakaiproject.user.api.UsersShareEmailUDP;
 
+import com.unboundid.ldap.sdk.BindRequest;
 import com.unboundid.ldap.sdk.BindResult;
 import com.unboundid.ldap.sdk.DereferencePolicy;
+import com.unboundid.ldap.sdk.GetEntryLDAPConnectionPoolHealthCheck;
 import com.unboundid.ldap.sdk.LDAPConnectionOptions;
 import com.unboundid.ldap.sdk.LDAPConnection;
 import com.unboundid.ldap.sdk.LDAPSearchException;
@@ -112,6 +114,8 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	
 	public static final boolean DEFAULT_RETRY_FAILED_OPERATIONS_DUE_TO_INVALID_CONNECTIONS = false;
 
+	public static final long DEFAULT_HEALTH_CHECK_INTERVAL_MILLIS = 180000L;
+
 	/** Default LDAP maximum number of objects in a result */
 	public static final int DEFAULT_MAX_RESULT_SIZE = 1000;
 
@@ -161,6 +165,10 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	private int poolMaxConns = DEFAULT_POOL_MAX_CONNS;
 	
 	private boolean retryFailedOperationsDueToInvalidConnections = DEFAULT_RETRY_FAILED_OPERATIONS_DUE_TO_INVALID_CONNECTIONS;
+
+	private long healthCheckIntervalMillis = DEFAULT_HEALTH_CHECK_INTERVAL_MILLIS;
+
+	private Map<String,String> healthCheckMappings = null;
 
 	/** Maximum number of results from one LDAP query */
 	private int maxResultSize = DEFAULT_MAX_RESULT_SIZE;
@@ -319,9 +327,10 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 		// setup the negative user cache
 		negativeCache = memoryService.getCache(getClass().getName() + ".negativeCache");
 
-                connectOptions.setAbandonOnTimeout(true);
+                connectOptions.setAbandonOnTimeout(false);
                 connectOptions.setConnectTimeoutMillis(operationTimeout);
                 connectOptions.setResponseTimeoutMillis(operationTimeout); // Sakai should not be making any giant queries to LDAP
+                connectOptions.setUseSynchronousMode(true); // "operate more efficiently and without requiring a separate reader thread per connection"
 
                 serverSet = new SingleServerSet(ldapHost[0], ldapPort[0], connectOptions);
 
@@ -1332,6 +1341,24 @@ public class UnboundidDirectoryProvider implements UserDirectoryProvider, LdapCo
 	 */
 	public void setRetryFailedOperationsDueToInvalidConnections(boolean retryFailedOperationsDueToInvalidConnections) {
 		this.retryFailedOperationsDueToInvalidConnections = retryFailedOperationsDueToInvalidConnections;
+	}
+
+	public long getHealthCheckIntervalMillis() {
+		return healthCheckIntervalMillis;
+	}
+
+	public void setHealthCheckIntervalMillis(long healthCheckIntervalMillis) {
+		this.healthCheckIntervalMillis = healthCheckIntervalMillis;
+	}
+
+	public Map<String, String> getHealthCheckMappings()
+	{
+		return healthCheckMappings;
+	}
+
+	public void setHealthCheckMappings(Map<String, String> healthCheckMappings)
+	{
+		this.healthCheckMappings = healthCheckMappings;
 	}
 
 	/**
