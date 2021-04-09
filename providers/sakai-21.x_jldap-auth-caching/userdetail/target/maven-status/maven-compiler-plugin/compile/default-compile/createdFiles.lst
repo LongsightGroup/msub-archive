@@ -1,0 +1,5 @@
+org/sakaiproject/user/detail/ChainedDetailProvider.class
+org/sakaiproject/user/detail/MappingDetailProvider.class
+org/sakaiproject/user/detail/FallbackDetailProvider.class
+org/sakaiproject/user/detail/CandidateDetailProviderImpl.class
+org/sakaiproject/user/detail/ValueEncryptionUtilities.class
