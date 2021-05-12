@@ -1,0 +1,99 @@
+# Sakai CLE Externals
+# Updating: svn propset svn:externals -F .externals .
+# Corporate POM
+master https://github.com/adrianfish/sakai/branches/SAK-45092/master
+
+# Core services
+common https://github.com/adrianfish/sakai/branches/SAK-45092/common
+commons https://github.com/adrianfish/sakai/branches/SAK-45092/commons
+content-review https://github.com/adrianfish/sakai/branches/SAK-45092/content-review
+delegatedaccess https://github.com/adrianfish/sakai/branches/SAK-45092/delegatedaccess
+emailtemplateservice https://github.com/adrianfish/sakai/branches/SAK-45092/emailtemplateservice
+entitybroker https://github.com/adrianfish/sakai/branches/SAK-45092/entitybroker
+external-calendaring-service https://github.com/adrianfish/sakai/branches/SAK-45092/external-calendaring-service/
+hierarchy https://github.com/adrianfish/sakai/branches/SAK-45092/hierarchy
+jsf https://github.com/adrianfish/sakai/branches/SAK-45092/jsf
+jsf2 https://github.com/adrianfish/sakai/branches/SAK-45092/jsf2
+userauditservice https://github.com/adrianfish/sakai/branches/SAK-45092/userauditservice
+
+# Core Sakai Tools
+access https://github.com/adrianfish/sakai/branches/SAK-45092/access
+admin-tools  https://github.com/adrianfish/sakai/branches/SAK-45092/admin-tools
+admin-su  https://github.com/adrianfish/sakai/branches/SAK-45092/admin-su
+announcement https://github.com/adrianfish/sakai/branches/SAK-45092/announcement
+archive https://github.com/adrianfish/sakai/branches/SAK-45092/archive
+assignment https://github.com/adrianfish/sakai/branches/SAK-45092/assignment
+basiclti https://github.com/adrianfish/sakai/branches/SAK-45092/basiclti
+calendar https://github.com/adrianfish/sakai/branches/SAK-45092/calendar
+chat https://github.com/adrianfish/sakai/branches/SAK-45092/chat
+citations https://github.com/adrianfish/sakai/branches/SAK-45092/citations
+cloud-content https://github.com/adrianfish/sakai/branches/SAK-45092/cloud-content
+cloud-storage https://github.com/adrianfish/sakai/branches/SAK-45092/cloud-storage
+cmprovider https://github.com/adrianfish/sakai/branches/SAK-45092/cmprovider
+config https://github.com/adrianfish/sakai/branches/SAK-45092/config
+content https://github.com/adrianfish/sakai/branches/SAK-45092/content
+dashboard https://github.com/adrianfish/sakai/branches/SAK-45092/dashboard
+dav https://github.com/adrianfish/sakai/branches/SAK-45092/dav
+deploy https://github.com/adrianfish/sakai/branches/SAK-45092/deploy
+docker https://github.com/adrianfish/sakai/branches/SAK-45092/docker
+edu-services https://github.com/adrianfish/sakai/branches/SAK-45092/edu-services
+endorsed https://github.com/adrianfish/sakai/branches/SAK-45092/endorsed
+feedback https://github.com/adrianfish/sakai/branches/SAK-45092/feedback
+gradebookng https://github.com/adrianfish/sakai/branches/SAK-45092/gradebookng
+help https://github.com/adrianfish/sakai/branches/SAK-45092/help
+jobscheduler https://github.com/adrianfish/sakai/branches/SAK-45092/jobscheduler
+kernel https://github.com/adrianfish/sakai/branches/SAK-45092/kernel
+lessonbuilder https://github.com/adrianfish/sakai/branches/SAK-45092/lessonbuilder
+library https://github.com/adrianfish/sakai/branches/SAK-45092/library
+licenses https://github.com/adrianfish/sakai/branches/SAK-45092/licenses
+login https://github.com/adrianfish/sakai/branches/SAK-45092/login
+mailarchive https://github.com/adrianfish/sakai/branches/SAK-45092/mailarchive
+mailsender https://github.com/adrianfish/sakai/branches/SAK-45092/mailsender
+message https://github.com/adrianfish/sakai/branches/SAK-45092/message
+msgcntr https://github.com/adrianfish/sakai/branches/SAK-45092/msgcntr
+mycalendar https://github.com/adrianfish/sakai/branches/SAK-45092/mycalendar
+myconnections https://github.com/adrianfish/sakai/branches/SAK-45092/myconnections
+oauth https://github.com/adrianfish/sakai/branches/SAK-45092/oauth
+oss-parent https://github.com/adrianfish/sakai/branches/SAK-45092/oss-parent
+pack https://github.com/adrianfish/sakai/branches/SAK-45092/pack
+pasystem https://github.com/adrianfish/sakai/branches/SAK-45092/pasystem
+podcasts https://github.com/adrianfish/sakai/branches/SAK-45092/podcasts
+polls https://github.com/adrianfish/sakai/branches/SAK-45092/polls
+portal https://github.com/adrianfish/sakai/branches/SAK-45092/portal
+postem https://github.com/adrianfish/sakai/branches/SAK-45092/postem
+presence https://github.com/adrianfish/sakai/branches/SAK-45092/presence
+profile2 https://github.com/adrianfish/sakai/branches/SAK-45092/profile2
+providers https://github.com/adrianfish/sakai/branches/SAK-45092/providers
+reset-pass https://github.com/adrianfish/sakai/branches/SAK-45092/reset-pass
+roster2 https://github.com/adrianfish/sakai/branches/SAK-45092/roster2
+rsf https://github.com/adrianfish/sakai/branches/SAK-45092/rsf
+rubrics https://github.com/adrianfish/sakai/branches/SAK-45092/rubrics
+rwiki https://github.com/adrianfish/sakai/branches/SAK-45092/rwiki
+samigo https://github.com/adrianfish/sakai/branches/SAK-45092/samigo
+search https://github.com/adrianfish/sakai/branches/SAK-45092/search
+sections https://github.com/adrianfish/sakai/branches/SAK-45092/sections
+shortenedurl https://github.com/adrianfish/sakai/branches/SAK-45092/shortenedurl
+simple-rss-portlet https://github.com/adrianfish/sakai/branches/SAK-45092/simple-rss-portlet
+signup https://github.com/adrianfish/sakai/branches/SAK-45092/signup
+site https://github.com/adrianfish/sakai/branches/SAK-45092/site
+site-manage https://github.com/adrianfish/sakai/branches/SAK-45092/site-manage
+sitedescription https://github.com/adrianfish/sakai/branches/SAK-45092/sitedescription
+sitemembers https://github.com/adrianfish/sakai/branches/SAK-45092/sitemembers
+sitestats https://github.com/adrianfish/sakai/branches/SAK-45092/sitestats
+syllabus https://github.com/adrianfish/sakai/branches/SAK-45092/syllabus
+taggable https://github.com/adrianfish/sakai/branches/SAK-45092/taggable
+tags https://github.com/adrianfish/sakai/branches/SAK-45092/tags
+textarea https://github.com/adrianfish/sakai/branches/SAK-45092/textarea
+user https://github.com/adrianfish/sakai/branches/SAK-45092/user
+usermembership https://github.com/adrianfish/sakai/branches/SAK-45092/usermembership
+velocity https://github.com/adrianfish/sakai/branches/SAK-45092/velocity
+web https://github.com/adrianfish/sakai/branches/SAK-45092/web
+webapi https://github.com/adrianfish/sakai/branches/SAK-45092/webapi
+webcomponents https://github.com/adrianfish/sakai/branches/SAK-45092/webcomponents
+webjars https://github.com/adrianfish/sakai/branches/SAK-45092/webjars
+webservices https://github.com/adrianfish/sakai/branches/SAK-45092/webservices
+wicket https://github.com/adrianfish/sakai/branches/SAK-45092/wicket
+
+
+#Patcher options: "mavenoptions: <options>"
+#mavenoptions:-Psakai-21 -Psakai21.x -Dsakai.edu-services.version=21-SNAPSHOT -Dsakai.common.version=21-SNAPSHOT -Dsakai.jdk.version=1.8
