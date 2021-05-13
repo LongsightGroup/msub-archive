@@ -96,4 +96,4 @@ wicket https://github.com/adrianfish/sakai/branches/SAK-45092/wicket
 
 
 #Patcher options: "mavenoptions: <options>"
-#mavenoptions:-Psakai-21 -Psakai21.x -Dsakai.edu-services.version=21-SNAPSHOT -Dsakai.common.version=21-SNAPSHOT -Dsakai.jdk.version=1.8
+#mavenoptions:-Psakai-22 -Psakai22.x -Dsakai.edu-services.version=22-SNAPSHOT -Dsakai.common.version=22-SNAPSHOT -Dsakai.jdk.version=1.8
