@@ -31,6 +31,7 @@ cloud-content https://github.com/adrianfish/sakai/branches/SAK-45092/cloud-conte
 cloud-storage https://github.com/adrianfish/sakai/branches/SAK-45092/cloud-storage
 config https://github.com/adrianfish/sakai/branches/SAK-45092/config
 content https://github.com/adrianfish/sakai/branches/SAK-45092/content
+conversations https://github.com/adrianfish/sakai/branches/SAK-45092/conversations
 dashboard https://github.com/adrianfish/sakai/branches/SAK-45092/dashboard
 dav https://github.com/adrianfish/sakai/branches/SAK-45092/dav
 deploy https://github.com/adrianfish/sakai/branches/SAK-45092/deploy
