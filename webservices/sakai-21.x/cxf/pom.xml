@@ -16,7 +16,7 @@
     </parent>
 
     <properties>
-        <cxf.version>3.3.5</cxf.version>
+        <cxf.version>3.3.11</cxf.version>
     </properties>
 
     <dependencies>
@@ -199,6 +199,16 @@
     <dependency>
       <groupId>org.sakaiproject.edu-services.gradebook</groupId>
       <artifactId>gradebook-service-impl</artifactId>
+      <version>${sakai.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject.profile2</groupId>
+      <artifactId>profile2-api</artifactId>
+      <version>${sakai.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject.common</groupId>
+      <artifactId>sakai-common-api</artifactId>
       <version>${sakai.version}</version>
     </dependency>
 	<!-- End WSLongsight only-->
