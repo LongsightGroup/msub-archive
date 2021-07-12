@@ -36,6 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
+import org.sakaiproject.api.common.edu.person.SakaiPerson;
 import org.sakaiproject.api.app.messageforums.SynopticMsgcntrItem;
 import org.sakaiproject.api.app.messageforums.SynopticMsgcntrManager;
 import org.sakaiproject.api.app.messageforums.cover.SynopticMsgcntrManagerCover;
@@ -66,6 +67,8 @@ import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.importer.api.ImportDataSource;
 import org.sakaiproject.importer.api.ResetOnCloseInputStream;
 import org.sakaiproject.memory.api.Cache;
+import org.sakaiproject.profile2.logic.ProfileLogic;
+import org.sakaiproject.profile2.logic.SakaiProxy;
 import org.sakaiproject.service.gradebook.shared.Assignment;
 import org.sakaiproject.service.gradebook.shared.CourseGrade;
 import org.sakaiproject.service.gradebook.shared.GradeDefinition;
@@ -4107,6 +4110,35 @@ public class WSLongsight extends AbstractWebService {
 	{
 		Session session = establishSession(sessionid);
 		clusterService.markClosing(serverid, !ClusterService.Status.CLOSING.toString().equals(status));
+  }
+
+	@WebMethod
+	@Path("/longsightSetPhoneticPronunciation")
+	@Produces("text/plain")
+	@GET
+	public void longsightSetPhoneticPronunciation(
+			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid, 
+			@WebParam(name = "eid", partName = "eid") @QueryParam("eid") String eid, 
+			@WebParam(name = "phonetic", partName = "phonetic") @QueryParam("phonetic") String phonetic)
+	{
+		Session session = establishSession(sessionid);
+		if (!securityService.isSuperUser())
+		{
+			LOG.warn("NonSuperUser trying to set pronunciation: " + session.getUserId());
+			return;
+		}
+
+		try {
+			String uuid = userDirectoryService.getUserByEid(eid).getId();
+			SakaiPerson sakaiPerson = sakaiProxy.getSakaiPerson(uuid);
+			if (sakaiPerson == null) {
+				sakaiPerson = sakaiProxy.createSakaiPerson(uuid);
+			}
+			sakaiPerson.setPhoneticPronunciation(phonetic);
+			profileLogic.saveUserProfile(sakaiPerson);
+		} catch (Exception e) {
+			LOG.warn("Error trying to set pronunciation", e);
+		}
   }
 
 }

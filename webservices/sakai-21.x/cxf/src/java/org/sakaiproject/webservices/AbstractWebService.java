@@ -36,6 +36,8 @@ import org.sakaiproject.event.api.EventTrackingService;
 import org.sakaiproject.event.api.UsageSessionService;
 import org.sakaiproject.event.api.ActivityService;
 import org.sakaiproject.messagebundle.api.MessageBundleService;
+import org.sakaiproject.profile2.logic.ProfileLogic;
+import org.sakaiproject.profile2.logic.SakaiProxy;
 import org.sakaiproject.service.gradebook.shared.GradebookExternalAssessmentService;
 import org.sakaiproject.service.gradebook.shared.GradebookService;
 import org.sakaiproject.site.api.SiteService;
@@ -106,6 +108,8 @@ public class AbstractWebService {
     protected SqlService sqlService;
     protected ImportService importService;
     protected SyllabusManager syllabusManager;
+    protected ProfileLogic profileLogic;
+    protected SakaiProxy sakaiProxy;
 
     /**
      * Get the Session related to the given sessionid
@@ -325,5 +329,16 @@ public class AbstractWebService {
     public void setSyllabusManager(SyllabusManager syllabusManager) {
         this.syllabusManager = syllabusManager;
     }
+
+    @WebMethod(exclude = true)
+    public void setProfileLogic(ProfileLogic profileLogic) {
+        this.profileLogic = profileLogic;
+    }
+
+    @WebMethod(exclude = true)
+    public void setSakaiProxy(SakaiProxy sakaiProxy) {
+        this.sakaiProxy = sakaiProxy;
+    }
+
 
 }
