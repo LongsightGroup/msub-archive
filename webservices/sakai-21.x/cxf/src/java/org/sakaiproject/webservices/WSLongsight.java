@@ -4113,13 +4113,14 @@ public class WSLongsight extends AbstractWebService {
   }
 
 	@WebMethod
-	@Path("/longsightSetPhoneticPronunciation")
+	@Path("/longsightSetPronunciation")
 	@Produces("text/plain")
 	@GET
-	public void longsightSetPhoneticPronunciation(
+	public void longsightSetPronunciation(
 			@WebParam(name = "sessionid", partName = "sessionid") @QueryParam("sessionid") String sessionid, 
 			@WebParam(name = "eid", partName = "eid") @QueryParam("eid") String eid, 
-			@WebParam(name = "phonetic", partName = "phonetic") @QueryParam("phonetic") String phonetic)
+			@WebParam(name = "phonetic", partName = "phonetic") @QueryParam("phonetic") String phonetic,
+			@WebParam(name = "filedir", partName = "filedir") @QueryParam("filedir") String filedir)
 	{
 		Session session = establishSession(sessionid);
 		if (!securityService.isSuperUser())
@@ -4134,7 +4135,20 @@ public class WSLongsight extends AbstractWebService {
 			if (sakaiPerson == null) {
 				sakaiPerson = sakaiProxy.createSakaiPerson(uuid);
 			}
-			sakaiPerson.setPhoneticPronunciation(phonetic);
+			if (StringUtils.isNotBlank(phonetic)) {
+				sakaiPerson.setPhoneticPronunciation(phonetic);
+			}
+			if (StringUtils.isNotBlank(filedir)) {
+				final String filename = filedir + "/" + eid + ".wav";
+				FileInputStream file = new FileInputStream(filename);
+				byte[] bytes = new byte[file.available()];
+				file.read(bytes);
+				file.close();
+
+				String resourceId = profileLogic.getUserNamePronunciationResourceId(uuid);
+				sakaiProxy.removeResource(resourceId);
+				sakaiProxy.saveFile(resourceId, uuid, uuid+".wav", "audio/wav", bytes);
+			}
 			profileLogic.saveUserProfile(sakaiPerson);
 		} catch (Exception e) {
 			LOG.warn("Error trying to set pronunciation", e);
