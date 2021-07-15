@@ -1,6 +1,7 @@
 package org.sakaiproject.webservices;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -4140,14 +4141,17 @@ public class WSLongsight extends AbstractWebService {
 			}
 			if (StringUtils.isNotBlank(filedir)) {
 				final String filename = filedir + "/" + eid + ".wav";
-				FileInputStream file = new FileInputStream(filename);
-				byte[] bytes = new byte[file.available()];
-				file.read(bytes);
-				file.close();
+				File f = new File(filename);
+				if (f.isFile() && f.canRead()) {
+					try (FileInputStream file = new FileInputStream(f)) {
+						byte[] bytes = new byte[file.available()];
+						file.read(bytes);
 
-				String resourceId = profileLogic.getUserNamePronunciationResourceId(uuid);
-				sakaiProxy.removeResource(resourceId);
-				sakaiProxy.saveFile(resourceId, uuid, uuid+".wav", "audio/wav", bytes);
+						String resourceId = profileLogic.getUserNamePronunciationResourceId(uuid);
+						sakaiProxy.removeResource(resourceId);
+						sakaiProxy.saveFile(resourceId, uuid, uuid+".wav", "audio/wav", bytes);
+					}
+				}
 			}
 			profileLogic.saveUserProfile(sakaiPerson);
 		} catch (Exception e) {
