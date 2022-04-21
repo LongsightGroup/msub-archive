@@ -93,7 +93,7 @@ wicket https://github.com/sakaiproject/sakai/branches/22.x/wicket
 
 
 #Patcher options: "mavenoptions: <options>"
-#mavenoptions:-Psakai-22 -Psakai22.x -Dsakai.edu-services.version=22-SNAPSHOT -Dsakai.common.version=22-SNAPSHOT -Dsakai.jdk.version=1.11
+#mavenoptions:-Psakai-22 -Psakai22.x -Dsakai.edu-services.version=22-SNAPSHOT -Dsakai.common.version=22-SNAPSHOT
 
 # Additional tools  - Uncomment after 22.x branch is completed
 #attendance https://github.com/sakaicontrib/attendance/branches/22.x
