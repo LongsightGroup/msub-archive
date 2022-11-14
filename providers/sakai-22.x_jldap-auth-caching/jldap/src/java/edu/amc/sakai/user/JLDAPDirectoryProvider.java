@@ -1715,6 +1715,14 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 		this.memoryService = memoryService;
 	}
 
+	public UserDirectoryService getUserDirectoryService() {
+		return userDirectoryService;
+	}
+
+	public void setUserDirectoryService(UserDirectoryService userDirectoryService) {
+		this.userDirectoryService = userDirectoryService;
+	}
+
 	/** 
      * Search all the externally provided users that match this criteria in eid, 
      * email, first or last name. 
