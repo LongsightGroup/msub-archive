@@ -368,19 +368,20 @@ public class SimpleLdapConnectionManager implements LdapConnectionManager {
 	}
 	
 	private boolean isSocketAlive(String host, int port) {
+		final String hcKey = host + ":" + port;
 		final int timeNow = (int) (System.currentTimeMillis() / 1000L);
 		int lastCheck = 0;
 		
-		if (!lastHealthCheck.isEmpty() && lastHealthCheck.containsKey(host)) {
-			lastCheck = lastHealthCheck.get(host);
+		if (!lastHealthCheck.isEmpty() && lastHealthCheck.containsKey(hcKey)) {
+			lastCheck = lastHealthCheck.get(hcKey);
 		}
 		
 		if ((timeNow - lastCheck) < 60) {
 			// if our last check was in the past 60 seconds, just return last value
 			int lastStatus = 0;
 			
-			if (!lastHealthStatus.isEmpty() && lastHealthStatus.containsKey(host)) {
-				lastStatus = lastHealthStatus.get(host);
+			if (!lastHealthStatus.isEmpty() && lastHealthStatus.containsKey(hcKey)) {
+				lastStatus = lastHealthStatus.get(hcKey);
 			}
 			
 			// if it was healthy in last 60 seconds, assume it is still alive
@@ -403,8 +404,8 @@ public class SimpleLdapConnectionManager implements LdapConnectionManager {
 		try {
 			socket.connect(endPoint, timeout);
 			if (socket.isConnected()) {
-				lastHealthCheck.put(host, timeNow);
-				lastHealthStatus.put(host, 1);
+				lastHealthCheck.put(hcKey, timeNow);
+				lastHealthStatus.put(hcKey, 1);
 				return true;
 			}
 		} catch (IOException e) {
@@ -418,8 +419,8 @@ public class SimpleLdapConnectionManager implements LdapConnectionManager {
 			}
 		}
 		
-		lastHealthCheck.put(host, timeNow);
-		lastHealthStatus.put(host, -1);
+		lastHealthCheck.put(hcKey, timeNow);
+		lastHealthStatus.put(hcKey, -1);
 		return false;
 	}
 

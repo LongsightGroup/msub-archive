@@ -138,6 +138,8 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 	
 	/** Maximum number of results from one LDAP query */
 	private int maxObjectsToQueryFor = DEFAULT_MAX_OBJECTS_TO_QUERY;
+	private int maxResultSize = maxObjectsToQueryFor;
+	private int batchSize = maxObjectsToQueryFor;
 	
 	/** LDAP host address */
 	private String secondaryLdapHost;
@@ -711,7 +713,7 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 					}
 					
 					String filter = ldapAttributeMapper.getManyUsersInOneSearch(usersToSearchInLDAP.keySet());
-					List<LdapUserData> ldapUsers = searchDirectory(filter, null, null, null, null, 0);
+					List<LdapUserData> ldapUsers = searchDirectory(filter, null, null, null, null, maxResultSize);
 				
 					for (LdapUserData ldapUserData : ldapUsers) {
 						String ldapEid = ldapUserData.getEid();
@@ -1760,7 +1762,7 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 			String domain = getLdapDomain();
 
 			if (StringUtils.isNotEmpty(domain)) {
-                                        domain = domain.toLowerCase();
+					domain = domain.toLowerCase();
 
 					User currentUser = userDirectoryService.getCurrentUser();
 					String email = currentUser.getEmail().toLowerCase();
@@ -1786,7 +1788,7 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 		
 		try {
 			//no limit to the number of search results, use the LDAP server's settings.
-			List<LdapUserData> ldapUsers = searchDirectory(filter, null, null, null, null, 0);
+			List<LdapUserData> ldapUsers = searchDirectory(filter, null, null, null, null, maxResultSize);
 			
 			for(LdapUserData ldapUserData: ldapUsers) {
 				String ldapUserEid = ldapUserData.getEid();
@@ -1828,7 +1830,7 @@ public class JLDAPDirectoryProvider implements UserDirectoryProvider, LdapConnec
 
 		String filter = ldapAttributeMapper.getFindUserByEmailFilter(email);
 		try {
-			List<LdapUserData> ldapUsers = searchDirectory(filter, null, null, null, null, 0);
+			List<LdapUserData> ldapUsers = searchDirectory(filter, null, null, null, null, maxResultSize);
 
 			for(LdapUserData ldapUserData: ldapUsers) {
 
