@@ -299,15 +299,16 @@ public class SimpleLdapConnectionManager implements LdapConnectionManager {
 		boolean isConnected = conn.isConnected();
 
 		if ( M_log.isDebugEnabled() ) {
-			M_log.debug("connect() :: " + ldapHost + "::" + isConnected + "::" + conn.toString() );
+			M_log.debug("connect() :: " + ldapHost + ":" + ldapPort + "::" + isConnected + "::" + conn.toString() );
 		}
 
 		if (!isConnected) {
 			final int timeNow = (int) (System.currentTimeMillis() / 1000L);
+			final String hcKey = ldapHost + ":" + ldapPort;
 			
-			lastHealthStatus.put(ldapHost, -1);
+			lastHealthStatus.put(hcKey, -1);
 			// do not check for at least another five minutes
-			lastHealthCheck.put(ldapHost, (timeNow + (60*5))); 
+			lastHealthCheck.put(hcKey, (timeNow + (60*5))); 
 			connect(conn);
 		}
 
@@ -382,6 +383,10 @@ public class SimpleLdapConnectionManager implements LdapConnectionManager {
 			
 			if (!lastHealthStatus.isEmpty() && lastHealthStatus.containsKey(hcKey)) {
 				lastStatus = lastHealthStatus.get(hcKey);
+			}
+
+			if (M_log.isDebugEnabled()) {
+				M_log.debug("JLDAP isSocketAlive cached check " + (timeNow - lastCheck) + "; status=" + lastStatus + "; hckey=" + hcKey);
 			}
 			
 			// if it was healthy in last 60 seconds, assume it is still alive
