@@ -67,12 +67,6 @@
     </dependency>
 <!-- This exists strictly so we can control logging
     	levels in Maven-executed unit tests -->
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.8</version>
-      <scope>test</scope>
-    </dependency>
 <!--org.sakaiprojectsakai-authz-api${sakai.version}-->
 <!--org.sakaiprojectsakai-entity-api${sakai.version}-->
 <!--org.sakaiprojectsakai-user-api${sakai.version}-->
