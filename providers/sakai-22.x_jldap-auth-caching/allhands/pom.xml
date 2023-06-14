@@ -26,7 +26,6 @@
 <!--
       This has been relocated to sakai-kernel-util
       org.sakaiproject.kernel.utilsakai-util-->
-    </dependency>
     <dependency>
     	<groupId>commons-lang</groupId>
     	<artifactId>commons-lang</artifactId>
