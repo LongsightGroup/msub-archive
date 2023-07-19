@@ -90,7 +90,7 @@ web https://github.com/sakaiproject/sakai/branches/23.x/web
 webapi https://github.com/sakaiproject/sakai/branches/23.x/webapi
 webcomponents https://github.com/sakaiproject/sakai/branches/23.x/webcomponents
 webjars https://github.com/sakaiproject/sakai/branches/23.x/webjars
-webservices https://github.com/sakaiproject/sakai/branches/23.x/webservices
+#webservices https://github.com/sakaiproject/sakai/branches/23.x/webservices
 wicket https://github.com/sakaiproject/sakai/branches/23.x/wicket
 
 
@@ -103,4 +103,4 @@ wicket https://github.com/sakaiproject/sakai/branches/23.x/wicket
 #blogwow https://github.com/sakaicontrib/blogwow/branches/23.x
 #certification https://github.com/sakaicontrib/certification/branches/23.x
 #evaluation https://github.com/sakaicontrib/evaluation/branches/23.x
-#webservices https://source.sakaiproject.org/svn/msub/longsight.com/webservices/sakai-23.x
+webservices https://source.sakaiproject.org/svn/msub/longsight.com/webservices/sakai-23.x
