@@ -99,6 +99,6 @@ bbb-tool https://github.com/sakaicontrib/bbb-tool/branches/20.x
 blogwow https://github.com/sakaicontrib/blogwow/branches/20.x
 certification https://github.com/sakaicontrib/certification/branches/20.x
 evaluation https://github.com/sakaicontrib/evaluation/branches/20.x
-webservices https://source.sakaiproject.org/svn/msub/longsight.com/webservices/sakai-20.x
+webservices https://github.com/LongsightGroup/webservices/branches/20.x
 
 #shell_command curl -L https://jenkins.nightly.sakaiproject.org/job/sakai-translations/job/master/TranslationPatch_5far/translation_ar.patch > ar.patch ; patch -p1 < ar.patch
